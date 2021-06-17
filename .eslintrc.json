@@ -1,0 +1,124 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "react-app"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "airbnb-typescript",
+        "react-app"
+    ],
+    "rules": {
+        "@typescript-eslint/indent": [
+            "error",
+            4
+        ],
+        "@typescript-eslint/quotes": [
+            "error",
+            "double"
+        ],
+        "@typescript-eslint/comma-dangle": "off",
+        "@typescript-eslint/lines-between-class-members": [
+            "error",
+            {
+                "exceptAfterSingleLine": true
+            }
+        ],
+        "@typescript-eslint/no-unused-expressions": [
+            "error",
+            {
+                "allowShortCircuit": true,
+                "allowTernary": true
+            }
+        ],
+        "react/jsx-indent": [
+            "error",
+            4,
+            {
+                "indentLogicalExpressions": true,
+                "checkAttributes": true
+            }
+        ],
+        "object-shorthand": [
+            "error",
+            "consistent-as-needed"
+        ],
+        "no-param-reassign": [
+            "error",
+            {
+                "props": true,
+                "ignorePropertyModificationsFor": [
+                    "draft"
+                ]
+            }
+        ],
+        "arrow-parens": [
+            "error",
+            "as-needed"
+        ],
+        "react/jsx-indent-props": [
+            "error",
+            4
+        ],
+        "react/jsx-closing-bracket-location": [
+            "error",
+            {
+                "nonEmpty": "after-props",
+                "selfClosing": "after-props"
+            }
+        ],
+        "radix": [
+            "error",
+            "as-needed"
+        ],
+        "object-curly-newline": [
+            "error",
+            {
+                "ImportDeclaration": {
+                    "multiline": true
+                }
+            }
+        ],
+        "no-restricted-syntax": [
+            "error",
+            "ForInStatement",
+            "LabeledStatement",
+            "WithStatement"
+        ],
+        // Does not work with TS and arrow functions
+        // https://github.com/yannickcr/eslint-plugin-react/issues/2353
+        "react/prop-types": "off",
+        // Is this the way to go? I think both ways are acceptable, but should not be enforced...
+        "react/destructuring-assignment": "off",
+        // Deprecated rule
+        "no-spaced-func": "off",
+        // We don't use default props
+        "react/require-default-props": "off",
+        "@typescript-eslint/no-shadow": [
+            "error",
+            {
+                "ignoreFunctionTypeParameterNameValueShadow": true
+            }
+        ],
+        "react/jsx-props-no-spreading": "off",
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+                "js": "never",
+                "jsx": "never",
+                "ts": "never",
+                "tsx": "never"
+            }
+        ],
+        "@typescript-eslint/object-curly-spacing": "off",
+        // We need to use any for interfaces towards bpmn-js way too often for this rule to be effective
+        "@typescript-eslint/no-explicit-any": "off"
+    }
+}
