@@ -14,7 +14,7 @@ class GlobalEventListenerUtil {
         // eslint-disable-next-line no-param-reassign
         eventBus.fire = (event: string, data: any) => {
             this.listeners.forEach(l => l(event, data));
-            fire(event, data);
+            return fire(event, data);
         };
     }
 
