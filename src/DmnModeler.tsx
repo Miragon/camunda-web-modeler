@@ -1,9 +1,9 @@
-import { makeStyles } from "@material-ui/core/styles";
-import { Code } from "@material-ui/icons";
-import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
+import { makeStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomDmnJsModeler, { DmnView } from "./bpmnio/dmn/CustomDmnJsModeler";
+import SvgIcon from "./components/SvgIcon";
+import ToggleGroup from "./components/ToggleGroup";
 import DmnEditor, { DmnModelerOptions, DmnPropertiesPanelOptions } from "./editor/DmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { isBpmnIoEvent } from "./events/bpmnio/BpmnIoEvents";
@@ -129,7 +129,7 @@ const DmnModeler: React.FC<Props> = props => {
         }
     }, [onEvent]);
 
-    const changeMode = useCallback(async (_, value) => {
+    const changeMode = useCallback(async value => {
         if (value !== null && value !== activeView) {
             await saveFile("view.changed");
             setActiveView(value);
@@ -181,45 +181,38 @@ const DmnModeler: React.FC<Props> = props => {
             )}
 
             {!modelerTabOptions?.disabled && (
-                <div className={classes.modeToggle}>
+                <ToggleGroup
+                    className={classes.modeToggle}
+                    options={[
+                        ...views.map(view => ({
+                            id: view.id,
+                            node: (
+                                <>
+                                    <span className={clsx({
+                                        "dmn-icon-lasso-tool": view.type === "drd",
+                                        "dmn-icon-decision-table": view.type === "decisionTable",
+                                        "dmn-icon-literal-expression": view.type === "literalExpression"
+                                    })} />
 
-                    <ToggleButtonGroup
-                        exclusive
-                        value={activeView}
-                        onChange={changeMode}>
-
-                        {views.map(view => (
-                            <ToggleButton
-                                disableRipple
-                                key={view.id}
-                                value={view.id}>
-
-                                <span className={clsx({
-                                    "dmn-icon-lasso-tool": view.type === "drd",
-                                    "dmn-icon-decision-table": view.type === "decisionTable",
-                                    "dmn-icon-literal-expression": view.type === "literalExpression"
-                                })} />
-
-                                <span
-                                    title={view.name || "Unnamed"}
-                                    className={classes.buttonTitle}>
-                                    {view.name || "Unnamed"}
-                                </span>
-
-                            </ToggleButton>
-                        ))}
-
-                        <ToggleButton
-                            value="xml"
-                            disableRipple>
-
-                            <Code />
-
-                        </ToggleButton>
-
-                    </ToggleButtonGroup>
-
-                </div>
+                                    <span
+                                        title={view.name || "Unnamed"}
+                                        className={classes.buttonTitle}>
+                                        {view.name || "Unnamed"}
+                                    </span>
+                                </>
+                            )
+                        })),
+                        {
+                            id: "xml",
+                            node: (
+                                <SvgIcon
+                                    path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                            )
+                        }
+                    ]}
+                    onChange={changeMode}
+                    active={activeView || ""} />
             )}
 
         </div>

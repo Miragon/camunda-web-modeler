@@ -1,9 +1,9 @@
 import { makeStyles } from "@material-ui/styles";
-import { Code, Edit } from "@material-ui/icons";
-import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
+import SvgIcon from "./components/SvgIcon";
+import ToggleGroup from "./components/ToggleGroup";
 import BpmnEditor, { BpmnModelerOptions, BpmnPropertiesPanelOptions } from "./editor/BpmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { Event } from "./events/Events";
@@ -126,7 +126,7 @@ const BpmnModeler: React.FC<Props> = props => {
         }
     }, [onEvent]);
 
-    const changeMode = useCallback(async (_, value) => {
+    const changeMode = useCallback(async value => {
         if (value !== null && value !== mode) {
             await saveFile("view.changed");
             setMode(value);
@@ -165,32 +165,29 @@ const BpmnModeler: React.FC<Props> = props => {
             )}
 
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
-                <div className={classes.modeToggle}>
-
-                    <ToggleButtonGroup
-                        exclusive
-                        value={mode}
-                        onChange={changeMode}>
-
-                        <ToggleButton
-                            disableRipple
-                            value="bpmn">
-
-                            <Edit />
-
-                        </ToggleButton>
-
-                        <ToggleButton
-                            value="xml"
-                            disableRipple>
-
-                            <Code />
-
-                        </ToggleButton>
-
-                    </ToggleButtonGroup>
-
-                </div>
+                <ToggleGroup
+                    className={classes.modeToggle}
+                    options={[
+                        {
+                            id: "bpmn",
+                            node: (
+                                <SvgIcon
+                                    path="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
+                                        7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41
+                                        0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                            )
+                        },
+                        {
+                            id: "xml",
+                            node: (
+                                <SvgIcon
+                                    path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
+                            )
+                        }
+                    ]}
+                    onChange={changeMode}
+                    active={mode} />
             )}
 
         </div>
