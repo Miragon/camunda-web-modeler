@@ -8,8 +8,8 @@ import React, {
     useRef,
     useState
 } from "react";
+import SplitPane from "react-split-pane";
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
-import SplitView from "../components/SplitView";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { Event } from "../events/Events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
@@ -376,24 +376,23 @@ const BpmnEditor: React.FC<Props> = props => {
     }
 
     return (
-        <SplitView
+        <SplitPane
+            split="vertical"
+            minSize="10%"
+            defaultSize="75%"
+            maxSize="95%"
             className={clsx(!props.active && classes.hidden, className)}
-            onResize={newWidth => {
+            resizerStyle={{
+                cursor: "col-resize",
+                width: "2px",
+                backgroundColor: "black"
+            }}
+            onChange={(newWidth: string) => {
                 onEvent(createPropertiesPanelResizedEvent(parseInt(newWidth)));
-            }}
-            orientation="vertical"
-            component1={{
-                component: modelerContainer,
-                initSize: modelerOptions?.size?.initial || "75%",
-                maxSize: modelerOptions?.size?.max || "95%",
-                minSize: modelerOptions?.size?.min || "5%"
-            }}
-            component2={{
-                component: propertiesPanelContainer,
-                initSize: propertiesPanelOptions?.size?.initial || "25%",
-                maxSize: propertiesPanelOptions?.size?.max || "95%",
-                minSize: propertiesPanelOptions?.size?.min || "5%"
-            }} />
+            }}>
+            {modelerContainer}
+            {propertiesPanelContainer}
+        </SplitPane>
     );
 };
 
