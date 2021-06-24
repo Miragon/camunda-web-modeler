@@ -1,1 +1,1 @@
-declare module "react-split-pane/lib/Pane";
+declare module "react-split-pane";
