@@ -6,8 +6,8 @@ import css from "rollup-plugin-css-only";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from '@rollup/plugin-replace';
 import deepmerge from "deepmerge";
-import fs from "fs";
-import path from "path";
+/* import fs from "fs";
+import path from "path"; */
 
 const defaultConfig = {
     input: "src/index.ts",
@@ -63,8 +63,9 @@ export default [
             sourcemap: true
         },
         plugins: [
-            // terser(),
-            {
+            terser(),
+            /* { // Use this to write a graph.json to analyze the bundle
+                // Remember to uncomment the imports, too
                 buildEnd() {
                     const deps = [];
                     for (const id of this.getModuleIds()) {
@@ -80,7 +81,7 @@ export default [
                         path.join(__dirname, 'graph.json'),
                         JSON.stringify(deps, null, 2));
                 },
-            }
+            } */
         ]
     })
 ];

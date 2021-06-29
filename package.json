@@ -1,12 +1,12 @@
 {
     "name": "@miragon/camunda-web-modeler-test",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
     "author": "FlowSquad GmbH <info@flowsquad.io>",
     "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
     "scripts": {
         "clean": "rimraf dist index.js index.d.ts",
-        "build": "npx tsc && npx tsc -p tsconfig.index.json && copyfiles -u 1 \"src/types/*.d.ts\" dist",
+        "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
         "bundle": "npx rollup -c",
         "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
     },
