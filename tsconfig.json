@@ -9,7 +9,7 @@
     "jsx": "react",
     "strict": true,
     "outDir": "dist",
-    "module": "CommonJS",
+    "module": "ESNext",
     "declaration": true,
     "skipLibCheck": true,
     "removeComments": false,

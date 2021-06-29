@@ -1,8 +1,7 @@
-import {makeStyles} from "@material-ui/styles";
+import { makeStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import React, {ReactNode} from "react";
-import SplitPane from "react-split-pane";
-import Pane from "react-split-pane/lib/Pane";
+import React, { ReactNode } from "react";
+import SplitPane, { Pane } from "react-split-pane";
 
 interface SplitPaneComponent {
     component: ReactNode;
