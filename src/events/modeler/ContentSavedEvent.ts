@@ -22,7 +22,7 @@ export type ContentSavedReason =
  * Indicates that the content of the model has changed for some reason. The reasons are documented
  * above.
  */
-interface Data {
+export interface ContentSavedEventData {
     /**
      * The new XML model.
      */
@@ -43,7 +43,7 @@ export const createContentSavedEvent = (
     xml: string,
     svg: string | undefined,
     reason: ContentSavedReason
-): Event<Data> => ({
+): Event<ContentSavedEventData> => ({
     source: "modeler",
     event: EventName,
     data: {
@@ -53,6 +53,6 @@ export const createContentSavedEvent = (
     }
 });
 
-export const isContentSavedEvent = (event: Event<any>): event is Event<Data> => (
+export const isContentSavedEvent = (event: Event<any>): event is Event<ContentSavedEventData> => (
     event.source === "modeler" && event.event === EventName
 );

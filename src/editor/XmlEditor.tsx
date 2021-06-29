@@ -25,7 +25,7 @@ export interface MonacoOptions {
     options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 }
 
-interface Props {
+export interface XmlEditorProps {
     /**
      * The xml to display in the editor.
      */
@@ -67,7 +67,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const XmlEditor: React.FC<Props> = props => {
+const XmlEditor: React.FC<XmlEditorProps> = props => {
     const classes = useStyles();
 
     const { xml, onChanged, active, monacoOptions, className } = props;

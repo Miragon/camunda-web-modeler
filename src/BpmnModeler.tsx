@@ -69,7 +69,7 @@ export interface XmlTabOptions {
     className?: string;
 }
 
-interface Props {
+export interface BpmnModelerProps {
     /**
      * The class name applied to the root element.
      */
@@ -98,7 +98,7 @@ interface Props {
 
 declare type BpmnViewMode = "bpmn" | "xml";
 
-const BpmnModeler: React.FC<Props> = props => {
+const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const classes = useStyles();
 
     const {

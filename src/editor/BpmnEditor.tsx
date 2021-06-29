@@ -125,7 +125,7 @@ export interface BpmnModelerOptions {
     className?: string;
 }
 
-interface Props {
+export interface BpmnEditorProps {
     /**
      * The class name applied to the root element.
      */
@@ -189,7 +189,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const BpmnEditor: React.FC<Props> = props => {
+const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     const classes = useStyles();
 
     const {

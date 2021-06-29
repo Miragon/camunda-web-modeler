@@ -117,7 +117,7 @@ export interface DmnModelerOptions {
     className?: string;
 }
 
-interface Props {
+export interface DmnEditorProps {
     /**
      * The xml to display in the editor.
      */
@@ -181,7 +181,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const DmnEditor: React.FC<Props> = props => {
+const DmnEditor: React.FC<DmnEditorProps> = props => {
     const classes = useStyles();
 
     const {

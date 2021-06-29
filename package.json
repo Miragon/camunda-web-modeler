@@ -1,12 +1,13 @@
 {
     "name": "@miragon/camunda-web-modeler-test",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
     "author": "FlowSquad GmbH <info@flowsquad.io>",
     "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
     "scripts": {
         "clean": "rimraf dist index.js index.d.ts",
-        "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
+        "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
+        "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
         "bundle": "npx rollup -c",
         "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
     },
@@ -71,6 +72,7 @@
         "rollup-plugin-terser": "^7.0.2",
         "rollup-plugin-typescript2": "^0.30.0",
         "tslib": "^2.3.0",
+        "typedoc": "^0.21.2",
         "typescript": "^4.3.4"
     },
     "peerDependencies": {

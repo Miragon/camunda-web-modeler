@@ -12,7 +12,7 @@ export type NotificationSeverity =
  * Indicates any notification, could be a success, info, warning, or failure. This may be displayed
  * by the application directly to the user, if desired.
  */
-interface Data {
+export interface NotificationEventData {
     /**
      * The message text. A human readable string.
      */
@@ -27,7 +27,7 @@ interface Data {
 export const createNotificationEvent = (
     message: string,
     severity: NotificationSeverity
-): Event<Data> => ({
+): Event<NotificationEventData> => ({
     source: "modeler",
     event: EventName,
     data: {
@@ -36,6 +36,6 @@ export const createNotificationEvent = (
     }
 });
 
-export const isNotificationEvent = (event: Event<any>): event is Event<Data> => (
+export const isNotificationEvent = (event: Event<any>): event is Event<NotificationEventData> => (
     event.source === "modeler" && event.event === EventName
 );

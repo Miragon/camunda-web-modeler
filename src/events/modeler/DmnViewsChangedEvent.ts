@@ -6,7 +6,7 @@ const EventName = "dmn.views.changed";
 /**
  * Indicates that the views available or the selected view in the DMN editor have changed.
  */
-interface Data {
+export interface DmnViewsChangedEventData {
     /**
      * The list of all available views.
      */
@@ -21,7 +21,7 @@ interface Data {
 export const createDmnViewsChangedEvent = (
     views: DmnView[],
     activeView: DmnView | undefined
-): Event<Data> => ({
+): Event<DmnViewsChangedEventData> => ({
     source: "modeler",
     event: EventName,
     data: {
@@ -30,6 +30,6 @@ export const createDmnViewsChangedEvent = (
     }
 });
 
-export const isDmnViewsChangedEvent = (event: Event<any>): event is Event<Data> => (
+export const isDmnViewsChangedEvent = (event: Event<any>): event is Event<DmnViewsChangedEventData> => (
     event.source === "modeler" && event.event === EventName
 );

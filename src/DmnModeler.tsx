@@ -57,7 +57,7 @@ export interface XmlTabOptions {
     className?: string;
 }
 
-interface Props {
+export interface DmnModelerProps {
     /**
      * The class name applied to the root element.
      */
@@ -105,7 +105,7 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-const DmnModeler: React.FC<Props> = props => {
+const DmnModeler: React.FC<DmnModelerProps> = props => {
     const classes = useStyles();
 
     const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
