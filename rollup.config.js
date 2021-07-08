@@ -12,7 +12,7 @@ import path from "path"; */
 const defaultConfig = {
     input: "src/index.ts",
     output: {
-        format: "iife",
+        format: "umd",
         name: "MiragonModeler",
         globals: {
             react: "React",
