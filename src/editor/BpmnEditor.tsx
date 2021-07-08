@@ -91,7 +91,7 @@ export interface BpmnModelerOptions {
     /**
      * Will receive the reference to the modeler instance.
      */
-    ref?: MutableRefObject<CustomBpmnJsModeler | undefined>;
+    refs?: MutableRefObject<CustomBpmnJsModeler | undefined>[];
 
     /**
      * The initial, minimum, and maximum sizes of the modeler panel.
@@ -203,7 +203,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     } = props;
 
     const [initializeCount, setInitializeCount] = useState(0);
-    const ref = useRef<CustomBpmnJsModeler | null>(null);
+    const ref = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
     const handleEvent = useCallback(async (event: string, data: any) => {
         // TODO: Should bpmn-js events only be forwarded if the editor is currently active?
@@ -254,14 +254,18 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         });
 
         ref.current = modeler;
-        if (modelerOptions?.ref) {
-            modelerOptions.ref.current = modeler;
+        if (modelerOptions?.refs) {
+            modelerOptions.refs.forEach(ref => ref.current = modeler);
         }
 
         setInitializeCount(cur => cur + 1);
 
         return () => {
             modeler.destroy();
+            ref.current = undefined;
+            if (modelerOptions?.refs) {
+                modelerOptions.refs.forEach(ref => ref.current = undefined);
+            }
         };
     }, [
         bpmnJsOptions,
@@ -320,7 +324,10 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      * Imports the document XML whenever it changes.
      */
     useEffect(() => {
-        initializeCount > 0 && importXml(xml);
+        if (initializeCount > 0) {
+            console.log("Importing XML");
+            importXml(xml);
+        }
     }, [xml, importXml, initializeCount]);
 
     useEffect(() => {

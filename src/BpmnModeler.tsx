@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
 import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
@@ -119,6 +119,22 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         }
     }, [modelerTabOptions, xmlTabOptions]);
 
+    const modelerOptions = useMemo(() => {
+        if(!modelerTabOptions?.modelerOptions) {
+            return {
+                refs: [modelerRef]
+            };
+        }
+
+        return {
+           ...modelerTabOptions.modelerOptions,
+           refs: [
+               ...(modelerTabOptions.modelerOptions.refs || []),
+               modelerRef
+           ]
+        };
+    }, [modelerTabOptions]);
+
     const saveFile = useCallback(async (reason: ContentSavedReason) => {
         if (modelerRef.current) {
             const saved = await modelerRef.current?.save();
@@ -133,6 +149,14 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         }
     }, [saveFile, mode]);
 
+    const onXmlChanged = useCallback((value: string) => {
+        onEvent(createContentSavedEvent(
+            value,
+            undefined,
+            "xml.changed"
+        ));
+    }, [onEvent]);
+
     if (!xml) {
         return null;
     }
@@ -145,7 +169,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     xml={xml}
                     active={mode === "bpmn"}
                     onEvent={onEvent}
-                    modelerOptions={modelerTabOptions?.modelerOptions}
+                    modelerOptions={modelerOptions}
                     propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
                     bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
                     className={modelerTabOptions?.className} />
@@ -155,13 +179,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                 <XmlEditor
                     xml={xml}
                     active={mode === "xml"}
-                    onChanged={value => {
-                        onEvent(createContentSavedEvent(
-                            value,
-                            undefined,
-                            "xml.changed"
-                        ));
-                    }} />
+                    onChanged={onXmlChanged} />
             )}
 
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (

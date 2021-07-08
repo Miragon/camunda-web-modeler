@@ -72,15 +72,9 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
 
     const { xml, onChanged, active, monacoOptions, className } = props;
 
-    const [editedXml, setEditedXml] = useState("");
     const [xmlEditorShown, setXmlEditorShown] = useState(false);
 
-    useEffect(() => {
-        setEditedXml(xml);
-    }, [xml]);
-
     const onXmlChanged = useCallback((value: string) => {
-        setEditedXml(value);
         if (active) {
             onChanged(value);
         }
@@ -121,7 +115,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
             <MonacoEditor
                 height=""
                 language="xml"
-                value={editedXml}
+                value={xml}
                 options={options}
                 className={className}
                 onChange={onXmlChanged}
@@ -131,4 +125,4 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     );
 };
 
-export default XmlEditor;
+export default React.memo(XmlEditor);
