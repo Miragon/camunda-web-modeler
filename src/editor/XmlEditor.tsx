@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/styles";
+import composeRefs from "@seznam/compose-react-refs";
 import MonacoEditor, { MonacoEditorProps, RefEditorInstance } from "@uiw/react-monacoeditor";
 import clsx from "clsx";
 import deepmerge from "deepmerge";
@@ -10,7 +11,7 @@ export interface MonacoOptions {
      * Will receive the reference to the editor instance, the monaco instance, and the container
      * element.
      */
-    ref?: MutableRefObject<RefEditorInstance | null>;
+    refs?: MutableRefObject<RefEditorInstance | null>[];
 
     /**
      * Additional props to pass to the editor component. This will override the defaults defined by
@@ -72,9 +73,15 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
 
     const { xml, onChanged, active, monacoOptions, className } = props;
 
+    const [editedXml, setEditedXml] = useState("");
     const [xmlEditorShown, setXmlEditorShown] = useState(false);
 
+    useEffect(() => {
+        setEditedXml(xml);
+    }, [xml]);
+
     const onXmlChanged = useCallback((value: string) => {
+        setEditedXml(value);
         if (active) {
             onChanged(value);
         }
@@ -119,7 +126,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
                 options={options}
                 className={className}
                 onChange={onXmlChanged}
-                ref={monacoOptions?.ref}
+                ref={composeRefs<RefEditorInstance>(undefined, undefined, ...(monacoOptions?.refs || []))}
                 {...monacoOptions?.props || {}} />
         </div>
     );

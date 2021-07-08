@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/styles";
+import { RefEditorInstance } from "@uiw/react-monacoeditor";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
@@ -109,6 +110,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         className
     } = props;
 
+    const monacoRef = useRef<RefEditorInstance>(null);
     const modelerRef = useRef<CustomBpmnJsModeler>();
 
     const [mode, setMode] = useState<BpmnViewMode>("bpmn");
@@ -119,32 +121,59 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         }
     }, [modelerTabOptions, xmlTabOptions]);
 
-    const modelerOptions = useMemo(() => {
-        if(!modelerTabOptions?.modelerOptions) {
+    const modelerOptions: BpmnModelerOptions = useMemo(() => {
+        if (!modelerTabOptions?.modelerOptions) {
             return {
                 refs: [modelerRef]
             };
         }
 
         return {
-           ...modelerTabOptions.modelerOptions,
-           refs: [
-               ...(modelerTabOptions.modelerOptions.refs || []),
-               modelerRef
-           ]
+            ...modelerTabOptions.modelerOptions,
+            refs: [
+                ...(modelerTabOptions.modelerOptions.refs || []),
+                modelerRef
+            ]
         };
     }, [modelerTabOptions]);
 
-    const saveFile = useCallback(async (reason: ContentSavedReason) => {
-        if (modelerRef.current) {
-            const saved = await modelerRef.current?.save();
-            onEvent(createContentSavedEvent(saved.xml, saved.svg, reason));
+    const monacoOptions: MonacoOptions = useMemo(() => {
+        if (!xmlTabOptions?.monacoOptions) {
+            return {
+                refs: [monacoRef]
+            };
+        }
+
+        return {
+            ...xmlTabOptions.monacoOptions,
+            refs: [
+                ...(xmlTabOptions.monacoOptions.refs || []),
+                monacoRef
+            ]
+        };
+    }, [xmlTabOptions]);
+
+    const saveFile = useCallback(async (source: BpmnViewMode, reason: ContentSavedReason) => {
+        switch (source) {
+            case "bpmn": {
+                if (modelerRef.current) {
+                    const saved = await modelerRef.current?.save();
+                    onEvent(createContentSavedEvent(saved.xml, saved.svg, reason));
+                }
+                break;
+            }
+            case "xml": {
+                if (monacoRef.current) {
+                    const saved = await monacoRef.current?.editor?.getValue() || "";
+                    onEvent(createContentSavedEvent(saved, undefined, reason));
+                }
+            }
         }
     }, [onEvent]);
 
     const changeMode = useCallback(async value => {
         if (value !== null && value !== mode) {
-            await saveFile("view.changed");
+            await saveFile(mode, "view.changed");
             setMode(value);
         }
     }, [saveFile, mode]);
@@ -179,6 +208,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                 <XmlEditor
                     xml={xml}
                     active={mode === "xml"}
+                    monacoOptions={monacoOptions}
                     onChanged={onXmlChanged} />
             )}
 

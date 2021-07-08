@@ -325,7 +325,6 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      */
     useEffect(() => {
         if (initializeCount > 0) {
-            console.log("Importing XML");
             importXml(xml);
         }
     }, [xml, importXml, initializeCount]);

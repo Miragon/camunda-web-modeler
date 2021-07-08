@@ -269,7 +269,7 @@ class CustomDmnJsModeler extends Modeler {
      * @param listener The listener to register
      */
     public registerGlobalEventListener(listener: EventCallback): void {
-        this.get("globalEventListenerUtil").on(listener);
+        this.getActiveViewer()?.get("globalEventListenerUtil").on(listener);
     }
 
     /**
@@ -278,7 +278,7 @@ class CustomDmnJsModeler extends Modeler {
      * @param listener The listener to unregister
      */
     public unregisterGlobalEventListener(listener: EventCallback): void {
-        this.get("globalEventListenerUtil").off(listener);
+        this.getActiveViewer()?.get("globalEventListenerUtil").off(listener);
     }
 }
 
