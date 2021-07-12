@@ -41,7 +41,8 @@ const CONTENT_SAVED_EVENT = [
     "import.done",
     "view.contentChanged",
     "dmn.views.changed",
-    "views.changed"
+    "views.changed",
+    "elements.changed"
 ];
 
 export interface DmnPropertiesPanelOptions {
