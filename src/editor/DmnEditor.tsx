@@ -8,8 +8,8 @@ import React, {
     useRef,
     useState
 } from "react";
+import SplitPane from "react-split-pane";
 import CustomDmnJsModeler, { DmnView } from "../bpmnio/dmn/CustomDmnJsModeler";
-import SplitView from "../components/SplitView";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { Event } from "../events/Events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
@@ -83,7 +83,7 @@ export interface DmnModelerOptions {
     /**
      * Will receive the reference to the modeler instance.
      */
-    ref?: MutableRefObject<CustomDmnJsModeler | undefined>;
+    refs?: MutableRefObject<CustomDmnJsModeler | undefined>[];
 
     /**
      * The initial, minimum, and maximum sizes of the modeler panel.
@@ -235,6 +235,16 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             }
         }
     }, [active, onEvent]);
+
+    const viewsChangedCallback = useCallback((event, data) => {
+        handleEvent(event.type, data);
+        if (ref.current?.getActiveViewer()) {
+            ref.current?.registerGlobalEventListener(handleEvent);
+            return () => ref.current?.unregisterGlobalEventListener(handleEvent);
+        }
+        return undefined;
+    }, [handleEvent]);
+
     /**
      * Instantiates the modeler and properties panel. Only happens once on mount.
      */
@@ -246,13 +256,22 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         });
 
         ref.current = modeler;
-        if (modelerOptions?.ref) {
-            modelerOptions.ref.current = modeler;
+        if (modelerOptions?.refs) {
+            modelerOptions.refs.forEach(r => {
+                // eslint-disable-next-line no-param-reassign
+                r.current = modeler;
+            });
         }
 
         setInitializeCount(cur => cur + 1);
 
         return () => {
+            if (modelerOptions?.refs) {
+                modelerOptions.refs.forEach(r => {
+                    // eslint-disable-next-line no-param-reassign
+                    r.current = undefined;
+                });
+            }
             modeler.destroy();
         };
     }, [
@@ -260,6 +279,12 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         modelerOptions,
         propertiesPanelOptions
     ]);
+
+    useEffect(() => {
+        const modeler = ref.current;
+        modeler?.on("views.changed", viewsChangedCallback);
+        return () => modeler?.off("views.changed", viewsChangedCallback);
+    }, [viewsChangedCallback]);
 
     /**
      * Imports the specified XML. The following steps are executed:
@@ -269,7 +294,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
      * 3. Import the specified XML if it has changed.
      * 4. Show any errors or warnings that occurred during import.
      */
-    const importXml = useCallback(async (newXml: string) => {
+    const importXml = useCallback(async (newXml: string, open = false): Promise<void> => {
         if (ref.current) {
             try {
                 const currentXml = await ref.current?.save({
@@ -286,7 +311,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             }
 
             try {
-                const result = await ref.current.import(newXml);
+                const result = await ref.current.import(newXml, open);
                 const count = result.warnings.length;
                 if (count > 0) {
                     // eslint-disable-next-line no-console
@@ -311,17 +336,11 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
      * Imports the document XML whenever it changes.
      */
     useEffect(() => {
-        initializeCount > 0 && importXml(xml);
-    }, [xml, importXml, initializeCount]);
-
-    useEffect(() => {
-        const modeler = ref.current;
-        if (initializeCount > 0 && modeler) {
-            modeler.registerGlobalEventListener(handleEvent);
-            return () => modeler.unregisterGlobalEventListener(handleEvent);
+        if (initializeCount > 0) {
+            // Only open the view on first render
+            importXml(xml, initializeCount === 1);
         }
-        return undefined;
-    }, [initializeCount, handleEvent]);
+    }, [xml, importXml, initializeCount]);
 
     /**
      * Binds the current modeler instance to the keyboard when active and unbinds it when inactive.
@@ -372,24 +391,23 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     }
 
     return (
-        <SplitView
+        <SplitPane
+            split="vertical"
+            minSize="10%"
+            defaultSize="75%"
+            maxSize="95%"
             className={clsx(!props.active && classes.hidden, className)}
-            onResize={newWidth => {
+            resizerStyle={{
+                cursor: "col-resize",
+                width: "5px",
+                backgroundColor: "rgba(0, 0, 0, 0.25)"
+            }}
+            onChange={(newWidth: string) => {
                 onEvent(createPropertiesPanelResizedEvent(parseInt(newWidth)));
-            }}
-            orientation="vertical"
-            component1={{
-                component: modelerContainer,
-                initSize: modelerOptions?.size?.initial || "75%",
-                maxSize: modelerOptions?.size?.max || "95%",
-                minSize: modelerOptions?.size?.min || "5%"
-            }}
-            component2={{
-                component: propertiesPanelContainer,
-                initSize: propertiesPanelOptions?.size?.initial || "25%",
-                maxSize: propertiesPanelOptions?.size?.max || "95%",
-                minSize: propertiesPanelOptions?.size?.min || "5%"
-            }} />
+            }}>
+            {modelerContainer}
+            {propertiesPanelContainer}
+        </SplitPane>
     );
 };
 

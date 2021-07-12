@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import React, { ReactNode } from "react";
+import React from "react";
 
 interface Props {
     path: string;

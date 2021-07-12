@@ -189,10 +189,11 @@ class CustomDmnJsModeler extends Modeler {
      * Imports the specified XML.
      *
      * @param xml The XML to import
+     * @param open Whether to open the view after importing
      */
-    public import(xml: string): Promise<{ warnings: ImportWarning[] }> {
+    public import(xml: string, open = true): Promise<{ warnings: ImportWarning[] }> {
         return new Promise((resolve, reject) => {
-            this.importXML(xml, { open: false }, (error, warnings) => {
+            this.importXML(xml, { open }, (error, warnings) => {
                 if (error) {
                     reject(error);
                 } else {

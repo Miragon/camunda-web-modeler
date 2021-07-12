@@ -20,6 +20,9 @@ const useStyles = makeStyles(() => ({
         left: "97px",
         bottom: "32px",
         backgroundColor: "rgba(255, 255, 255, 0.87)"
+    },
+    icon: {
+        marginTop: "4px"
     }
 }));
 
@@ -167,6 +170,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     const saved = await monacoRef.current?.editor?.getValue() || "";
                     onEvent(createContentSavedEvent(saved, undefined, reason));
                 }
+                break;
             }
         }
     }, [onEvent]);
@@ -220,6 +224,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                             id: "bpmn",
                             node: (
                                 <SvgIcon
+                                    className={classes.icon}
                                     path="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
                                         7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41
                                         0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
@@ -229,6 +234,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                             id: "xml",
                             node: (
                                 <SvgIcon
+                                    className={classes.icon}
                                     path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
                                         0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
                             )

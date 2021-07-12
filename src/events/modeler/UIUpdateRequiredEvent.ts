@@ -14,12 +14,16 @@ export interface UIUpdateRequiredEventData {
     isActive: boolean;
 }
 
-export const createUIUpdateRequiredEvent = (isActive: boolean): Event<UIUpdateRequiredEventData> => ({
+export const createUIUpdateRequiredEvent = (
+    isActive: boolean
+): Event<UIUpdateRequiredEventData> => ({
     source: "modeler",
     event: EventName,
     data: { isActive }
 });
 
-export const isUIUpdateRequiredEvent = (event: Event<any>): event is Event<UIUpdateRequiredEventData> => (
+export const isUIUpdateRequiredEvent = (
+    event: Event<any>
+): event is Event<UIUpdateRequiredEventData> => (
     event.source === "modeler" && event.event === EventName
 );

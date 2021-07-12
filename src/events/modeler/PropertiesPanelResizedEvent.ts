@@ -12,12 +12,16 @@ export interface PropertiesPanelResizedEventData {
     width: number;
 }
 
-export const createPropertiesPanelResizedEvent = (width: number): Event<PropertiesPanelResizedEventData> => ({
+export const createPropertiesPanelResizedEvent = (
+    width: number
+): Event<PropertiesPanelResizedEventData> => ({
     source: "modeler",
     event: EventName,
     data: { width }
 });
 
-export const isPropertiesPanelResizedEvent = (event: Event<any>): event is Event<PropertiesPanelResizedEventData> => (
+export const isPropertiesPanelResizedEvent = (
+    event: Event<any>
+): event is Event<PropertiesPanelResizedEventData> => (
     event.source === "modeler" && event.event === EventName
 );

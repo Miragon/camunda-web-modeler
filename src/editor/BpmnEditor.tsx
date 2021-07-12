@@ -255,7 +255,10 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
 
         ref.current = modeler;
         if (modelerOptions?.refs) {
-            modelerOptions.refs.forEach(ref => ref.current = modeler);
+            modelerOptions.refs.forEach(r => {
+                // eslint-disable-next-line no-param-reassign
+                r.current = modeler;
+            });
         }
 
         setInitializeCount(cur => cur + 1);
@@ -264,7 +267,10 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             modeler.destroy();
             ref.current = undefined;
             if (modelerOptions?.refs) {
-                modelerOptions.refs.forEach(ref => ref.current = undefined);
+                modelerOptions.refs.forEach(r => {
+                    // eslint-disable-next-line no-param-reassign
+                    r.current = undefined;
+                });
             }
         };
     }, [
@@ -390,8 +396,8 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             className={clsx(!props.active && classes.hidden, className)}
             resizerStyle={{
                 cursor: "col-resize",
-                width: "2px",
-                backgroundColor: "black"
+                width: "5px",
+                backgroundColor: "rgba(0, 0, 0, 0.25)"
             }}
             onChange={(newWidth: string) => {
                 onEvent(createPropertiesPanelResizedEvent(parseInt(newWidth)));

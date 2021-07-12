@@ -30,6 +30,8 @@ export const createDmnViewsChangedEvent = (
     }
 });
 
-export const isDmnViewsChangedEvent = (event: Event<any>): event is Event<DmnViewsChangedEventData> => (
+export const isDmnViewsChangedEvent = (
+    event: Event<any>
+): event is Event<DmnViewsChangedEventData> => (
     event.source === "modeler" && event.event === EventName
 );

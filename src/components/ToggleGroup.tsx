@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
         borderRadius: "4px",
         display: "flex",
         "&>*": {
-            padding: "4px 4px 0px 4px !important",
+            padding: "0px 16px !important",
             minWidth: "50px",
             border: "none",
             cursor: "pointer",
@@ -57,7 +57,8 @@ const ToggleGroup: React.FC<Props> = props => {
             {props.options.map(option => (
                 <button
                     key={option.id}
-                    className={clsx("", props.active === option.id && classes.active)}
+                    type="button"
+                    className={clsx(props.active === option.id && classes.active)}
                     onClick={() => props.onChange(option.id)}>
                     {option.node}
                 </button>

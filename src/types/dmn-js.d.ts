@@ -30,7 +30,7 @@ declare module "dmn-js/lib/Modeler" {
          * @param event The name of the event
          * @param handler The listener to register
          */
-        on(event: string, handler: (event: any) => void);
+        on(event: string, handler: (event: any, data: any) => void);
 
         /**
          * Unregisters a previously registered listener for bpmn-js.
@@ -38,12 +38,17 @@ declare module "dmn-js/lib/Modeler" {
          * @param event The name of the event
          * @param handler The previously registered listener to unregister
          */
-        off(event: string, handler: (event: any) => void);
+        off(event: string, handler: (event: any, data: any) => void);
 
         /**
          * Returns the active viewer.
          */
         getActiveViewer(): DmnViewer | undefined;
+
+        /**
+         * Returns all available views.
+         */
+        getViews(): DmnView[];
 
         /**
          * Returns the active view.
