@@ -25,6 +25,7 @@ const UI_UPDATE_REQUIRED_EVENTS = [
     "import.done",
     "saveXML.done",
     "attach",
+    "dmn.views.changed",
     "views.changed",
     "view.contentChanged",
     "view.selectionChanged",
@@ -38,7 +39,9 @@ const UI_UPDATE_REQUIRED_EVENTS = [
  */
 const CONTENT_SAVED_EVENT = [
     "import.done",
-    "view.contentChanged"
+    "view.contentChanged",
+    "dmn.views.changed",
+    "views.changed"
 ];
 
 export interface DmnPropertiesPanelOptions {
