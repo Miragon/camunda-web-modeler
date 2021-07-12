@@ -366,6 +366,10 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         return undefined;
     }, [active, activeView, onEvent]);
 
+    const onPropertiesPanelWidthChanged = useCallback((newWidth: number) => {
+        onEvent(createPropertiesPanelResizedEvent(newWidth));
+    }, [onEvent]);
+
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
         <div
             id="dmnview"
@@ -402,9 +406,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                 width: "5px",
                 backgroundColor: "rgba(0, 0, 0, 0.25)"
             }}
-            onChange={(newWidth: string) => {
-                onEvent(createPropertiesPanelResizedEvent(parseInt(newWidth)));
-            }}>
+            onChange={onPropertiesPanelWidthChanged}>
             {modelerContainer}
             {propertiesPanelContainer}
         </SplitPane>

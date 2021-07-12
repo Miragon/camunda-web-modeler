@@ -1,6 +1,6 @@
 {
     "name": "@miragon/camunda-web-modeler-test",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
     "author": "FlowSquad GmbH <info@flowsquad.io>",
     "homepage": "https://github.com/FlowSquad/camunda-web-modeler",

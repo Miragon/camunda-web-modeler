@@ -363,6 +363,10 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         }
     }, [propertiesPanelOptions?.hidden, propertiesPanelOptions?.elementTemplates]);
 
+    const onPropertiesPanelWidthChanged = useCallback((newWidth: number) => {
+        onEvent(createPropertiesPanelResizedEvent(newWidth));
+    }, [onEvent]);
+
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
         <div
             id="bpmnview"
@@ -399,9 +403,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                 width: "5px",
                 backgroundColor: "rgba(0, 0, 0, 0.25)"
             }}
-            onChange={(newWidth: string) => {
-                onEvent(createPropertiesPanelResizedEvent(parseInt(newWidth)));
-            }}>
+            onChange={onPropertiesPanelWidthChanged}>
             {modelerContainer}
             {propertiesPanelContainer}
         </SplitPane>
