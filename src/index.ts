@@ -5,3 +5,6 @@ export {
     BpmnModeler,
     DmnModeler
 };
+
+export * from "./events";
+export * from "./bpmnio";

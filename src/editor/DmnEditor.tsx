@@ -11,7 +11,7 @@ import React, {
 import SplitPane from "react-split-pane";
 import CustomDmnJsModeler, { DmnView } from "../bpmnio/dmn/CustomDmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
-import { Event } from "../events/Events";
+import { Event } from "../events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createDmnViewsChangedEvent } from "../events/modeler/DmnViewsChangedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";

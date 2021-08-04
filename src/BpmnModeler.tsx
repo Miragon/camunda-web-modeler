@@ -7,7 +7,7 @@ import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
 import BpmnEditor, { BpmnModelerOptions, BpmnPropertiesPanelOptions } from "./editor/BpmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
-import { Event } from "./events/Events";
+import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
 
 const useStyles = makeStyles(() => ({

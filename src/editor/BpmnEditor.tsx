@@ -11,7 +11,7 @@ import React, {
 import SplitPane from "react-split-pane";
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
-import { Event } from "../events/Events";
+import { Event } from "../events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";

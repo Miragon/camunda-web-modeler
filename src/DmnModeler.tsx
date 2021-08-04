@@ -7,8 +7,8 @@ import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
 import DmnEditor, { DmnModelerOptions, DmnPropertiesPanelOptions } from "./editor/DmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
-import { isBpmnIoEvent } from "./events/bpmnio/BpmnIoEvents";
-import { Event } from "./events/Events";
+import { isBpmnIoEvent } from "./events";
+import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
 
 export interface ModelerTabOptions {

@@ -1,6 +1,6 @@
 {
-    "name": "@miragon/camunda-web-modeler-test",
-    "version": "0.0.14",
+    "name": "@miragon/camunda-web-modeler",
+    "version": "0.0.1",
     "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
     "author": "FlowSquad GmbH <info@flowsquad.io>",
     "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
@@ -11,6 +11,14 @@
         "bundle": "npx rollup -c",
         "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
     },
+    "keywords": [
+        "miragon",
+        "modeler",
+        "camunda",
+        "bpmnio",
+        "bpmn",
+        "dmn"
+    ],
     "license": "Apache-2.0",
     "files": [
         "dist/",
