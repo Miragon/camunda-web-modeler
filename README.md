@@ -4,6 +4,8 @@
 ![Type Definitions](https://img.shields.io/npm/types/@miragon/camunda-web-modeler)
 ![License](https://img.shields.io/npm/l/@miragon/camunda-web-modeler)
 
+![Screenshot](./static/screenshot.jpg)
+
 This is a React component based on [bpmn.io](https://bpmn.io) that allows you to use a fully functional modeler for BPMN and DMN in your browser application. It has lots of configuration options and offers these features:
 
 - Full support for BPMN and DMN
@@ -85,8 +87,6 @@ const BPMN = /* ... */;
 To see all options available, you can use this example. Remember that it's important to wrap all options and callbacks that are passed into the component using `useMemo()` and `useCallback()`. Else you will have lots of additional render cycles that can lead to bugs that are difficult to debug.
 
 Using the `bpmnJsOptions`, you can pass any options that you would normally pass into bpmn.io. The component will merge these with its own options and use it to create the modeler instance.
-
-> **Usage with DMN** is essentially the same. You just have to use the `<DmnModeler>` component instead. The API is very consistent between the two components.  
 
 ```typescript
 import {
@@ -192,7 +192,7 @@ const App: React.FC = () => {
 
     const modelerOptions = useMemo(() => ({
         className: undefined,
-        ref: modelerRef,
+        refs: [modelerRef],
         container: undefined,
         containerId: undefined,
         size: {
@@ -248,6 +248,10 @@ export default App;
 
 const BPMN = /* .... */;
 ```
+
+## Usage with DMN
+
+Usage with DMN is essentially the same. You just have to use the `<DmnModeler>` component instead. The API is very consistent between the two components.
 
 ## More examples
 
@@ -328,7 +332,7 @@ initialize = () => {
   const domContainer = document.querySelector('#root');
 
   var render = () => {
-    ReactDOM.render(React.createElement(MiragonModeler.BpmnModeler, {
+    ReactDOM.render(React.createElement(MiragonModeler.BpmnModeler, { // or MiragonModeler.DmnModeler
       modelerTabOptions: {
         propertiesPanelOptions: {
           hidden: false
@@ -349,6 +353,10 @@ initialize = () => {
 
 
 ```
+
+# Issues and Questions
+
+If you experience any bugs or have questions concerning the usage or further development plans, don't hesitate to create a new issue. However, **please make sure to include all relevant logs, screenshots, and code examples**. Thanks! 
 
 # API Reference
 
