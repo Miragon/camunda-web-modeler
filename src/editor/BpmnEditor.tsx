@@ -178,7 +178,8 @@ const useStyles = makeStyles(() => ({
     propertiesPanel: {
         height: "100%",
         "&>div": {
-            height: "100%"
+            height: "100%",
+            overflow: "auto"
         }
     },
     hidden: {
