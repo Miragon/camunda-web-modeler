@@ -75,7 +75,11 @@ class CustomBpmnJsModeler extends Modeler {
                     propertiesProviderModule
                 ]
             } : {}
-        ]);
+        ], {
+            // Deprecated, but @dominikhorn93 said it's okay because it's gonna stay that way for
+            // at least 5 years (or forever)
+            clone: false
+        });
         super(mergedOptions);
     }
 
