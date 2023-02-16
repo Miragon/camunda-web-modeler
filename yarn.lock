@@ -677,9 +677,9 @@ camunda-bpmn-moddle@^5.1.2:
     min-dash "^3.5.2"
 
 camunda-dmn-moddle@^1.0.0, camunda-dmn-moddle@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/camunda-dmn-moddle/-/camunda-dmn-moddle-1.1.0.tgz#16c1e72805e634e062850c7b23fe178c897697e0"
-  integrity sha512-jRPrAYgpCLBg52ydpSHT6frXqWhRg6PV3YG9DUz5CO3SPo7qtbiMwUwb06nmKgyR+UerDbUA7eistQsuM7kidw==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/camunda-dmn-moddle/-/camunda-dmn-moddle-1.2.0.tgz#888748ba6b9471c67279d7257859bac8fcdc842b"
+  integrity sha512-P4aKiQXAdLsJysHH81bMLFAqrjpbG5nW2FQZfgfZbHoB1huLoAZXM7ApT2Z/31gTZC8415c7RqqeUdI5F6CVqQ==
   dependencies:
     min-dash "^3.0.0"
 
