@@ -46,7 +46,7 @@
         "@seznam/compose-react-refs": "^1.0.6",
         "@uiw/react-monacoeditor": "^3.2.2",
         "bpmn-js": "^8.7.0",
-        "bpmn-js-properties-panel": "^0.43.1",
+        "bpmn-js-properties-panel": "^0.46.0",
         "camunda-bpmn-moddle": "^5.1.2",
         "camunda-dmn-moddle": "^1.1.0",
         "clsx": "^1.1.1",

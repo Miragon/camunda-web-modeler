@@ -121,12 +121,12 @@
     "@babel/helper-validator-identifier" "^7.14.5"
     to-fast-properties "^2.0.0"
 
-"@bpmn-io/element-templates-validator@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@bpmn-io/element-templates-validator/-/element-templates-validator-0.1.0.tgz#7e5a347061fbf6afddc9e13107e4c1f1934084c5"
-  integrity sha512-GK2IxWa//Zkck6wTwC6kmjNpL2W5zXLQdtPKdpe8UbAFtGxiltzUgIRiLPnvB0PKnKtyh1nq3on3GHxU9QlC0g==
+"@bpmn-io/element-templates-validator@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@bpmn-io/element-templates-validator/-/element-templates-validator-0.2.0.tgz#c3174e6f1b961cee64515bb2b6a0fd82021d56c2"
+  integrity sha512-/ogp0+6zUFdoiY09NYaHL5JtapB8zN1spG8hpML96qetXDCODRxnsqlHTvSwxtZHUDcgun+lxcK8b4wgtCP+6Q==
   dependencies:
-    "@camunda/element-templates-json-schema" "^0.3.1"
+    "@camunda/element-templates-json-schema" "^0.4.0"
     json-source-map "^0.6.1"
     min-dash "^3.7.0"
 
@@ -137,10 +137,10 @@
   dependencies:
     min-dash "^3.5.2"
 
-"@camunda/element-templates-json-schema@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@camunda/element-templates-json-schema/-/element-templates-json-schema-0.3.1.tgz#789fdfb11d063f3dc255600d572997ef8fbead2d"
-  integrity sha512-tU1DGIInadVbO1YLd+k4S35lLQTu7fgSVyjwEGUt9wdmPk9xca4Pup1zVd9S0gLdXAddnox37jsL6dJhKlNUVQ==
+"@camunda/element-templates-json-schema@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@camunda/element-templates-json-schema/-/element-templates-json-schema-0.4.0.tgz#6590ab3385772bf09cc0df107c02947c770ee682"
+  integrity sha512-M5xW61ba7z2maBxfoT4c1bjuLD8OIL7863et/hULiNG6+R/B9CZ4Qze1juuIfXv4zpF2fYSuUsTPkTtiZrcspQ==
 
 "@emotion/hash@^0.8.0":
   version "0.8.0"
@@ -591,12 +591,12 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-bpmn-js-properties-panel@^0.43.1:
-  version "0.43.1"
-  resolved "https://registry.yarnpkg.com/bpmn-js-properties-panel/-/bpmn-js-properties-panel-0.43.1.tgz#6eb9af478ed599cbfe3a24a6cef98c4157737c7e"
-  integrity sha512-zdXLmVmZF1v0NKkN4KvmpES5mucYghBR2g3imAHGwS1xsz9EIH94WO9L40b7KweHRAEB6SbBy2YrT6w7EmVspg==
+bpmn-js-properties-panel@^0.46.0:
+  version "0.46.0"
+  resolved "https://registry.yarnpkg.com/bpmn-js-properties-panel/-/bpmn-js-properties-panel-0.46.0.tgz#79e89ad22d0eee63eb0afba4251b501e28f72a50"
+  integrity sha512-8MlNvHklIZZQH9vtoKf0A0A1v0sHO4Iz19jGhHeX15czOOiCfdavjo+q23GHWNKzQA9347F91XYFcrnM6FO8zw==
   dependencies:
-    "@bpmn-io/element-templates-validator" "^0.1.0"
+    "@bpmn-io/element-templates-validator" "^0.2.0"
     "@bpmn-io/extract-process-variables" "^0.4.3"
     ids "^1.0.0"
     inherits "^2.0.1"
