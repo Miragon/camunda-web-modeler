@@ -11,6 +11,9 @@
         "bundle": "npx rollup -c",
         "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
     },
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org"
+    },
     "keywords": [
         "miragon",
         "modeler",
