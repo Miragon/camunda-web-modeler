@@ -2,8 +2,12 @@
     "name": "@miragon/camunda-web-modeler",
     "version": "0.0.4",
     "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
-    "author": "FlowSquad GmbH <info@flowsquad.io>",
+    "author": "Miragon GmbH <info@miragon.io>",
     "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FlowSquad/camunda-web-modeler.git"
+    },
     "scripts": {
         "clean": "rimraf dist index.js index.d.ts",
         "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
@@ -26,8 +30,7 @@
     "files": [
         "dist/",
         "index.d.ts",
-        "index.js",
-        "static/"
+        "index.js"
     ],
     "main": "index.js",
     "directories": {
