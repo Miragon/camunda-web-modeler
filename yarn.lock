@@ -628,13 +628,13 @@ bpmn-js-properties-panel@^0.46.0:
     semver "^6.3.0"
 
 bpmn-js@^8.7.0:
-  version "8.7.0"
-  resolved "https://registry.yarnpkg.com/bpmn-js/-/bpmn-js-8.7.0.tgz#2c9ea1a45dd085acd5fec97ec85903f48028458d"
-  integrity sha512-6CqpzO9HnlFDm7CWWKE6tFrQpC4s2PgHpmLPTmBkXrFs7FgentaGVaIUbU3SoRbthPucg3V0WewyvgZQRo1t6w==
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/bpmn-js/-/bpmn-js-8.10.0.tgz#e8500a0610abc691b47334afbad355df34533bf7"
+  integrity sha512-NozeOi01qL0ZdVq8+5hWZcikyEvgrP1yzCBqlhSufJdHFsnEMBCwn2bJJ0B/6JgX+IBwy1sk/Uw+Ds8rQ8vfrw==
   dependencies:
-    bpmn-moddle "^7.1.1"
+    bpmn-moddle "^7.1.2"
     css.escape "^1.5.1"
-    diagram-js "^7.3.0"
+    diagram-js "^7.8.2"
     diagram-js-direct-editing "^1.6.3"
     ids "^1.0.0"
     inherits "^2.0.4"
@@ -643,14 +643,14 @@ bpmn-js@^8.7.0:
     object-refs "^0.3.0"
     tiny-svg "^2.2.2"
 
-bpmn-moddle@^7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/bpmn-moddle/-/bpmn-moddle-7.1.1.tgz#880e6393ccc0135f6824307eda2b5d5ca73a2488"
-  integrity sha512-R3xDuTklpK2NtxVDHJiecEVJvY2hKZikXdyl7oaULHMCQPfTBdid7TU/LGUgrLjA3L3ihBN9AKPgcAQ6HoPjpA==
+bpmn-moddle@^7.1.2:
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/bpmn-moddle/-/bpmn-moddle-7.1.3.tgz#5b4592001e8f23dbdb18c557531e06489462bf42"
+  integrity sha512-ZcBfw0NSOdYTSXFKEn7MOXHItz7VfLZTrFYKO8cK6V8ZzGjCcdiLIOiw7Lctw1PJsihhLiZQS8Htj2xKf+NwCg==
   dependencies:
     min-dash "^3.5.2"
     moddle "^5.0.2"
-    moddle-xml "^9.0.5"
+    moddle-xml "^9.0.6"
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -933,10 +933,10 @@ diagram-js-origin@^1.3.2:
   dependencies:
     tiny-svg "^2.0.0"
 
-diagram-js@^7.2.0, diagram-js@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/diagram-js/-/diagram-js-7.3.0.tgz#cea20d479df87d0311ad56337f3c99d084ebcd37"
-  integrity sha512-giDlLWNCOtYTmcdU5UfVmvOhsGy/HFxsWwNhb3rrPpDw8ammONK0KkC4H9M808hszWSWOKcZnUJOkows+WcifA==
+diagram-js@^7.2.0, diagram-js@^7.8.2:
+  version "7.9.0"
+  resolved "https://registry.yarnpkg.com/diagram-js/-/diagram-js-7.9.0.tgz#2ec986086f066f0d9d622c214df6c144ff42601f"
+  integrity sha512-o1yUtX5TXV1pmpevP55gxU/AEG6nCidOXGs/HLuxNXG0zMZ3jQta7kMqRxTK93rNw/XuHmP1eMOwdvdJ2RP5qA==
   dependencies:
     css.escape "^1.5.1"
     didi "^5.2.1"
@@ -2464,10 +2464,10 @@ moddle-xml@^8.0.1:
     moddle "^5.0.1"
     saxen "^8.1.2"
 
-moddle-xml@^9.0.5:
-  version "9.0.5"
-  resolved "https://registry.yarnpkg.com/moddle-xml/-/moddle-xml-9.0.5.tgz#01acc2450637c4bc9914b56c760b0a5cba5785a5"
-  integrity sha512-1t9N35ZMQZTYZmRDoh1mBVd0XwLB34BkBywNJ0+YlLLYxaDBjFR/I+fqwsY746ayYPBz6yNRg8JpLyFgNF+eHg==
+moddle-xml@^9.0.6:
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/moddle-xml/-/moddle-xml-9.0.6.tgz#282b2a2232065a82556ba3fbbe3010b374f95cbf"
+  integrity sha512-tl0reHpsY/aKlLGhXeFlQWlYAQHFxTkFqC8tq8jXRYpQSnLVw13T6swMaourLd7EXqHdWsc+5ggsB+fEep6xZQ==
   dependencies:
     min-dash "^3.5.2"
     moddle "^5.0.2"
