@@ -2355,11 +2355,11 @@ diagram-js-direct-editing@^1.6.3:
     min-dom "^3.1.3"
 
 diagram-js-origin@^1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/diagram-js-origin/-/diagram-js-origin-1.3.2.tgz#b3341ff6a9318fd1a6aab4bed25eb2d41a045205"
-  integrity sha512-46p4Oiz5hswmY31tPS9j8RtYDpcyQd7tnqUu0d0BHQ+OuSOhUKddd+b00RkvLfktcFMOLzcSs9KZQq7s9oV94w==
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/diagram-js-origin/-/diagram-js-origin-1.4.0.tgz#0515e25848a2a85b49eae667c8aa473b0c1cbeee"
+  integrity sha512-qMX6jWsn26DJ4JMTXb+mIcuryosSZEsDaX2BrOk3roZ9peHLITOt4kg467/I6zVQZRWnQDq1PEuf1lIXCMDLkg==
   dependencies:
-    tiny-svg "^2.0.0"
+    tiny-svg "^3.0.0"
 
 diagram-js@^7.2.0, diagram-js@^7.8.2:
   version "7.9.0"
@@ -4998,10 +4998,15 @@ through2@^2.0.1:
     readable-stream "~2.3.6"
     xtend "~4.0.1"
 
-tiny-svg@^2.0.0, tiny-svg@^2.2.1, tiny-svg@^2.2.2:
+tiny-svg@^2.2.1, tiny-svg@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/tiny-svg/-/tiny-svg-2.2.2.tgz#9d9825c2e0ccb5e259bb1ae7d7ac79194e086657"
   integrity sha512-u6zCuMkDR/3VAh83X7hDRn/pi0XhwG2ycuNS0cTFtQjGdOG2tSvEb8ds65VeGWc3H6PUjJKeunueXqgkZqtMsg==
+
+tiny-svg@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/tiny-svg/-/tiny-svg-3.0.1.tgz#1cb79297b87abbc921396064098cbd08c3c34ea6"
+  integrity sha512-P8T4iwiW1t95vpHVHqrD36Brn7TqFYCPSHIWk9WLJtYK1X4aDd+5cgqcAADIWSjf1/i5idKnpCh9mim8hEdRBg==
 
 tiny-warning@^1.0.2:
   version "1.0.3"
