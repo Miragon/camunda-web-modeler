@@ -240,7 +240,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         }
     }, [active, onEvent]);
 
-    const viewsChangedCallback = useCallback((event, data) => {
+    const viewsChangedCallback = useCallback((event:any, data:any) => {
         handleEvent(event.type, data);
         if (ref.current?.getActiveViewer()) {
             ref.current?.registerGlobalEventListener(handleEvent);
@@ -399,6 +399,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     }
 
     return (
+        //@ts-ignore
         <SplitPane
             split="vertical"
             minSize="10%"

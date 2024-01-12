@@ -175,7 +175,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         }
     }, [onEvent]);
 
-    const changeMode = useCallback(async value => {
+    const changeMode = useCallback(async (value:BpmnViewMode) => {
         if (value !== null && value !== mode) {
             await saveFile(mode, "view.changed");
             setMode(value);
@@ -194,6 +194,9 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         return null;
     }
 
+    // @ts-ignore
+    // @ts-ignore
+    // @ts-ignore
     return (
         <div className={clsx(classes.root, className)}>
 
@@ -240,6 +243,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                             )
                         }
                     ]}
+                    //@ts-ignore
                     onChange={changeMode}
                     active={mode} />
             )}

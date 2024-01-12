@@ -393,6 +393,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     }
 
     return (
+        //@ts-ignore
         <SplitPane
             split="vertical"
             minSize="10%"
