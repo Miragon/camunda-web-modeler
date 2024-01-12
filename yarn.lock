@@ -1133,7 +1133,7 @@
   resolved "https://registry.yarnpkg.com/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.16.3", "@babel/runtime@^7.23.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.23.2", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4":
   version "7.23.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.2.tgz#062b0ac103261d68a966c4c7baf2ae3e62ec3885"
   integrity sha512-mM8eg4yl5D6i3lu2QKPuPH4FArvJ8KhTofbE7jwMUv9KX5mBvwPAqnV3MlyBNqdp9RyRKP6Yck8TrfYrPvX3bg==
@@ -1702,12 +1702,12 @@
     eslint-visitor-keys "^3.3.0"
 
 "@uiw/react-monacoeditor@^3.2.2":
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/@uiw/react-monacoeditor/-/react-monacoeditor-3.2.2.tgz#848a7c89496f5e74c5e618582e8604db44c6478c"
-  integrity sha512-iaNDJ8n4IZmVXA7KpmcSthcQefLtAXZEfvFO3us79an5FXK1Qwk7X6S4JCgXZHcwqLPQzCMAdGtqsZ+7oYIZbA==
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@uiw/react-monacoeditor/-/react-monacoeditor-3.6.0.tgz#b2c908ce3cd4dd936f4a0e142440c1cb1ce1f103"
+  integrity sha512-TByRDQvJLIzdyFhpkRdWz3g05fydBa73iTDKyHJ7W3Ic2fV+wEO/DX9HKOGk6f3r/hTdGOLDd4iytr8W7PFqmA==
   dependencies:
-    "@babel/runtime" "^7.13.10"
-    monaco-editor "^0.24.0"
+    "@babel/runtime" "^7.16.7"
+    monaco-editor "^0.44.0"
 
 acorn-jsx@^5.3.1:
   version "5.3.1"
@@ -4074,10 +4074,10 @@ moddle@^5.0.1, moddle@^5.0.2:
   dependencies:
     min-dash "^3.0.0"
 
-monaco-editor@^0.24.0:
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.24.0.tgz#990b55096bcc95d08d8d28e55264c6eb17707269"
-  integrity sha512-o1f0Lz6ABFNTtnEqqqvlY9qzNx24rQZx1RgYNQ8SkWkE+Ka63keHH/RqxQ4QhN4fs/UYOnvAtEUZsPrzccH++A==
+monaco-editor@^0.44.0:
+  version "0.44.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.44.0.tgz#3c0fe3655923bbf7dd647057302070b5095b6c59"
+  integrity sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==
 
 ms@2.1.2:
   version "2.1.2"
