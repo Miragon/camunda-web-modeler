@@ -1,10 +1,16 @@
-import propertiesPanelModule from "bpmn-js-properties-panel";
-import "bpmn-js-properties-panel/dist/assets/bpmn-js-properties-panel.css";
-import propertiesProviderModule from "bpmn-js-properties-panel/lib/provider/camunda";
+import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "bpmn-js/dist/assets/diagram-js.css";
-import Modeler from "bpmn-js/lib/Modeler";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
+import {
+    BpmnPropertiesPanelModule,
+    BpmnPropertiesProviderModule,
+} from 'bpmn-js-properties-panel';
+import {
+    ElementTemplatesPropertiesProviderModule, // Camunda 7 Element Templates
+    // CloudElementTemplatesPropertiesProviderModule // Camunda 8 Element Templates
+} from 'bpmn-js-element-templates';
+import Modeler from "bpmn-js/lib/Modeler";
 import deepmerge from "deepmerge";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
 
@@ -71,8 +77,9 @@ class CustomBpmnJsModeler extends Modeler {
                     parent: options.propertiesPanel
                 },
                 additionalModules: [
-                    propertiesPanelModule,
-                    propertiesProviderModule
+                    BpmnPropertiesPanelModule,
+                    BpmnPropertiesProviderModule,
+                    ElementTemplatesPropertiesProviderModule,
                 ]
             } : {}
         ], {

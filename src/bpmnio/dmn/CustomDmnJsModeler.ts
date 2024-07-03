@@ -1,12 +1,4 @@
-import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json";
-import deepmerge from "deepmerge";
-import diagramOriginModule from "diagram-js-origin";
-import propertiesPanelModule from "dmn-js-properties-panel";
-import "dmn-js-properties-panel/dist/assets/dmn-js-properties-panel.css";
-import decisionTableAdapterModule from "dmn-js-properties-panel/lib/adapter/decision-table";
-import drdAdapterModule from "dmn-js-properties-panel/lib/adapter/drd";
-import literalExpressionAdapterModule from "dmn-js-properties-panel/lib/adapter/literal-expression";
-import propertiesProviderModule from "dmn-js-properties-panel/lib/provider/camunda";
+import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
 import "dmn-js/dist/assets/diagram-js.css";
 import "dmn-js/dist/assets/dmn-font/css/dmn-embedded.css";
 import "dmn-js/dist/assets/dmn-js-decision-table-controls.css";
@@ -14,6 +6,14 @@ import "dmn-js/dist/assets/dmn-js-decision-table.css";
 import "dmn-js/dist/assets/dmn-js-drd.css";
 import "dmn-js/dist/assets/dmn-js-literal-expression.css";
 import "dmn-js/dist/assets/dmn-js-shared.css";
+import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json";
+
+import {
+    DmnPropertiesPanelModule,
+    DmnPropertiesProviderModule,
+} from 'dmn-js-properties-panel';
+import deepmerge from "deepmerge";
+import diagramOriginModule from "diagram-js-origin";
 import Modeler from "dmn-js/lib/Modeler";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
 
@@ -105,7 +105,6 @@ class CustomDmnJsModeler extends Modeler {
                 container: options.container,
                 drd: {
                     additionalModules: [
-                        drdAdapterModule,
                         diagramOriginModule,
                         {
                             __init__: ["globalEventListenerUtil"],
@@ -115,7 +114,6 @@ class CustomDmnJsModeler extends Modeler {
                 },
                 decisionTable: {
                     additionalModules: [
-                        decisionTableAdapterModule,
                         {
                             __init__: ["globalEventListenerUtil"],
                             globalEventListenerUtil: ["type", GlobalEventListenerUtil]
@@ -124,7 +122,6 @@ class CustomDmnJsModeler extends Modeler {
                 },
                 literalExpression: {
                     additionalModules: [
-                        literalExpressionAdapterModule,
                         {
                             __init__: ["globalEventListenerUtil"],
                             globalEventListenerUtil: ["type", GlobalEventListenerUtil]
@@ -143,28 +140,10 @@ class CustomDmnJsModeler extends Modeler {
                         parent: options.propertiesPanel
                     },
                     additionalModules: [
-                        propertiesPanelModule,
-                        propertiesProviderModule
+                        DmnPropertiesPanelModule,
+                        DmnPropertiesProviderModule,
                     ]
                 },
-                decisionTable: {
-                    propertiesPanel: {
-                        parent: options.propertiesPanel
-                    },
-                    additionalModules: [
-                        propertiesPanelModule,
-                        propertiesProviderModule
-                    ]
-                },
-                literalExpression: {
-                    propertiesPanel: {
-                        parent: options.propertiesPanel
-                    },
-                    additionalModules: [
-                        propertiesPanelModule,
-                        propertiesProviderModule
-                    ]
-                }
             } : {}
         ]);
         super(mergedOptions);

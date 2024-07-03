@@ -306,7 +306,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             }
 
             try {
-                const result = await ref.current.importXML(newXml);
+                const result = ref.current.importXML(newXml);
                 const count = result.warnings.length;
                 if (count > 0) {
                     // eslint-disable-next-line no-console
