@@ -52,8 +52,8 @@
         "@babel/eslint-parser": "^7.24.7",
         "@bpmn-io/properties-panel": "^3.22.0",
         "@material-ui/styles": "^4.11.5",
+        "@monaco-editor/react": "^4.6.0",
         "@seznam/compose-react-refs": "^1.0.6",
-        "@uiw/react-monacoeditor": "^3.6.0",
         "bpmn-js": "^17.9.0",
         "bpmn-js-element-templates": "^1.16.0",
         "bpmn-js-properties-panel": "^5.18.0",
@@ -64,6 +64,7 @@
         "diagram-js-origin": "^1.4.0",
         "dmn-js": "^16.5.0",
         "dmn-js-properties-panel": "^3.4.1",
+        "monaco-editor": "^0.50.0",
         "react-split-pane": "^0.1.92"
     },
     "devDependencies": {

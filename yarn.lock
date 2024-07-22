@@ -1090,7 +1090,7 @@
   resolved "https://registry.yarnpkg.com/@babel/regjsgen/-/regjsgen-0.8.0.tgz#f0ba69b075e1f05fb2825b7fad991e7adbb18310"
   integrity sha512-x/rqGMdzj+fWZvCOYForTghzbtqPDZ5gPwaoNGHdgDfF2QA/XZbCBp4Moo5scrkAMPhB7z26XM/AaHuIJdgauA==
 
-"@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.16.7", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.12.5", "@babel/runtime@^7.16.3", "@babel/runtime@^7.3.1", "@babel/runtime@^7.4.4", "@babel/runtime@^7.8.3", "@babel/runtime@^7.8.4":
   version "7.24.7"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.7.tgz#f4f0d5530e8dbdf59b3451b9b3e594b6ba082e12"
   integrity sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==
@@ -1454,6 +1454,20 @@
     "@babel/runtime" "^7.4.4"
     prop-types "^15.7.2"
     react-is "^16.8.0 || ^17.0.0"
+
+"@monaco-editor/loader@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/loader/-/loader-1.4.0.tgz#f08227057331ec890fa1e903912a5b711a2ad558"
+  integrity sha512-00ioBig0x642hytVspPl7DbQyaSWRaolYie/UFNjoTdvoKPzo6xrXLhTk9ixgIKcLH5b5vDOjVNiGyY+uDCUlg==
+  dependencies:
+    state-local "^1.0.6"
+
+"@monaco-editor/react@^4.6.0":
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/react/-/react-4.6.0.tgz#bcc68671e358a21c3814566b865a54b191e24119"
+  integrity sha512-RFkU9/i7cN2bsq/iTkurMWOEErmYcY6JiQI3Jn+WeR/FGISH8JbHERjpS9oRuSOPvDMJI0Z8nJeKkbOs9sBYQw==
+  dependencies:
+    "@monaco-editor/loader" "^1.4.0"
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
@@ -1925,14 +1939,6 @@
   dependencies:
     "@typescript-eslint/types" "7.15.0"
     eslint-visitor-keys "^3.4.3"
-
-"@uiw/react-monacoeditor@^3.6.0":
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/@uiw/react-monacoeditor/-/react-monacoeditor-3.6.0.tgz#b2c908ce3cd4dd936f4a0e142440c1cb1ce1f103"
-  integrity sha512-TByRDQvJLIzdyFhpkRdWz3g05fydBa73iTDKyHJ7W3Ic2fV+wEO/DX9HKOGk6f3r/hTdGOLDd4iytr8W7PFqmA==
-  dependencies:
-    "@babel/runtime" "^7.16.7"
-    monaco-editor "^0.44.0"
 
 acorn-jsx@^5.3.2:
   version "5.3.2"
@@ -4403,10 +4409,10 @@ moddle@^6.0.0, moddle@^6.2.3:
   dependencies:
     min-dash "^4.0.0"
 
-monaco-editor@^0.44.0:
-  version "0.44.0"
-  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.44.0.tgz#3c0fe3655923bbf7dd647057302070b5095b6c59"
-  integrity sha512-5SmjNStN6bSuSE5WPT2ZV+iYn1/yI9sd4Igtk23ChvqB7kDk9lZbB9F5frsuvpB+2njdIeGGFf2G4gbE6rCC9Q==
+monaco-editor@^0.50.0:
+  version "0.50.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.50.0.tgz#44e62b124c8aed224e1d310bbbe6ffd6d5122413"
+  integrity sha512-8CclLCmrRRh+sul7C08BmPBP3P8wVWfBHomsTcndxg5NRCEPfu/mc2AGU8k37ajjDVXcXFc12ORAMUkmk+lkFA==
 
 mri@^1.2.0:
   version "1.2.0"
@@ -5079,6 +5085,11 @@ source-map@^0.6.0:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
+
+state-local@^1.0.6:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/state-local/-/state-local-1.0.7.tgz#da50211d07f05748d53009bee46307a37db386d5"
+  integrity sha512-HTEHMNieakEnoe33shBYcZ7NX83ACUjCu8c40iOGEZsngj9zRnkqS9j1pqQPXwobB0ZcVTk27REb7COQ0UR59w==
 
 stop-iteration-iterator@^1.0.0:
   version "1.0.0"

@@ -248,6 +248,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      * Instantiates the modeler and properties panel. Only happens once on mount.
      */
     useEffect(() => {
+        console.log("Instantiating BPMN Modeler...");
         const modeler = new CustomBpmnJsModeler({
             container: modelerOptions?.containerId || "#bpmnview",
             propertiesPanel: propertiesPanelOptions?.hidden ? undefined : propertiesPanelOptions?.containerId || "#bpmnprop",
@@ -262,9 +263,11 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             });
         }
 
-        setInitializeCount(cur => cur + 1);
+        setInitializeCount(count => count + 1);
 
         return () => {
+            console.log("Destroying BPMN Modeler...");
+            modeler.unregisterGlobalEventListener(handleEvent)
             modeler.destroy();
             ref.current = undefined;
             if (modelerOptions?.refs) {
@@ -276,7 +279,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         };
     }, [
         bpmnJsOptions,
-        modelerOptions,
+        // modelerOptions,
         propertiesPanelOptions
     ]);
 

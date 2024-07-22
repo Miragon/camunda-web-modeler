@@ -1,5 +1,4 @@
 import { makeStyles } from "@material-ui/styles";
-import { RefEditorInstance } from "@uiw/react-monacoeditor";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomDmnJsModeler, { DmnView, ViewsChangedEvent } from "./bpmnio/dmn/CustomDmnJsModeler";
@@ -10,6 +9,8 @@ import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { isBpmnIoEvent } from "./events";
 import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
+import {editor} from "monaco-editor";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 export interface ModelerTabOptions {
     /**
@@ -114,7 +115,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
 
     const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
 
-    const monacoRef = useRef<RefEditorInstance>(null);
+    const monacoRef = useRef<IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomDmnJsModeler>();
 
     const [views, setViews] = useState<DmnView[]>([]);
@@ -130,7 +131,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
         switch (source) {
             case "xml": {
                 if (monacoRef.current) {
-                    const saved = await monacoRef.current?.editor?.getValue() || "";
+                    const saved = monacoRef.current?.getValue() || "";
                     onEvent(createContentSavedEvent(saved, undefined, reason));
                 }
                 break;

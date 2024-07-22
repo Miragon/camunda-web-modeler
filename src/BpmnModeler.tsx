@@ -1,5 +1,4 @@
 import { makeStyles } from "@material-ui/styles";
-import { RefEditorInstance } from "@uiw/react-monacoeditor";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
@@ -9,6 +8,8 @@ import BpmnEditor, { BpmnModelerOptions, BpmnPropertiesPanelOptions } from "./ed
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
+import {editor} from "monaco-editor";
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -113,7 +114,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         className
     } = props;
 
-    const monacoRef = useRef<RefEditorInstance>(null);
+    const monacoRef = useRef<IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomBpmnJsModeler>();
 
     const [mode, setMode] = useState<BpmnViewMode>("bpmn");
@@ -167,7 +168,9 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
             }
             case "xml": {
                 if (monacoRef.current) {
-                    const saved = await monacoRef.current?.editor?.getValue() || "";
+                    //const saved = await monacoRef.current?.editor?.getValue() || "";
+                    const saved = monacoRef.current?.getValue() || "";
+                    console.log("saved", saved);
                     onEvent(createContentSavedEvent(saved, undefined, reason));
                 }
                 break;
@@ -197,7 +200,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     return (
         <div className={clsx(classes.root, className)}>
 
-            {!modelerTabOptions?.disabled && (
+            {!modelerTabOptions?.disabled && mode === "bpmn" && (
                 <BpmnEditor
                     xml={xml}
                     active={mode === "bpmn"}
@@ -208,7 +211,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     className={modelerTabOptions?.className} />
             )}
 
-            {!xmlTabOptions?.disabled && (
+            {!xmlTabOptions?.disabled && mode === "xml" && (
                 <XmlEditor
                     xml={xml}
                     active={mode === "xml"}

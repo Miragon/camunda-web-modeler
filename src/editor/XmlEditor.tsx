@@ -1,23 +1,22 @@
 import { makeStyles } from "@material-ui/styles";
-import composeRefs from "@seznam/compose-react-refs";
-import MonacoEditor, { MonacoEditorProps, RefEditorInstance } from "@uiw/react-monacoeditor";
 import clsx from "clsx";
 import deepmerge from "deepmerge";
-import * as monaco from "monaco-editor";
 import React, { MutableRefObject, useCallback, useEffect, useMemo, useState } from "react";
+import Editor, { EditorProps, loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 
 export interface MonacoOptions {
     /**
      * Will receive the reference to the editor instance, the monaco instance, and the container
      * element.
      */
-    refs?: MutableRefObject<RefEditorInstance | null>[];
+    refs?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>[];
 
     /**
      * Additional props to pass to the editor component. This will override the defaults defined by
      * this component.
      */
-    props?: Partial<MonacoEditorProps>;
+    props?: Partial<EditorProps>;
 
     /**
      * Additional options to pass to the editor component. This will override the defaults defined
@@ -68,6 +67,8 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
+loader.config( { monaco });
+
 const XmlEditor: React.FC<XmlEditorProps> = props => {
     const classes = useStyles();
 
@@ -75,17 +76,26 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
 
     const [xmlEditorShown, setXmlEditorShown] = useState(false);
 
-    const onXmlChanged = useCallback((value: string) => {
+    const onEditorMount = useCallback((editor: monaco.editor.IStandaloneCodeEditor) => {
+        monacoOptions?.refs?.forEach((e) => {
+            e.current = editor;
+        })
+    }, [monacoOptions]);
+
+    const onXmlChanged = useCallback((value?: string) => {
+        console.debug("XmlEditor xml changed:", value);
         if (active) {
-            onChanged(value);
+            const xmlValue = value ? value : xml; // value is empty when the editor initialized
+            onChanged(xmlValue);
         }
-    }, [active, onChanged]);
+    }, [xml, active, onChanged]);
 
     /**
      * Initializes the editor when it is visible for the first time. If it is shown when it is
      * first mounted, the size is wrong.
      */
     useEffect(() => {
+        console.log("XmlEditor active:", active);
         if (active && !xmlEditorShown) {
             setXmlEditorShown(true);
         }
@@ -113,16 +123,14 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
 
     return (
         <div className={clsx(classes.root, !active && classes.hidden)}>
-            <MonacoEditor
+            <Editor
                 height=""
                 language="xml"
                 value={xml}
                 options={options}
                 className={className}
                 onChange={onXmlChanged}
-                ref={composeRefs<RefEditorInstance>(
-                    undefined, undefined, ...(monacoOptions?.refs || [])
-                )}
+                onMount={onEditorMount}
                 {...monacoOptions?.props || {}} />
         </div>
     );
