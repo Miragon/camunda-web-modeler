@@ -5,6 +5,8 @@ import React, { MutableRefObject, useCallback, useEffect, useMemo, useState } fr
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 
+loader.config( { monaco });
+
 export interface MonacoOptions {
     /**
      * Will receive the reference to the editor instance, the monaco instance, and the container
@@ -67,8 +69,6 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-loader.config( { monaco });
-
 const XmlEditor: React.FC<XmlEditorProps> = props => {
     const classes = useStyles();
 
@@ -83,7 +83,6 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     }, [monacoOptions]);
 
     const onXmlChanged = useCallback((value?: string) => {
-        console.debug("XmlEditor xml changed:", value);
         if (active) {
             const xmlValue = value ? value : xml; // value is empty when the editor initialized
             onChanged(xmlValue);
@@ -95,7 +94,6 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
      * first mounted, the size is wrong.
      */
     useEffect(() => {
-        console.log("XmlEditor active:", active);
         if (active && !xmlEditorShown) {
             setXmlEditorShown(true);
         }
@@ -124,7 +122,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     return (
         <div className={clsx(classes.root, !active && classes.hidden)}>
             <Editor
-                height=""
+                height="100%"
                 language="xml"
                 value={xml}
                 options={options}
