@@ -1,7 +1,7 @@
 import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "bpmn-js/dist/assets/diagram-js.css";
-import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
+import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json" with { type: "json" };
 import {
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,

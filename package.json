@@ -1,101 +1,106 @@
 {
-    "name": "@miragon/camunda-web-modeler",
-    "version": "0.0.4",
-    "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
-    "author": "Miragon GmbH <info@miragon.io>",
-    "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/FlowSquad/camunda-web-modeler.git"
-    },
-    "scripts": {
-        "clean": "rimraf dist index.js index.d.ts",
-        "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
-        "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
-        "bundle": "npx rollup -c",
-        "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
-    },
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org"
-    },
-    "keywords": [
-        "miragon",
-        "modeler",
-        "camunda",
-        "bpmnio",
-        "bpmn",
-        "dmn"
+  "name": "@miragon/camunda-web-modeler",
+  "version": "0.0.4",
+  "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
+  "author": "Miragon GmbH <info@miragon.io>",
+  "homepage": "https://github.com/FlowSquad/camunda-web-modeler",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FlowSquad/camunda-web-modeler.git"
+  },
+  "scripts": {
+    "clean": "rimraf dist index.js index.d.ts",
+    "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
+    "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
+    "bundle": "npx rollup -c",
+    "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "keywords": [
+    "miragon",
+    "modeler",
+    "camunda",
+    "bpmnio",
+    "bpmn",
+    "dmn"
+  ],
+  "license": "Apache-2.0",
+  "files": [
+    "dist/",
+    "index.d.ts",
+    "index.js"
+  ],
+  "main": "index.js",
+  "directories": {
+    "lib": "dist/"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
-    "license": "Apache-2.0",
-    "files": [
-        "dist/",
-        "index.d.ts",
-        "index.js"
-    ],
-    "main": "index.js",
-    "directories": {
-        "lib": "dist/"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
-    },
-    "dependencies": {
-        "@babel/eslint-parser": "^7.24.7",
-        "@bpmn-io/properties-panel": "^3.22.0",
-        "@material-ui/styles": "^4.11.5",
-        "@monaco-editor/react": "^4.6.0",
-        "@seznam/compose-react-refs": "^1.0.6",
-        "bpmn-js": "^17.9.0",
-        "bpmn-js-element-templates": "^1.16.0",
-        "bpmn-js-properties-panel": "^5.18.0",
-        "camunda-bpmn-moddle": "^7.0.1",
-        "camunda-dmn-moddle": "^1.3.0",
-        "clsx": "^2.1.1",
-        "deepmerge": "^4.3.1",
-        "diagram-js-origin": "^1.4.0",
-        "dmn-js": "^16.5.0",
-        "dmn-js-properties-panel": "^3.4.1",
-        "monaco-editor": "^0.50.0",
-        "react-split-pane": "^0.1.92"
-    },
-    "devDependencies": {
-        "@rollup/plugin-commonjs": "^26.0.1",
-        "@rollup/plugin-json": "^6.1.0",
-        "@rollup/plugin-node-resolve": "^15.2.3",
-        "@rollup/plugin-replace": "^5.0.7",
-        "@rollup/plugin-terser": "^0.4.4",
-        "@types/react": "^17.0.11",
-        "@typescript-eslint/eslint-plugin": "^7.15.0",
-        "@typescript-eslint/parser": "^7.15.0",
-        "copyfiles": "^2.4.1",
-        "eslint": "^9.6.0",
-        "eslint-config-airbnb-typescript": "^18.0.0",
-        "eslint-config-react-app": "^7.0.1",
-        "eslint-plugin-flowtype": "^8.0.3",
-        "eslint-plugin-import": "^2.29.1",
-        "eslint-plugin-jsx-a11y": "^6.9.0",
-        "eslint-plugin-react": "^7.34.3",
-        "eslint-plugin-react-app": "^6.2.2",
-        "eslint-plugin-react-hooks": "^4.6.2",
-        "rollup": "^4.18.0",
-        "rollup-plugin-css-only": "^4.5.2",
-        "rollup-plugin-typescript2": "^0.36.0",
-        "tslib": "^2.6.3",
-        "typedoc": "^0.26.3",
-        "typescript": "^5.5.3"
-    },
-    "peerDependencies": {
-        "react": "^17.0.0",
-        "react-dom": "^17.0.0"
-    },
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "dependencies": {
+    "@babel/eslint-parser": "^7.24.8",
+    "@bpmn-io/properties-panel": "^3.22.3",
+    "@material-ui/styles": "^4.11.5",
+    "@monaco-editor/react": "^4.6.0",
+    "@seznam/compose-react-refs": "^1.0.6",
+    "bpmn-js": "^17.9.1",
+    "bpmn-js-element-templates": "^1.16.0",
+    "bpmn-js-properties-panel": "^5.19.0",
+    "camunda-bpmn-moddle": "^7.0.1",
+    "camunda-dmn-moddle": "^1.3.0",
+    "clsx": "^2.1.1",
+    "deepmerge": "^4.3.1",
+    "diagram-js-origin": "^1.4.0",
+    "dmn-js": "^16.6.1",
+    "dmn-js-properties-panel": "^3.4.1",
+    "monaco-editor": "^0.50.0",
+    "prettier": "^3.3.3",
+    "react-split-pane": "^0.1.92"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.1.1",
+    "@eslint/js": "^9.7.0",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/react": "^17.0.11",
+    "@typescript-eslint/eslint-plugin": "^7.16.1",
+    "@typescript-eslint/parser": "^7.16.1",
+    "copyfiles": "^2.4.1",
+    "eslint": "9.x",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-app": "^6.2.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "globals": "^15.8.0",
+    "rollup": "^4.19.0",
+    "rollup-plugin-css-only": "^4.5.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tslib": "^2.6.3",
+    "typedoc": "^0.26.5",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^7.16.1"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
