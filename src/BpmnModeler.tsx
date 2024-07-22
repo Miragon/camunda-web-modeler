@@ -8,8 +8,7 @@ import BpmnEditor, { BpmnModelerOptions, BpmnPropertiesPanelOptions } from "./ed
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
-import {editor} from "monaco-editor";
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import * as monaco from "monaco-editor";
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -114,7 +113,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         className
     } = props;
 
-    const monacoRef = useRef<IStandaloneCodeEditor>(null);
+    const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomBpmnJsModeler>();
 
     const [mode, setMode] = useState<BpmnViewMode>("bpmn");

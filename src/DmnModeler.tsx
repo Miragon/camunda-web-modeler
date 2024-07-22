@@ -9,8 +9,7 @@ import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { isBpmnIoEvent } from "./events";
 import { Event } from "./events";
 import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
-import {editor} from "monaco-editor";
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import * as monaco from "monaco-editor";
 
 export interface ModelerTabOptions {
     /**
@@ -115,7 +114,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
 
     const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
 
-    const monacoRef = useRef<IStandaloneCodeEditor>(null);
+    const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomDmnJsModeler>();
 
     const [views, setViews] = useState<DmnView[]>([]);

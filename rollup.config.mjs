@@ -1,6 +1,5 @@
 import terser from "@rollup/plugin-terser";
 import json from "@rollup/plugin-json";
-import url from "@rollup/plugin-url";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from '@rollup/plugin-replace';
 import {nodeResolve} from "@rollup/plugin-node-resolve";
@@ -68,12 +67,6 @@ export default [
         },
         plugins: [
             terser(),
-            url({
-                include: ['**/*.ttf', '**/*.woff', '**/*.woff2', '**/*.eot', '**/*.otf'],
-                limit: 8192, // 8 KB limit for inlining
-                emitFiles: true,
-                fileName: '[name][hash][extname]'
-            })
             /* { // Use this to write a graph.json to analyze the bundle
                 // Remember to uncomment the imports, too
                 buildEnd() {
