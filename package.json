@@ -11,6 +11,7 @@
   "scripts": {
     "clean": "rimraf dist index.js index.d.ts",
     "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
+    "watch": "npx tsc -w",
     "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
     "bundle": "npx rollup -c",
     "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
