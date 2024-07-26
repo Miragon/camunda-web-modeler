@@ -94,7 +94,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     const onXmlChanged = useCallback(
         (value?: string) => {
             if (active) {
-                const xmlValue = value ? value : xml; // value is empty when the editor initialized
+                const xmlValue = value ?? xml; // value is empty when the editor initialized
                 onChanged(xmlValue);
             }
         },
