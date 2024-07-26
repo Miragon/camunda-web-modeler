@@ -11,7 +11,7 @@ import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json" 
 import {
     DmnPropertiesPanelModule,
     DmnPropertiesProviderModule,
-} from 'dmn-js-properties-panel';
+} from "dmn-js-properties-panel";
 import deepmerge from "deepmerge";
 import diagramOriginModule from "diagram-js-origin";
 import Modeler from "dmn-js/lib/Modeler";
@@ -108,43 +108,46 @@ class CustomDmnJsModeler extends Modeler {
                         diagramOriginModule,
                         {
                             __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil]
-                        }
-                    ]
+                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+                        },
+                    ],
                 },
                 decisionTable: {
                     additionalModules: [
                         {
                             __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil]
-                        }
-                    ]
+                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+                        },
+                    ],
                 },
                 literalExpression: {
                     additionalModules: [
                         {
                             __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil]
-                        }
-                    ]
+                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+                        },
+                    ],
                 },
                 moddleExtensions: {
-                    camunda: camundaModdleDescriptor
-                }
+                    camunda: camundaModdleDescriptor,
+                },
             },
 
             // The options required to display the properties panel (if desired)
-            options.propertiesPanel ? {
-                drd: {
-                    propertiesPanel: {
-                        parent: options.propertiesPanel
+            // prettier-ignore
+            options.propertiesPanel
+                ? {
+                    drd: {
+                        propertiesPanel: {
+                            parent: options.propertiesPanel,
+                        },
+                        additionalModules: [
+                            DmnPropertiesPanelModule,
+                            DmnPropertiesProviderModule,
+                        ],
                     },
-                    additionalModules: [
-                        DmnPropertiesPanelModule,
-                        DmnPropertiesProviderModule,
-                    ]
-                },
-            } : {}
+                }
+                : {},
         ]);
         super(mergedOptions);
     }
@@ -225,7 +228,6 @@ class CustomDmnJsModeler extends Modeler {
      * Returns the current stack index.
      */
     public getStackIndex(): number {
-        // eslint-disable-next-line no-underscore-dangle
         return this.getActiveViewer()?.get("commandStack")._stackIdx;
     }
 

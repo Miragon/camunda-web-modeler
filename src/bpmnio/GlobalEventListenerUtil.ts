@@ -7,11 +7,9 @@ export type EventCallback = (event: string, data: any) => void;
 class GlobalEventListenerUtil {
     private listeners: EventCallback[] = [];
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(eventBus: any) {
         const fire = eventBus.fire.bind(eventBus);
 
-        // eslint-disable-next-line no-param-reassign
         eventBus.fire = (event: string, data: any) => {
             this.listeners.forEach(l => l(event, data));
             return fire(event, data);

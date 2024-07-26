@@ -9,7 +9,7 @@ export interface ToggleOption {
 
 interface Props {
     options: ToggleOption[];
-    onChange: (id: string) => void;
+    onChange: (id: string) => Promise<void>;
     active: string;
     className?: string;
 }
@@ -31,27 +31,28 @@ const useStyles = makeStyles(() => ({
             "&:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.2)",
                 color: "rgba(0, 0, 0, 0.87)",
-                fill: "rgba(0, 0, 0, 0.87)"
-            }
+                fill: "rgba(0, 0, 0, 0.87)",
+            },
         },
         "&>:first-child": {
             borderTopLeftRadius: "4px",
-            borderBottomLeftRadius: "4px"
+            borderBottomLeftRadius: "4px",
         },
         "&>:last-child": {
             borderTopRightRadius: "4px",
-            borderBottomRightRadius: "4px"
-        }
+            borderBottomRightRadius: "4px",
+        },
     },
     active: {
         backgroundColor: "rgba(0, 0, 0, 0.15)",
         color: "rgba(0, 0, 0, 0.87)",
-        fill: "rgba(0, 0, 0, 0.87)"
-    }
+        fill: "rgba(0, 0, 0, 0.87)",
+    },
 }));
 
 const ToggleGroup: React.FC<Props> = props => {
     const classes = useStyles();
+
     return (
         <div className={clsx(classes.root, props.className)}>
             {props.options.map(option => (
@@ -59,7 +60,8 @@ const ToggleGroup: React.FC<Props> = props => {
                     key={option.id}
                     type="button"
                     className={clsx(props.active === option.id && classes.active)}
-                    onClick={() => props.onChange(option.id)}>
+                    onClick={() => void props.onChange(option.id)}
+                >
                     {option.node}
                 </button>
             ))}

@@ -5,11 +5,8 @@ import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json"
 import {
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
-} from 'bpmn-js-properties-panel';
-import {
-    ElementTemplatesPropertiesProviderModule, // Camunda 7 Element Templates
-    // CloudElementTemplatesPropertiesProviderModule // Camunda 8 Element Templates
-} from 'bpmn-js-element-templates';
+} from "bpmn-js-properties-panel";
+import { ElementTemplatesPropertiesProviderModule } from "bpmn-js-element-templates";
 import Modeler from "bpmn-js/lib/Modeler";
 import deepmerge from "deepmerge";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
@@ -53,40 +50,46 @@ class CustomBpmnJsModeler extends Modeler {
      * @param options The options to include
      */
     constructor(options: CustomBpmnJsModelerOptions) {
-        const mergedOptions = deepmerge.all([
-            // The options passed by the user
-            options.bpmnJsOptions || {},
+        const mergedOptions = deepmerge.all(
+            [
+                // The options passed by the user
+                options.bpmnJsOptions || {},
 
-            // The library's default options
-            {
-                container: options.container,
-                additionalModules: [
-                    {
-                        __init__: ["globalEventListenerUtil"],
-                        globalEventListenerUtil: ["type", GlobalEventListenerUtil]
-                    }
-                ],
-                moddleExtensions: {
-                    camunda: camundaModdleDescriptor
-                }
-            },
-
-            // The options required to display the properties panel (if desired)
-            options.propertiesPanel ? {
-                propertiesPanel: {
-                    parent: options.propertiesPanel
+                // The library's default options
+                {
+                    container: options.container,
+                    additionalModules: [
+                        {
+                            __init__: ["globalEventListenerUtil"],
+                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+                        },
+                    ],
+                    moddleExtensions: {
+                        camunda: camundaModdleDescriptor,
+                    },
                 },
-                additionalModules: [
-                    BpmnPropertiesPanelModule,
-                    BpmnPropertiesProviderModule,
-                    ElementTemplatesPropertiesProviderModule,
-                ]
-            } : {}
-        ], {
-            // Deprecated, but @dominikhorn93 said it's okay because it's gonna stay that way for
-            // at least 5 years (or forever)
-            clone: false
-        });
+
+                // The options required to display the properties panel (if desired)
+                // prettier-ignore
+                options.propertiesPanel
+                    ? {
+                        propertiesPanel: {
+                            parent: options.propertiesPanel,
+                        },
+                        additionalModules: [
+                            BpmnPropertiesPanelModule,
+                            BpmnPropertiesProviderModule,
+                            ElementTemplatesPropertiesProviderModule,
+                        ],
+                    }
+                    : {},
+            ],
+            {
+                // Deprecated, but @dominikhorn93 said it's okay because it's gonna stay that way for
+                // at least 5 years (or forever)
+                clone: false,
+            },
+        );
         super(mergedOptions);
     }
 
@@ -100,13 +103,13 @@ class CustomBpmnJsModeler extends Modeler {
     /**
      * Saves the editor content as SVG and XML simultaneously.
      */
-    async save(): Promise<{ xml: string; svg: string; }> {
+    async save(): Promise<{ xml: string; svg: string }> {
         const [{ xml }, { svg }] = await Promise.all([
             this.saveXML({
                 format: true,
-                preamble: false
+                preamble: false,
             }),
-            this.saveSVG()
+            this.saveSVG(),
         ]);
         return { xml, svg };
     }
@@ -210,7 +213,9 @@ class CustomBpmnJsModeler extends Modeler {
         // select all elements except for the invisible
         // root element
         const rootElement = canvas.getRootElement();
-        const elements = elementRegistry.filter((element: any) => element !== rootElement);
+        const elements = elementRegistry.filter(
+            (element: any) => element !== rootElement,
+        );
         selection.select(elements);
     }
 
@@ -255,7 +260,6 @@ class CustomBpmnJsModeler extends Modeler {
      * Returns the current stack index.
      */
     public getStackIndex(): number {
-        // eslint-disable-next-line no-underscore-dangle
         return this.get("commandStack")._stackIdx;
     }
 

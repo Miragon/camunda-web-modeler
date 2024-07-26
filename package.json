@@ -10,11 +10,11 @@
   },
   "scripts": {
     "clean": "rimraf dist index.js index.d.ts",
-    "docs": "npx typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
-    "watch": "npx tsc -w",
-    "build": "npx tsc && npx tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
-    "bundle": "npx rollup -c",
-    "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx"
+    "docs": "typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --disableSources --out dist/docs",
+    "watch": "tsc -w",
+    "build": "tsc && tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
+    "bundle": "rollup -c",
+    "lint": "eslint -c eslint.config.mjs ."
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
@@ -50,7 +50,6 @@
     ]
   },
   "dependencies": {
-    "@babel/eslint-parser": "^7.24.8",
     "@bpmn-io/properties-panel": "^3.22.3",
     "@material-ui/styles": "^4.11.5",
     "@monaco-editor/react": "^4.6.0",
@@ -65,18 +64,22 @@
     "diagram-js-origin": "^1.4.0",
     "dmn-js": "^16.6.1",
     "dmn-js-properties-panel": "^3.4.1",
+    "eslint-config-prettier": "^9.1.0",
     "monaco-editor": "^0.50.0",
     "prettier": "^3.3.3",
     "react-split-pane": "^0.1.92"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.24.8",
     "@eslint/compat": "^1.1.1",
+    "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.7.0",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.7",
     "@rollup/plugin-terser": "^0.4.4",
+    "@stylistic/eslint-plugin": "^2.3.0",
     "@types/react": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",

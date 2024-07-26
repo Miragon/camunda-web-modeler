@@ -1,14 +1,22 @@
 import { makeStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import CustomDmnJsModeler, { DmnView, ViewsChangedEvent } from "./bpmnio/dmn/CustomDmnJsModeler";
+import CustomDmnJsModeler, {
+    DmnView,
+    ViewsChangedEvent,
+} from "./bpmnio/dmn/CustomDmnJsModeler";
 import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
-import DmnEditor, { DmnModelerOptions, DmnPropertiesPanelOptions } from "./editor/DmnEditor";
+import DmnEditor, {
+    DmnModelerOptions,
+    DmnPropertiesPanelOptions,
+} from "./editor/DmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
-import { isBpmnIoEvent } from "./events";
-import { Event } from "./events";
-import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
+import { Event, isBpmnIoEvent } from "./events";
+import {
+    ContentSavedReason,
+    createContentSavedEvent,
+} from "./events/modeler/ContentSavedEvent";
 import * as monaco from "monaco-editor";
 
 export interface ModelerTabOptions {
@@ -88,13 +96,13 @@ export interface DmnModelerProps {
 const useStyles = makeStyles(() => ({
     root: {
         height: "100%",
-        overflow: "hidden"
+        overflow: "hidden",
     },
     modeToggle: {
         position: "absolute",
         left: "32px",
         bottom: "32px",
-        backgroundColor: "rgba(255, 255, 255, 0.87)"
+        backgroundColor: "rgba(255, 255, 255, 0.87)",
     },
     buttonTitle: {
         marginLeft: "0.5rem",
@@ -102,11 +110,11 @@ const useStyles = makeStyles(() => ({
         maxWidth: "8rem",
         textOverflow: "ellipsis",
         overflow: "hidden",
-        whiteSpace: "nowrap"
+        whiteSpace: "nowrap",
     },
     icon: {
-        marginTop: "4px"
-    }
+        marginTop: "4px",
+    },
 }));
 
 const DmnModeler: React.FC<DmnModelerProps> = props => {
@@ -118,7 +126,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     const modelerRef = useRef<CustomDmnJsModeler>();
 
     const [views, setViews] = useState<DmnView[]>([]);
-    const [activeView, setActiveView] = useState<string | "xml" | undefined>(undefined);
+    const [activeView, setActiveView] = useState<string | undefined>(undefined);
 
     useEffect(() => {
         if (modelerTabOptions?.disabled && !xmlTabOptions?.disabled) {
@@ -126,91 +134,95 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
         }
     }, [modelerTabOptions, xmlTabOptions]);
 
-    const saveFile = useCallback(async (source: "xml" | string | undefined, reason: ContentSavedReason) => {
-        switch (source) {
-            case "xml": {
-                if (monacoRef.current) {
-                    const saved = monacoRef.current?.getValue() || "";
-                    onEvent(createContentSavedEvent(saved, undefined, reason));
+    const saveFile = useCallback(
+        async (source: string | undefined, reason: ContentSavedReason) => {
+            switch (source) {
+                case "xml": {
+                    if (monacoRef.current) {
+                        const saved = monacoRef.current?.getValue() || "";
+                        onEvent(createContentSavedEvent(saved, undefined, reason));
+                    }
+                    break;
                 }
-                break;
-            }
-            case undefined: {
-                break;
-            }
-            default: {
-                if (modelerRef.current) {
-                    const saved = await modelerRef.current?.save({ format: true });
-                    onEvent(createContentSavedEvent(saved.xml, undefined, reason));
+                case undefined: {
+                    break;
                 }
-                break;
+                default: {
+                    if (modelerRef.current) {
+                        const saved = await modelerRef.current?.save({ format: true });
+                        onEvent(createContentSavedEvent(saved.xml, undefined, reason));
+                    }
+                    break;
+                }
             }
-        }
-    }, [onEvent]);
+        },
+        [onEvent],
+    );
 
-    const changeMode = useCallback(async (viewId: string | undefined) => {
-        if (viewId && activeView !== viewId) {
-            // View has been changed from or to XML, save it so the user can reimport it
-            if (viewId === "xml" || activeView === "xml") {
-                await saveFile(activeView, "view.changed");
+    const changeMode = useCallback(
+        async (viewId: string | undefined) => {
+            if (viewId && activeView !== viewId) {
+                // View has been changed from or to XML, save it so the user can reimport it
+                if (viewId === "xml" || activeView === "xml") {
+                    await saveFile(activeView, "view.changed");
+                }
+
+                setActiveView(viewId);
+
+                // View is a dmn-js view, open it
+                if (viewId !== "xml") {
+                    const view = modelerRef.current
+                        ?.getViews()
+                        .find(v => v.id === viewId);
+                    view && modelerRef.current?.open(view);
+                }
             }
+        },
+        [activeView, saveFile],
+    );
 
-            setActiveView(viewId);
-
-            // View is a dmn-js view, open it
-            if (viewId !== "xml") {
-                const view = modelerRef.current?.getViews().find(v => v.id === viewId);
-                view && modelerRef.current?.open(view);
+    const localOnEvent = useCallback(
+        (event: Event<any, any>) => {
+            if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
+                const data = event.data as ViewsChangedEvent;
+                setViews(data.views);
+                setActiveView(data.activeView?.id);
             }
-        }
-    }, [activeView, saveFile]);
+            onEvent(event);
+        },
+        [onEvent],
+    );
 
-    const localOnEvent = useCallback((event: Event<any, any>) => {
-        if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
-            const data = event.data as ViewsChangedEvent;
-            setViews(data.views);
-            setActiveView(data.activeView?.id);
-        }
-        onEvent(event);
-    }, [onEvent]);
-
-    const onXmlChanged = useCallback((value: string) => {
-        onEvent(createContentSavedEvent(
-            value,
-            undefined,
-            "xml.changed"
-        ));
-    }, [onEvent]);
+    const onXmlChanged = useCallback(
+        (value: string) => {
+            onEvent(createContentSavedEvent(value, undefined, "xml.changed"));
+        },
+        [onEvent],
+    );
 
     const modelerOptions: DmnModelerOptions = useMemo(() => {
         if (!modelerTabOptions?.modelerOptions) {
             return {
-                refs: [modelerRef]
+                refs: [modelerRef],
             };
         }
 
         return {
             ...modelerTabOptions.modelerOptions,
-            refs: [
-                ...(modelerTabOptions.modelerOptions.refs || []),
-                modelerRef
-            ]
+            refs: [...(modelerTabOptions.modelerOptions.refs ?? []), modelerRef],
         };
     }, [modelerTabOptions]);
 
     const monacoOptions: MonacoOptions = useMemo(() => {
         if (!xmlTabOptions?.monacoOptions) {
             return {
-                refs: [monacoRef]
+                refs: [monacoRef],
             };
         }
 
         return {
             ...xmlTabOptions.monacoOptions,
-            refs: [
-                ...(xmlTabOptions.monacoOptions.refs || []),
-                monacoRef
-            ]
+            refs: [...(xmlTabOptions.monacoOptions.refs ?? []), monacoRef],
         };
     }, [xmlTabOptions]);
 
@@ -220,7 +232,6 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
 
     return (
         <div className={clsx(classes.root, className)}>
-
             {!modelerTabOptions?.disabled && (
                 <DmnEditor
                     xml={xml}
@@ -229,7 +240,8 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     modelerOptions={modelerOptions}
                     propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
                     dmnJsOptions={modelerTabOptions?.dmnJsOptions}
-                    className={modelerTabOptions?.className} />
+                    className={modelerTabOptions?.className}
+                />
             )}
 
             {!xmlTabOptions?.disabled && (
@@ -237,7 +249,8 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     xml={xml}
                     monacoOptions={monacoOptions}
                     active={activeView === "xml"}
-                    onChanged={onXmlChanged} />
+                    onChanged={onXmlChanged}
+                />
             )}
 
             {!modelerTabOptions?.disabled && (
@@ -248,19 +261,24 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                             id: view.id,
                             node: (
                                 <>
-                                    <span className={clsx({
-                                        "dmn-icon-lasso-tool": view.type === "drd",
-                                        "dmn-icon-decision-table": view.type === "decisionTable",
-                                        "dmn-icon-literal-expression": view.type === "literalExpression"
-                                    })} />
+                                    <span
+                                        className={clsx({
+                                            "dmn-icon-lasso-tool": view.type === "drd",
+                                            "dmn-icon-decision-table":
+                                                view.type === "decisionTable",
+                                            "dmn-icon-literal-expression":
+                                                view.type === "literalExpression",
+                                        })}
+                                    />
 
                                     <span
                                         title={view.name || "Unnamed"}
-                                        className={classes.buttonTitle}>
+                                        className={classes.buttonTitle}
+                                    >
                                         {view.name || "Unnamed"}
                                     </span>
                                 </>
-                            )
+                            ),
                         })),
                         {
                             id: "xml",
@@ -268,14 +286,15 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                                 <SvgIcon
                                     className={classes.icon}
                                     path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
-                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
-                            )
-                        }
+                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
+                                />
+                            ),
+                        },
                     ]}
                     onChange={changeMode}
-                    active={activeView || ""} />
+                    active={activeView ?? ""}
+                />
             )}
-
         </div>
     );
 };
