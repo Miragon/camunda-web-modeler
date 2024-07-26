@@ -249,7 +249,6 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      * Instantiates the modeler and properties panel. Only happens once on mount.
      */
     useEffect(() => {
-        console.log("Instantiating BPMN Modeler...");
         const modeler = new CustomBpmnJsModeler({
             container: modelerOptions?.containerId ?? "#bpmnview",
             propertiesPanel: propertiesPanelOptions?.hidden
@@ -268,7 +267,6 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         setInitializeCount(count => count + 1);
 
         return () => {
-            console.log("Destroying BPMN Modeler...");
             modeler.unregisterGlobalEventListener(handleEvent);
             modeler.destroy();
             ref.current = undefined;
@@ -278,7 +276,12 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                 });
             }
         };
-    }, [handleEvent, bpmnJsOptions, modelerOptions, propertiesPanelOptions]);
+    }, [
+        handleEvent,
+        bpmnJsOptions,
+        propertiesPanelOptions,
+        modelerOptions?.containerId,
+    ]);
 
     /**
      * Imports the specified XML. The following steps are executed:
