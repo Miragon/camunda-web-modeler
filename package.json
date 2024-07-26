@@ -100,8 +100,7 @@
     "typescript-eslint": "^7.16.1"
   },
   "peerDependencies": {
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react": "^17.0.0"
   },
   "packageManager": "yarn@4.3.1"
 }

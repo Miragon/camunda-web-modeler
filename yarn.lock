@@ -2192,7 +2192,6 @@ __metadata:
     typescript-eslint: "npm:^7.16.1"
   peerDependencies:
     react: ^17.0.0
-    react-dom: ^17.0.0
   languageName: unknown
   linkType: soft
 
