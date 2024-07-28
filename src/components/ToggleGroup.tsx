@@ -1,6 +1,6 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
 import React, { ReactNode } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
 
 export interface ToggleOption {
     id: string;

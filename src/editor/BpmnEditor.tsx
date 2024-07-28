@@ -1,7 +1,8 @@
-import {makeStyles} from "@material-ui/styles";
-import clsx from "clsx";
 import React, {MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState,} from "react";
-import SplitPane from "react-split-pane";
+import {makeStyles} from "@material-ui/core/styles";
+import clsx from "clsx";
+import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
+
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import {createBpmnIoEvent} from "../events/bpmnio/BpmnIoEvents";
 import {Event} from "../events";
@@ -45,12 +46,12 @@ export interface BpmnPropertiesPanelOptions {
      * Can be in % or px each.
      */
     size?: {
-        // Default "25%"
-        initial?: string;
-        // Default "95%"
-        min?: string;
-        // Default "5%"
-        max?: string;
+        // Default "25"
+        initial?: number;
+        // Default "5"
+        min?: number;
+        // Default "95"
+        max?: number;
     };
 
     /**
@@ -88,12 +89,12 @@ export interface BpmnModelerOptions {
      * Can be in % or px each.
      */
     size?: {
-        // Default "75%"
-        initial?: string;
-        // Default "95%"
-        min?: string;
-        // Default "5%"
-        max?: string;
+        // Default "75"
+        initial?: number;
+        // Default "5"
+        min?: number;
+        // Default "95"
+        max?: number;
     };
 
     /**
@@ -375,8 +376,8 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     }, [propertiesPanelOptions?.hidden, propertiesPanelOptions?.elementTemplates]);
 
     const onPropertiesPanelWidthChanged = useCallback(
-        (newWidth: number) => {
-            onEvent(createPropertiesPanelResizedEvent(newWidth));
+        (sizes: number[]) => {
+            onEvent(createPropertiesPanelResizedEvent(sizes[1]));
         },
         [onEvent],
     );
@@ -418,22 +419,33 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     }
 
     return (
-        <SplitPane
-            split="vertical"
-            minSize="10%"
-            defaultSize="75%"
-            maxSize="95%"
+        <PanelGroup
             className={clsx(!props.active && classes.hidden, className)}
-            resizerStyle={{
-                cursor: "col-resize",
-                width: "5px",
-                backgroundColor: "rgba(0, 0, 0, 0.25)",
-            }}
-            onChange={onPropertiesPanelWidthChanged}
+            direction="horizontal"
+            onLayout={onPropertiesPanelWidthChanged}
         >
-            {modelerContainer}
-            {propertiesPanelContainer}
-        </SplitPane>
+            <Panel
+                defaultSize={modelerOptions?.size?.initial ?? 75}
+                maxSize={modelerOptions?.size?.max ?? 95}
+                minSize={modelerOptions?.size?.min ?? 5}
+            >
+                {modelerContainer}
+            </Panel>
+            <PanelResizeHandle
+                style={{
+                    cursor: "col-resize",
+                    width: "5px",
+                    backgroundColor: "rgba(0, 0, 0, 0.25)",
+                }}
+            />
+            <Panel
+                defaultSize={propertiesPanelOptions?.size?.initial ?? 25}
+                maxSize={propertiesPanelOptions?.size?.max ?? 95}
+                minSize={propertiesPanelOptions?.size?.min ?? 5}
+            >
+                {propertiesPanelContainer}
+            </Panel>
+        </PanelGroup>
     );
 };
 

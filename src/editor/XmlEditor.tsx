@@ -1,6 +1,3 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
-import deepmerge from "deepmerge";
 import React, {
     MutableRefObject,
     useCallback,
@@ -8,6 +5,9 @@ import React, {
     useMemo,
     useState,
 } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
+import deepmerge from "deepmerge";
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 

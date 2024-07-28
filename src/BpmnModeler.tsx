@@ -1,6 +1,8 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createMuiTheme, makeStyles, ThemeProvider } from "@material-ui/core";
+import clsx from "clsx";
+import * as monaco from "monaco-editor";
+
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
 import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
@@ -14,9 +16,11 @@ import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
-import * as monaco from "monaco-editor";
 
-const useStyles = makeStyles(() => ({
+const theme = createMuiTheme();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-shadow
+const useStyles = makeStyles(theme => ({
     root: {
         height: "100%",
         overflow: "hidden",
@@ -196,59 +200,63 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     }
 
     return (
-        <div className={clsx(classes.root, className)}>
-            {!modelerTabOptions?.disabled && (
-                <BpmnEditor
-                    xml={xml}
-                    active={mode === "bpmn"}
-                    onEvent={onEvent}
-                    modelerOptions={modelerOptions}
-                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
-                    bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
-                    className={modelerTabOptions?.className}
-                />
-            )}
+        <ThemeProvider theme={theme}>
+            <div className={clsx(classes.root, className)}>
+                {!modelerTabOptions?.disabled && (
+                    <BpmnEditor
+                        xml={xml}
+                        active={mode === "bpmn"}
+                        onEvent={onEvent}
+                        modelerOptions={modelerOptions}
+                        propertiesPanelOptions={
+                            modelerTabOptions?.propertiesPanelOptions
+                        }
+                        bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
+                        className={modelerTabOptions?.className}
+                    />
+                )}
 
-            {!xmlTabOptions?.disabled && (
-                <XmlEditor
-                    xml={xml}
-                    active={mode === "xml"}
-                    monacoOptions={monacoOptions}
-                    onChanged={onXmlChanged}
-                />
-            )}
+                {!xmlTabOptions?.disabled && (
+                    <XmlEditor
+                        xml={xml}
+                        active={mode === "xml"}
+                        monacoOptions={monacoOptions}
+                        onChanged={onXmlChanged}
+                    />
+                )}
 
-            {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
-                <ToggleGroup
-                    className={classes.modeToggle}
-                    options={[
-                        {
-                            id: "bpmn",
-                            node: (
-                                <SvgIcon
-                                    className={classes.icon}
-                                    path="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
+                {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
+                    <ToggleGroup
+                        className={classes.modeToggle}
+                        options={[
+                            {
+                                id: "bpmn",
+                                node: (
+                                    <SvgIcon
+                                        className={classes.icon}
+                                        path="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
                                         7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41
                                         0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-                                />
-                            ),
-                        },
-                        {
-                            id: "xml",
-                            node: (
-                                <SvgIcon
-                                    className={classes.icon}
-                                    path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                                    />
+                                ),
+                            },
+                            {
+                                id: "xml",
+                                node: (
+                                    <SvgIcon
+                                        className={classes.icon}
+                                        path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
                                         0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
-                                />
-                            ),
-                        },
-                    ]}
-                    onChange={changeMode}
-                    active={mode}
-                />
-            )}
-        </div>
+                                    />
+                                ),
+                            },
+                        ]}
+                        onChange={changeMode}
+                        active={mode}
+                    />
+                )}
+            </div>
+        </ThemeProvider>
     );
 };
 

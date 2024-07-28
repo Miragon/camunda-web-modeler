@@ -1,6 +1,6 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
 import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
 
 interface Props {
     path: string;
@@ -10,8 +10,8 @@ interface Props {
 const useStyles = makeStyles(() => ({
     root: {
         height: "1.5rem",
-        width: "1.5rem"
-    }
+        width: "1.5rem",
+    },
 }));
 
 const SvgIcon: React.FC<Props> = props => {

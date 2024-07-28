@@ -1,6 +1,8 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createMuiTheme, makeStyles, ThemeProvider } from "@material-ui/core/styles";
+import clsx from "clsx";
+import * as monaco from "monaco-editor";
+
 import CustomDmnJsModeler, {
     DmnView,
     ViewsChangedEvent,
@@ -17,7 +19,6 @@ import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
-import * as monaco from "monaco-editor";
 
 export interface ModelerTabOptions {
     /**
@@ -93,7 +94,10 @@ export interface DmnModelerProps {
     xmlTabOptions?: XmlTabOptions;
 }
 
-const useStyles = makeStyles(() => ({
+const theme = createMuiTheme();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-shadow
+const useStyles = makeStyles(theme => ({
     root: {
         height: "100%",
         overflow: "hidden",
@@ -231,71 +235,76 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     }
 
     return (
-        <div className={clsx(classes.root, className)}>
-            {!modelerTabOptions?.disabled && (
-                <DmnEditor
-                    xml={xml}
-                    active={activeView !== "xml"}
-                    onEvent={localOnEvent}
-                    modelerOptions={modelerOptions}
-                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
-                    dmnJsOptions={modelerTabOptions?.dmnJsOptions}
-                    className={modelerTabOptions?.className}
-                />
-            )}
+        <ThemeProvider theme={theme}>
+            <div className={clsx(classes.root, className)}>
+                {!modelerTabOptions?.disabled && (
+                    <DmnEditor
+                        xml={xml}
+                        active={activeView !== "xml"}
+                        onEvent={localOnEvent}
+                        modelerOptions={modelerOptions}
+                        propertiesPanelOptions={
+                            modelerTabOptions?.propertiesPanelOptions
+                        }
+                        dmnJsOptions={modelerTabOptions?.dmnJsOptions}
+                        className={modelerTabOptions?.className}
+                    />
+                )}
 
-            {!xmlTabOptions?.disabled && (
-                <XmlEditor
-                    xml={xml}
-                    monacoOptions={monacoOptions}
-                    active={activeView === "xml"}
-                    onChanged={onXmlChanged}
-                />
-            )}
+                {!xmlTabOptions?.disabled && (
+                    <XmlEditor
+                        xml={xml}
+                        monacoOptions={monacoOptions}
+                        active={activeView === "xml"}
+                        onChanged={onXmlChanged}
+                    />
+                )}
 
-            {!modelerTabOptions?.disabled && (
-                <ToggleGroup
-                    className={classes.modeToggle}
-                    options={[
-                        ...views.map(view => ({
-                            id: view.id,
-                            node: (
-                                <>
-                                    <span
-                                        className={clsx({
-                                            "dmn-icon-lasso-tool": view.type === "drd",
-                                            "dmn-icon-decision-table":
-                                                view.type === "decisionTable",
-                                            "dmn-icon-literal-expression":
-                                                view.type === "literalExpression",
-                                        })}
-                                    />
+                {!modelerTabOptions?.disabled && (
+                    <ToggleGroup
+                        className={classes.modeToggle}
+                        options={[
+                            ...views.map(view => ({
+                                id: view.id,
+                                node: (
+                                    <>
+                                        <span
+                                            className={clsx({
+                                                "dmn-icon-lasso-tool":
+                                                    view.type === "drd",
+                                                "dmn-icon-decision-table":
+                                                    view.type === "decisionTable",
+                                                "dmn-icon-literal-expression":
+                                                    view.type === "literalExpression",
+                                            })}
+                                        />
 
-                                    <span
-                                        title={view.name || "Unnamed"}
-                                        className={classes.buttonTitle}
-                                    >
-                                        {view.name || "Unnamed"}
-                                    </span>
-                                </>
-                            ),
-                        })),
-                        {
-                            id: "xml",
-                            node: (
-                                <SvgIcon
-                                    className={classes.icon}
-                                    path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                                        <span
+                                            title={view.name || "Unnamed"}
+                                            className={classes.buttonTitle}
+                                        >
+                                            {view.name || "Unnamed"}
+                                        </span>
+                                    </>
+                                ),
+                            })),
+                            {
+                                id: "xml",
+                                node: (
+                                    <SvgIcon
+                                        className={classes.icon}
+                                        path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
                                         0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
-                                />
-                            ),
-                        },
-                    ]}
-                    onChange={changeMode}
-                    active={activeView ?? ""}
-                />
-            )}
-        </div>
+                                    />
+                                ),
+                            },
+                        ]}
+                        onChange={changeMode}
+                        active={activeView ?? ""}
+                    />
+                )}
+            </div>
+        </ThemeProvider>
     );
 };
 
