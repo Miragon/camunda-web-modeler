@@ -1,6 +1,5 @@
 import React, { ReactNode } from "react";
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from "clsx";
+import { makeStyles } from "tss-react/mui";
 
 export interface ToggleOption {
     id: string;
@@ -14,7 +13,7 @@ interface Props {
     className?: string;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     root: {
         height: "40px",
         border: "1px solid #AAA",
@@ -51,15 +50,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ToggleGroup: React.FC<Props> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     return (
-        <div className={clsx(classes.root, props.className)}>
+        <div className={cx(classes.root, props.className)}>
             {props.options.map(option => (
                 <button
                     key={option.id}
                     type="button"
-                    className={clsx(props.active === option.id && classes.active)}
+                    className={cx(props.active === option.id && classes.active)}
                     onClick={() => void props.onChange(option.id)}
                 >
                     {option.node}

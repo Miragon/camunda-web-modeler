@@ -5,8 +5,7 @@ import React, {
     useMemo,
     useState,
 } from "react";
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from "clsx";
+import { makeStyles } from "tss-react/mui";
 import deepmerge from "deepmerge";
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
@@ -62,7 +61,7 @@ export interface XmlEditorProps {
     className?: string;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     root: {
         height: "100%",
         "&>div": {
@@ -76,7 +75,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const XmlEditor: React.FC<XmlEditorProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const { xml, onChanged, active, monacoOptions, className } = props;
 
@@ -136,7 +135,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     }
 
     return (
-        <div className={clsx(classes.root, !active && classes.hidden)}>
+        <div className={cx(classes.root, !active && classes.hidden)}>
             <Editor
                 height="100%"
                 language="xml"

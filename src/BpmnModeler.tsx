@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-// import { createMuiTheme, makeStyles, ThemeProvider } from "@material-ui/core";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
+import { makeStyles } from "tss-react/mui";
 import * as monaco from "monaco-editor";
 
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
@@ -18,8 +16,7 @@ import {
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-shadow
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     root: {
         height: "100%",
         overflow: "hidden",
@@ -112,7 +109,7 @@ export interface BpmnModelerProps {
 declare type BpmnViewMode = "bpmn" | "xml";
 
 const BpmnModeler: React.FC<BpmnModelerProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const { onEvent, xml, modelerTabOptions, xmlTabOptions, className } = props;
 
@@ -199,7 +196,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     }
 
     return (
-        <div className={clsx(classes.root, className)}>
+        <div className={cx(classes.root, className)}>
             {!modelerTabOptions?.disabled && (
                 <BpmnEditor
                     xml={xml}

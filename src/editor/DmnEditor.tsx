@@ -1,6 +1,5 @@
 import React, {MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState,} from "react";
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from "clsx";
+import {makeStyles} from "tss-react/mui";
 import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
 
 import CustomDmnJsModeler, {DmnView} from "../bpmnio/dmn/CustomDmnJsModeler";
@@ -161,7 +160,7 @@ export interface DmnEditorProps {
     modelerOptions?: DmnModelerOptions;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     modeler: {
         height: "100%",
     },
@@ -180,7 +179,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const DmnEditor: React.FC<DmnEditorProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const {
         xml,
@@ -385,7 +384,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
         <div
             id="dmnview"
-            className={clsx(
+            className={cx(
                 classes.modeler,
                 modelerOptions?.className,
                 !active && classes.hidden,
@@ -396,7 +395,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
             id="dmnprop"
-            className={clsx(
+            className={cx(
                 classes.propertiesPanel,
                 propertiesPanelOptions?.className,
                 !active && classes.hidden,
@@ -407,7 +406,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     if (propertiesPanelOptions?.hidden) {
         return (
             <div
-                className={clsx(
+                className={cx(
                     !props.active && classes.hidden,
                     classes.modelerOnly,
                     className,
@@ -420,7 +419,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
 
     return (
         <PanelGroup
-            className={clsx(!props.active && classes.hidden, className)}
+            className={cx(!props.active && classes.hidden, className)}
             direction="horizontal"
             onLayout={onPropertiesPanelWidthChanged}
         >

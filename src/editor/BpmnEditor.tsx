@@ -1,6 +1,5 @@
 import React, {MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState,} from "react";
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from "clsx";
+import {makeStyles} from "tss-react/mui";
 import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
 
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
@@ -12,7 +11,7 @@ import {createPropertiesPanelResizedEvent} from "../events/modeler/PropertiesPan
 import {createUIUpdateRequiredEvent} from "../events/modeler/UIUpdateRequiredEvent";
 
 /**
- * The events that trigger an UI update required event.
+ * The events that trigger a UI update required event.
  */
 const UI_UPDATE_REQUIRED_EVENTS = [
     "import.done",
@@ -123,7 +122,7 @@ export interface BpmnEditorProps {
     className?: string;
 
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -156,13 +155,13 @@ export interface BpmnEditorProps {
     /**
      * The options to control the appearance of the modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     modelerOptions?: BpmnModelerOptions;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     modeler: {
         height: "100%",
     },
@@ -182,7 +181,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const BpmnEditor: React.FC<BpmnEditorProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const {
         active,
@@ -307,7 +306,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                     }
                 } catch (e) {
                     // The editor has not yet loaded any content
-                    // => no definitions loaded, just ignore the error
+                    // => no definitions loaded, ignores the error
                 }
 
                 try {
@@ -385,7 +384,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
         <div
             id="bpmnview"
-            className={clsx(
+            className={cx(
                 classes.modeler,
                 modelerOptions?.className,
                 !active && classes.hidden,
@@ -396,7 +395,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
             id="bpmnprop"
-            className={clsx(
+            className={cx(
                 classes.propertiesPanel,
                 propertiesPanelOptions?.className,
                 !active && classes.hidden,
@@ -407,7 +406,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     if (propertiesPanelOptions?.hidden) {
         return (
             <div
-                className={clsx(
+                className={cx(
                     !props.active && classes.hidden,
                     classes.modelerOnly,
                     className,
@@ -420,7 +419,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
 
     return (
         <PanelGroup
-            className={clsx(!props.active && classes.hidden, className)}
+            className={cx(!props.active && classes.hidden, className)}
             direction="horizontal"
             onLayout={onPropertiesPanelWidthChanged}
         >

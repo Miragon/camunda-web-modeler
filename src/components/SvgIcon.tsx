@@ -1,13 +1,12 @@
 import React from "react";
-import makeStyles from '@mui/styles/makeStyles';
-import clsx from "clsx";
+import { makeStyles } from "tss-react/mui";
 
 interface Props {
     path: string;
     className?: string;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     root: {
         height: "1.5rem",
         width: "1.5rem",
@@ -15,10 +14,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 const SvgIcon: React.FC<Props> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     return (
-        <svg className={clsx(classes.root, props.className)}>
+        <svg className={cx(classes.root, props.className)}>
             <path d={props.path} />
         </svg>
     );

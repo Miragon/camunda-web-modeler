@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import makeStyles from "@mui/styles/makeStyles";
-import clsx from "clsx";
+import { makeStyles } from "tss-react/mui";
 import * as monaco from "monaco-editor";
 
 import CustomDmnJsModeler, {
@@ -94,8 +93,7 @@ export interface DmnModelerProps {
     xmlTabOptions?: XmlTabOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-shadow
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
     root: {
         height: "100%",
         overflow: "hidden",
@@ -120,7 +118,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const DmnModeler: React.FC<DmnModelerProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
 
@@ -233,7 +231,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     }
 
     return (
-        <div className={clsx(classes.root, className)}>
+        <div className={cx(classes.root, className)}>
             {!modelerTabOptions?.disabled && (
                 <DmnEditor
                     xml={xml}
@@ -264,7 +262,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                             node: (
                                 <>
                                     <span
-                                        className={clsx({
+                                        className={cx({
                                             "dmn-icon-lasso-tool": view.type === "drd",
                                             "dmn-icon-decision-table":
                                                 view.type === "decisionTable",
