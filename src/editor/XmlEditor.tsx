@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useState,
 } from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@mui/styles/makeStyles';
 import clsx from "clsx";
 import deepmerge from "deepmerge";
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
