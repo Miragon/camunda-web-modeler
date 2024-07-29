@@ -382,46 +382,30 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     );
 
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
-        <div
-            id="dmnview"
-            className={cx(
-                classes.modeler,
-                modelerOptions?.className,
-                !active && classes.hidden,
-            )}
-        />
+        <div id="dmnview" className={cx(classes.modeler, modelerOptions?.className)} />
     );
 
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
             id="dmnprop"
-            className={cx(
-                classes.propertiesPanel,
-                propertiesPanelOptions?.className,
-                !active && classes.hidden,
-            )}
+            className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
         />
     );
 
     if (propertiesPanelOptions?.hidden) {
         return (
-            <div
-                className={cx(
-                    !props.active && classes.hidden,
-                    classes.modelerOnly,
-                    className,
-                )}
-            >
-                {modelerContainer}
-            </div>
+            <div className={cx(classes.modelerOnly, className)}>{modelerContainer}</div>
         );
     }
 
     return (
         <PanelGroup
-            className={cx(!props.active && classes.hidden, className)}
+            className={className}
             direction="horizontal"
             onLayout={onPropertiesPanelWidthChanged}
+            style={{
+                display: props.active ? "flex" : "none",
+            }}
         >
             <Panel
                 defaultSize={modelerOptions?.size?.initial ?? 75}

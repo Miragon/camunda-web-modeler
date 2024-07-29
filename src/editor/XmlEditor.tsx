@@ -27,14 +27,14 @@ export interface MonacoOptions {
 
     /**
      * Additional options to pass to the editor component. This will override the defaults defined
-     * by this compnent.
+     * by this component.
      */
     options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 }
 
 export interface XmlEditorProps {
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -44,9 +44,9 @@ export interface XmlEditorProps {
     active: boolean;
 
     /**
-     * Callback to execute whenever the diagram's xml changes.
+     * Callback to execute whenever the diagram's XML changes.
      *
-     * @param xml The new xml
+     * @param xml The new XML
      */
     onChanged: (xml: string) => void;
 
@@ -128,7 +128,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     );
 
     /**
-     * Only show the editor once it has became active or the editor size will be wrong.
+     * Only show the editor once it has become active or the editor size will be wrong.
      */
     if (!xmlEditorShown) {
         return null;
