@@ -33,7 +33,7 @@ const useStyles = makeStyles()(() => ({
                 fill: "rgba(0, 0, 0, 0.87)",
             },
         },
-        "&>:first-child": {
+        "&>:first-of-type": {
             borderTopLeftRadius: "4px",
             borderBottomLeftRadius: "4px",
         },

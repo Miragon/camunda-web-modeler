@@ -86,7 +86,7 @@
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
     "copyfiles": "^2.4.1",
-    "eslint": "9.x",
+    "eslint": "^9.8.0",
     "eslint-config-airbnb-typescript": "^18.0.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^8.0.3",
