@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { makeStyles } from "tss-react/mui";
+import { tss } from "tss-react";
 
 export interface ToggleOption {
     id: string;
@@ -13,7 +13,7 @@ interface Props {
     className?: string;
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "40px",
         border: "1px solid #AAA",

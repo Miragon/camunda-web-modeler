@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { makeStyles } from "tss-react/mui";
+import { tss } from "tss-react";
 import * as monaco from "monaco-editor";
 
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
@@ -16,7 +16,7 @@ import {
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "100%",
         overflow: "hidden",

@@ -6,7 +6,7 @@ import "dmn-js/dist/assets/dmn-js-decision-table.css";
 import "dmn-js/dist/assets/dmn-js-drd.css";
 import "dmn-js/dist/assets/dmn-js-literal-expression.css";
 import "dmn-js/dist/assets/dmn-js-shared.css";
-import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json" with { type: "json" };
+import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json";
 
 import {
     DmnPropertiesPanelModule,

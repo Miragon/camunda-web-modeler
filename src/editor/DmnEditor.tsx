@@ -1,15 +1,15 @@
-import React, {MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState,} from "react";
-import {makeStyles} from "tss-react/mui";
-import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
+import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
-import CustomDmnJsModeler, {DmnView} from "../bpmnio/dmn/CustomDmnJsModeler";
-import {createBpmnIoEvent} from "../events/bpmnio/BpmnIoEvents";
-import {Event} from "../events";
-import {createContentSavedEvent} from "../events/modeler/ContentSavedEvent";
-import {createDmnViewsChangedEvent} from "../events/modeler/DmnViewsChangedEvent";
-import {createNotificationEvent} from "../events/modeler/NotificationEvent";
-import {createPropertiesPanelResizedEvent} from "../events/modeler/PropertiesPanelResizedEvent";
-import {createUIUpdateRequiredEvent} from "../events/modeler/UIUpdateRequiredEvent";
+import CustomDmnJsModeler, { DmnView } from "../bpmnio/dmn/CustomDmnJsModeler";
+import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
+import { Event } from "../events";
+import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
+import { createDmnViewsChangedEvent } from "../events/modeler/DmnViewsChangedEvent";
+import { createNotificationEvent } from "../events/modeler/NotificationEvent";
+import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
+import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
+import { tss } from "tss-react";
 
 /**
  * The events that trigger a UI update required event.
@@ -160,7 +160,7 @@ export interface DmnEditorProps {
     modelerOptions?: DmnModelerOptions;
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     modeler: {
         height: "100%",
     },

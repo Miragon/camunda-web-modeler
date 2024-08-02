@@ -52,7 +52,6 @@
   "dependencies": {
     "@bpmn-io/properties-panel": "^3.23.0",
     "@emotion/react": "^11.13.0",
-    "@emotion/styled": "^11.13.0",
     "@monaco-editor/react": "^4.6.0",
     "@seznam/compose-react-refs": "^1.0.6",
     "bpmn-js": "^17.9.1",
@@ -95,6 +94,7 @@
     "eslint-plugin-react-app": "^6.2.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "globals": "^15.9.0",
+    "rimraf": "^6.0.1",
     "rollup": "^4.19.2",
     "rollup-plugin-css-only": "^4.5.2",
     "rollup-plugin-typescript2": "^0.36.0",

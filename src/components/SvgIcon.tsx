@@ -1,12 +1,12 @@
 import React from "react";
-import { makeStyles } from "tss-react/mui";
+import { tss } from "tss-react";
 
 interface Props {
     path: string;
     className?: string;
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "1.5rem",
         width: "1.5rem",

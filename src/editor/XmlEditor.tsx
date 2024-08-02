@@ -5,10 +5,10 @@ import React, {
     useMemo,
     useState,
 } from "react";
-import { makeStyles } from "tss-react/mui";
 import deepmerge from "deepmerge";
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
+import { tss } from "tss-react";
 
 loader.config({ monaco });
 
@@ -61,7 +61,7 @@ export interface XmlEditorProps {
     className?: string;
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "100%",
         "&>div": {

@@ -1,5 +1,4 @@
 import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { makeStyles } from "tss-react/mui";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
@@ -9,6 +8,7 @@ import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
+import { tss } from "tss-react";
 
 /**
  * The events that trigger a UI update required event.
@@ -161,7 +161,7 @@ export interface BpmnEditorProps {
     modelerOptions?: BpmnModelerOptions;
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = tss.create(() => ({
     modeler: {
         height: "100%",
     },
