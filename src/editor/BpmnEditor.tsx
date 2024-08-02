@@ -1,14 +1,14 @@
-import React, {MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState,} from "react";
-import {makeStyles} from "tss-react/mui";
-import {Panel, PanelGroup, PanelResizeHandle} from "react-resizable-panels";
+import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { makeStyles } from "tss-react/mui";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
-import {createBpmnIoEvent} from "../events/bpmnio/BpmnIoEvents";
-import {Event} from "../events";
-import {createContentSavedEvent} from "../events/modeler/ContentSavedEvent";
-import {createNotificationEvent} from "../events/modeler/NotificationEvent";
-import {createPropertiesPanelResizedEvent} from "../events/modeler/PropertiesPanelResizedEvent";
-import {createUIUpdateRequiredEvent} from "../events/modeler/UIUpdateRequiredEvent";
+import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
+import { Event } from "../events";
+import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
+import { createNotificationEvent } from "../events/modeler/NotificationEvent";
+import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
+import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
 
 /**
  * The events that trigger a UI update required event.
@@ -340,9 +340,17 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      */
     useEffect(() => {
         if (initializeCount > 0) {
-            void importXml(xml);
+            importXml(xml).catch(e => {
+                console.error("Could not import XML", e);
+                onEvent(
+                    createNotificationEvent(
+                        "Could not import changed XML. Is it invalid? See console for details.",
+                        "error",
+                    ),
+                );
+            });
         }
-    }, [xml, importXml, initializeCount]);
+    }, [xml, importXml, initializeCount, onEvent]);
 
     useEffect(() => {
         const modeler = ref.current;
