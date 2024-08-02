@@ -7,10 +7,10 @@ import eslintPluginReact from "eslint-plugin-react";
 import eslintPluginReactHooks from "eslint-plugin-react-hooks";
 import eslintPluginFlowtype from "eslint-plugin-flowtype";
 
-import {FlatCompat} from "@eslint/eslintrc";
-import {fixupPluginRules} from "@eslint/compat";
+import { FlatCompat } from "@eslint/eslintrc";
+import { fixupPluginRules } from "@eslint/compat";
 import path from "path";
-import {fileURLToPath} from "url";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +26,9 @@ export default tseslint.config(
     ...compat.extends("airbnb-typescript"),
     eslintConfigPrettier,
     {
+        ignores: ["dist", "**/*.d.ts", "eslint.config.mjs", "rollup.config.mjs", "index.{js,ts}"],
+    },
+    {
         languageOptions: {
             parser: tseslint.parser,
             parserOptions: {
@@ -36,21 +39,14 @@ export default tseslint.config(
                 },
             },
         },
-    },
-    {
-        ignores: ["dist", "**/*.d.ts", "eslint.config.mjs", "rollup.config.mjs", "index.{js,ts}"],
-    },
-    {
         settings: {
             react: {
                 version: "17.0.0",
             },
             flowtype: {
                 onlyFilesWithFlowAnnotation: true,
-            }
+            },
         },
-    },
-    {
         plugins: {
             "import": eslintPluginImport,
             "react": eslintPluginReact,
@@ -58,9 +54,6 @@ export default tseslint.config(
             "@stylistic": stylistic,
             "flowtype": eslintPluginFlowtype,
         },
-    },
-    {
-        files: ["**/src/**/*.{ts,tsx}"],
         rules: {
             ...eslintPluginReactHooks.configs.recommended.rules,
             "@typescript-eslint/indent": ["error", 4],
@@ -155,7 +148,7 @@ export default tseslint.config(
                     tsx: "never",
                 },
             ],
-            "import/no-amd": "off"
+            "import/no-amd": "off",
         },
     },
 );
