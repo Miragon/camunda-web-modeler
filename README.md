@@ -369,6 +369,13 @@ You can also use the documentation that you can find here:
 - [BPMNModeler](https://unpkg.com/@miragon/camunda-web-modeler@latest/dist/docs/modules/bpmnmodeler.html)
 - [DMNModeler](https://unpkg.com/@miragon/camunda-web-modeler@latest/dist/docs/modules/dmnmodeler.html)
 
+## Engage with the Miragon team
+
+If you have any questions or need support, feel free to reach out to us via email ([info@miragon.io](mailto:info@miragon.io)).
+We are here to help you, especially if you are considering introducing camunda-web-modeler in your organization.
+
+For inquiries and professional support, please contact us at: [info@miragon.io](mailto:info@miragon.io)
+
 # License
 
 ```
