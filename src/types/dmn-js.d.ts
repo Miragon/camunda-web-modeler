@@ -19,7 +19,7 @@ declare module "dmn-js/lib/Modeler" {
         importXML(
             xml: string,
             options?: { open: boolean },
-            done: (error: Error | undefined, warnings: ImportWarning[]) => void
+            done: (error: Error | undefined, warnings: ImportWarning[]) => void,
         ): any;
 
         saveXML({ format: boolean }, callback: (err: Error, xml: string) => void): void;

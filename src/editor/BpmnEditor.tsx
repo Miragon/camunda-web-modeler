@@ -1,5 +1,6 @@
 import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { tss } from "tss-react";
 
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
@@ -8,7 +9,6 @@ import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
-import { tss } from "tss-react";
 
 /**
  * The events that trigger a UI update required event.

@@ -1,4 +1,6 @@
 import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
+import "bpmn-js-element-templates/dist/assets/element-templates.css";
+import "@bpmn-io/element-template-chooser/dist/element-template-chooser.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "bpmn-js/dist/assets/diagram-js.css";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
@@ -7,6 +9,7 @@ import {
     BpmnPropertiesProviderModule,
 } from "bpmn-js-properties-panel";
 import { ElementTemplatesPropertiesProviderModule } from "bpmn-js-element-templates";
+import ElementTemplateChooserModule from "@bpmn-io/element-template-chooser";
 import Modeler from "bpmn-js/lib/Modeler";
 import deepmerge from "deepmerge";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
@@ -80,6 +83,7 @@ class CustomBpmnJsModeler extends Modeler {
                             BpmnPropertiesPanelModule,
                             BpmnPropertiesProviderModule,
                             ElementTemplatesPropertiesProviderModule,
+                            ElementTemplateChooserModule,
                         ],
                     }
                     : {},
@@ -142,7 +146,7 @@ class CustomBpmnJsModeler extends Modeler {
     }
 
     /**
-     * Binds the keyboard to the curretn document.
+     * Binds the keyboard to the current document.
      * Keyboard shortcuts will trigger actions in the editor after this has been called.
      */
     public bindKeyboard(): void {

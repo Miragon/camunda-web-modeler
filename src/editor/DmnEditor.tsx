@@ -116,7 +116,7 @@ export interface DmnModelerOptions {
 
 export interface DmnEditorProps {
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -138,7 +138,7 @@ export interface DmnEditorProps {
     /**
      * The options passed to the dmn-js modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     dmnJsOptions?: any;
@@ -146,7 +146,7 @@ export interface DmnEditorProps {
     /**
      * The options to control the appearance of the properties panel.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     propertiesPanelOptions?: DmnPropertiesPanelOptions;
@@ -154,7 +154,7 @@ export interface DmnEditorProps {
     /**
      * The options to control the appearance of the modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     modelerOptions?: DmnModelerOptions;
@@ -210,7 +210,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             }
 
             /**
-             * If the event should trigger an UI update required event, do it.
+             * If the event should trigger a UI update required event, do it.
              */
             if (event && UI_UPDATE_REQUIRED_EVENTS.indexOf(event) !== -1) {
                 onEvent(createUIUpdateRequiredEvent(active));
@@ -311,7 +311,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                     }
                 } catch (e) {
                     // The editor has not yet loaded any content
-                    // => no definitions loaded, just ignore the error
+                    // ⇒ no definitions loaded, ignore the error
                 }
 
                 try {

@@ -28,7 +28,7 @@ export interface ModelerTabOptions {
     /**
      * The options passed to the bpmn-js modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     dmnJsOptions?: any;
