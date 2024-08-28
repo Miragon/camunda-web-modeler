@@ -22,7 +22,7 @@ class GlobalEventListenerUtil {
      * @param callback The callback to register
      */
     public on = (callback: EventCallback): void => {
-        if (this.listeners.indexOf(callback) === -1) {
+        if (!this.listeners.includes(callback)) {
             this.listeners.push(callback);
         }
     };

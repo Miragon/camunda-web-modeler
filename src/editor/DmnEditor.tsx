@@ -212,14 +212,14 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             /**
              * If the event should trigger a UI update required event, do it.
              */
-            if (event && UI_UPDATE_REQUIRED_EVENTS.indexOf(event) !== -1) {
+            if (event && UI_UPDATE_REQUIRED_EVENTS.includes(event)) {
                 onEvent(createUIUpdateRequiredEvent(active));
             }
 
             /**
              * If the event should trigger a content saved event, do it.
              */
-            if (event && CONTENT_SAVED_EVENT.indexOf(event) !== -1 && ref.current) {
+            if (event && CONTENT_SAVED_EVENT.includes(event) && ref.current) {
                 ref.current
                     .save({ format: true })
                     .then(saved => {
@@ -309,6 +309,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                         // XML has not changed
                         return;
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (e) {
                     // The editor has not yet loaded any content
                     // ⇒ no definitions loaded, ignore the error

@@ -7,26 +7,28 @@ import eslintPluginReact from "eslint-plugin-react";
 import eslintPluginReactHooks from "eslint-plugin-react-hooks";
 import eslintPluginFlowtype from "eslint-plugin-flowtype";
 
-import { FlatCompat } from "@eslint/eslintrc";
 import { fixupPluginRules } from "@eslint/compat";
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-});
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+//
+// const compat = new FlatCompat({
+//     baseDirectory: __dirname,
+// });
 
 export default tseslint.config(
     eslint.configs.recommended,
     ...tseslint.configs.recommendedTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
-    ...compat.extends("airbnb-typescript"),
     eslintConfigPrettier,
     {
-        ignores: ["dist", "**/*.d.ts", "eslint.config.mjs", "rollup.config.mjs", "index.{js,ts}"],
+        ignores: [
+            "dist",
+            "**/*.d.ts",
+            "eslint.config.mjs",
+            "rollup.config.mjs",
+            "index.{js,ts}",
+        ],
     },
     {
         languageOptions: {
@@ -48,16 +50,15 @@ export default tseslint.config(
             },
         },
         plugins: {
-            "import": eslintPluginImport,
-            "react": eslintPluginReact,
+            "@typescript-eslint": tseslint.plugin,
+            import: eslintPluginImport,
+            react: eslintPluginReact,
             "react-hooks": fixupPluginRules(eslintPluginReactHooks),
             "@stylistic": stylistic,
-            "flowtype": eslintPluginFlowtype,
+            flowtype: eslintPluginFlowtype,
         },
         rules: {
             ...eslintPluginReactHooks.configs.recommended.rules,
-            "@typescript-eslint/indent": ["error", 4],
-            "@typescript-eslint/quotes": ["error", "double"],
             "@typescript-eslint/comma-dangle": "off",
             "@typescript-eslint/no-unused-expressions": [
                 "error",
@@ -142,6 +143,7 @@ export default tseslint.config(
                 "error",
                 "ignorePackages",
                 {
+                    "": "never",
                     js: "never",
                     jsx: "never",
                     ts: "never",
