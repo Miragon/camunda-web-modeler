@@ -14,7 +14,12 @@ import {
 } from "dmn-js-properties-panel";
 import deepmerge from "deepmerge";
 import diagramOriginModule from "diagram-js-origin";
-import Modeler from "dmn-js/lib/Modeler";
+import Modeler, {
+    ImportXMLResult,
+    OpenError,
+    OpenResult,
+    SaveXMLResult,
+} from "dmn-js/lib/Modeler";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
 
 export interface ViewsChangedEvent {
@@ -89,7 +94,9 @@ interface Injector {
     get: (name: string, strict?: boolean) => any;
 }
 
-class CustomDmnJsModeler extends Modeler {
+class CustomDmnJsModeler {
+    private modeler: Modeler;
+
     /**
      * Creates a new instance of the bpmn-js modeler.
      *
@@ -149,22 +156,15 @@ class CustomDmnJsModeler extends Modeler {
                 }
                 : {},
         ]);
-        super(mergedOptions);
+
+        this.modeler = new Modeler(mergedOptions);
     }
 
     /**
      * Saves the editor content as XML.
      */
-    public save(params: { format: boolean }): Promise<{ xml: string }> {
-        return new Promise((resolve, reject) => {
-            this.saveXML(params, (err, xml) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve({ xml });
-                }
-            });
-        });
+    public save(params: { format: boolean }): Promise<SaveXMLResult> {
+        return this.modeler.saveXML(params);
     }
 
     /**
@@ -173,16 +173,102 @@ class CustomDmnJsModeler extends Modeler {
      * @param xml The XML to import
      * @param open Whether to open the view after importing
      */
-    public import(xml: string, open = true): Promise<{ warnings: ImportWarning[] }> {
-        return new Promise((resolve, reject) => {
-            this.importXML(xml, { open }, (error, warnings) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve({ warnings });
-                }
-            });
-        });
+    public import(xml: string, open = true): Promise<ImportXMLResult> {
+        class ImportXMLError extends Error {
+            warnings: string[];
+
+            constructor(message: string, warnings: string[]) {
+                super(message);
+                this.warnings = warnings;
+                this.name = "ImportXMLError";
+            }
+        }
+
+        try {
+            return this.modeler.importXML(xml, { open });
+        } catch (error) {
+            if (error instanceof ImportXMLError) {
+                console.error(
+                    "Importing XML failed with warnings",
+                    error.warnings,
+                    error,
+                );
+            } else {
+                console.error("Importing XML failed", error);
+            }
+            throw error;
+        }
+    }
+
+    public get(param: any) {
+        return this.modeler.get(param);
+    }
+
+    /**
+     * Registers an event listener for bpmn-js.
+     *
+     * @param event The name of the event
+     * @param handler The listener to register
+     */
+    public on(event: string, handler: (event: any, data: any) => void) {
+        return this.modeler.on(event, handler);
+    }
+
+    /**
+     * Unregisters a previously registered listener for bpmn-js.
+     *
+     * @param event The name of the event
+     * @param handler The previously registered listener to unregister
+     */
+    public off(event: string, handler: (event: any, data: any) => void) {
+        return this.modeler.off(event, handler);
+    }
+
+    /**
+     * Returns the active viewer.
+     */
+    public getActiveViewer(): DmnViewer | undefined {
+        return this.modeler.getActiveViewer();
+    }
+
+    /**
+     * Returns all available views.
+     */
+    public getViews(): DmnView[] {
+        return this.modeler.getViews();
+    }
+
+    /**
+     * Returns the active view.
+     */
+    public getActiveView(): DmnView | undefined {
+        return this.modeler.getActiveView();
+    }
+
+    /**
+     * Opens the specified view.
+     *
+     * @param view The view to open
+     */
+    public open(view: DmnView): Promise<OpenResult> {
+        try {
+            return this.modeler.open(view);
+        } catch (error: any) {
+            if (error.warnings) {
+                const e = error as OpenError;
+                console.error("Opening view failed with warnings", e.warnings, e.error);
+            } else {
+                console.error("Opening view failed", error);
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Destroys the modeler instance.
+     */
+    public destroy() {
+        this.modeler.destroy();
     }
 
     /**
@@ -190,7 +276,7 @@ class CustomDmnJsModeler extends Modeler {
      * Can be used to determine if the undo button should be enabled or not.
      */
     public canUndo(): boolean {
-        return this.getActiveViewer()?.get("commandStack").canUndo();
+        return this.modeler.getActiveViewer()?.get("commandStack").canUndo();
     }
 
     /**
@@ -198,14 +284,14 @@ class CustomDmnJsModeler extends Modeler {
      * Can be used to determine if the redo button should be enabled or not.
      */
     public canRedo(): boolean {
-        return this.getActiveViewer()?.get("commandStack").canRedo();
+        return this.modeler.getActiveViewer()?.get("commandStack").canRedo();
     }
 
     /**
      * Returns the size of the current selection.
      */
     public getSelectionSize(): number {
-        return this.getActiveViewer()?.get("selection")?.get()?.length || 0;
+        return this.modeler.getActiveViewer()?.get("selection")?.get()?.length || 0;
     }
 
     /**
@@ -213,7 +299,7 @@ class CustomDmnJsModeler extends Modeler {
      * Keyboard shortcuts will trigger actions in the editor after this has been called.
      */
     public bindKeyboard(): void {
-        this.getActiveViewer()?.get("keyboard").bind(document);
+        this.modeler.getActiveViewer()?.get("keyboard").bind(document);
     }
 
     /**
@@ -221,28 +307,28 @@ class CustomDmnJsModeler extends Modeler {
      * Keyboard shortcuts won't work anymore after this has been called.
      */
     public unbindKeyboard(): void {
-        this.getActiveViewer()?.get("keyboard").unbind();
+        this.modeler.getActiveViewer()?.get("keyboard").unbind();
     }
 
     /**
      * Returns the current stack index.
      */
     public getStackIndex(): number {
-        return this.getActiveViewer()?.get("commandStack")._stackIdx;
+        return this.modeler.getActiveViewer()?.get("commandStack")._stackIdx;
     }
 
     /**
      * Instructs the command stack to undo the last action.
      */
     public undo(): void {
-        return this.getActiveViewer()?.get("commandStack").undo();
+        return this.modeler.getActiveViewer()?.get("commandStack").undo();
     }
 
     /**
      * Instructs the command stack to repeat the last undone action.
      */
     public redo(): void {
-        return this.getActiveViewer()?.get("commandStack").redo();
+        return this.modeler.getActiveViewer()?.get("commandStack").redo();
     }
 
     /**
@@ -251,7 +337,7 @@ class CustomDmnJsModeler extends Modeler {
      * @param listener The listener to register
      */
     public registerGlobalEventListener(listener: EventCallback): void {
-        this.getActiveViewer()?.get("globalEventListenerUtil").on(listener);
+        this.modeler.getActiveViewer()?.get("globalEventListenerUtil").on(listener);
     }
 
     /**
@@ -260,7 +346,7 @@ class CustomDmnJsModeler extends Modeler {
      * @param listener The listener to unregister
      */
     public unregisterGlobalEventListener(listener: EventCallback): void {
-        this.getActiveViewer()?.get("globalEventListenerUtil").off(listener);
+        this.modeler.getActiveViewer()?.get("globalEventListenerUtil").off(listener);
     }
 }
 

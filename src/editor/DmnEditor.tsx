@@ -281,7 +281,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             }
             modeler.destroy();
         };
-    }, [dmnJsOptions, modelerOptions, propertiesPanelOptions]);
+    }, [dmnJsOptions, modelerOptions?.containerId, propertiesPanelOptions]);
 
     useEffect(() => {
         const modeler = ref.current;
@@ -356,20 +356,20 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
      */
     useEffect(() => {
         onEvent(createUIUpdateRequiredEvent(active));
-        const cur = ref.current;
+        const modeler = ref.current;
         if (active) {
-            if (cur?.getActiveViewer()) {
-                cur?.bindKeyboard();
-                return () => cur?.unbindKeyboard();
+            if (modeler?.getActiveViewer()) {
+                modeler?.bindKeyboard();
+                return () => modeler?.unbindKeyboard();
             }
 
             // TODO: Is this still required?
             // Fallback for first mount
             // TODO: Is there another way to do this? The way above does not work on first mount
-            const timeout = setTimeout(() => cur?.bindKeyboard(), 1000);
+            const timeout = setTimeout(() => modeler?.bindKeyboard(), 1000);
             return () => {
                 clearTimeout(timeout);
-                cur?.unbindKeyboard();
+                modeler?.unbindKeyboard();
             };
         }
         return undefined;

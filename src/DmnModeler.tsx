@@ -174,7 +174,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     const view = modelerRef.current
                         ?.getViews()
                         .find(v => v.id === viewId);
-                    view && modelerRef.current?.open(view);
+                    await (view && modelerRef.current?.open(view));
                 }
             }
         },
@@ -186,7 +186,32 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
             if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
                 const data = event.data as ViewsChangedEvent;
                 setViews(data.views);
-                setActiveView(data.activeView?.id);
+
+                if (!data.activeView) {
+                    const initialView = data.views[0];
+                    setActiveView(initialView.id);
+                    modelerRef.current
+                        ?.open(data.views[0])
+                        .then(result => {
+                            if (result.warnings.length > 0) {
+                                console.log(
+                                    "Opened initial view with warnings",
+                                    result.warnings,
+                                );
+                            }
+                        })
+                        .catch((e: any) => {
+                            if (e.warnings) {
+                                console.log(
+                                    "Failed to open initial view with warnings",
+                                    e.warnings,
+                                    e.error,
+                                );
+                            }
+                        });
+                } else {
+                    setActiveView(data.activeView.id);
+                }
             }
             onEvent(event);
         },

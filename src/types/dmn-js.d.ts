@@ -14,15 +14,10 @@ declare module "dmn-js/lib/Modeler" {
          * @param xml The XML to import
          * @param options Options for customization
          *                open: Whether to open the diagram after importing
-         * @param done Callback that is executed after the import is done
          */
-        importXML(
-            xml: string,
-            options?: { open: boolean },
-            done: (error: Error | undefined, warnings: ImportWarning[]) => void,
-        ): any;
+        importXML(xml: string, options?: { open: boolean }): Promise<ImportXMLResult>;
 
-        saveXML({ format: boolean }, callback: (err: Error, xml: string) => void): void;
+        saveXML({ format: boolean }): Promise<SaveXMLResult>;
 
         /**
          * Registers an event listener for bpmn-js.
@@ -60,13 +55,36 @@ declare module "dmn-js/lib/Modeler" {
          *
          * @param view The view to open
          */
-        open(view: DmnView);
+        open(view: DmnView): Promise<OpenResult>;
 
         /**
          * Destroys the modeler instance.
          */
         destroy();
     }
+
+    export type OpenResult = {
+        /**
+         * Warnings occurred during the opening.
+         */
+        warnings: string[];
+    };
+
+    export type OpenError = {
+        error: Error;
+        /**
+         * Warnings occurred during the opening.
+         */
+        warnings: string[];
+    };
+
+    export type ImportXMLResult = {
+        warnings: string[];
+    };
+
+    export type SaveXMLResult = {
+        xml: string;
+    };
 
     export default Modeler;
 }
