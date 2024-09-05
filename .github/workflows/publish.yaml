@@ -9,8 +9,7 @@ on:
         default: 'release/v0.0.0'
 
 jobs:
-
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -36,13 +35,6 @@ jobs:
         run: yarn
       - name: Build application
         run: yarn build
-
-  publish:
-    if: github.event.inputs.release-tag
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
       - name: Publish package
         run: yarn npm publish --access public
         env:
@@ -52,7 +44,7 @@ jobs:
     if: github.event.inputs.release-tag
     runs-on: ubuntu-latest
     needs:
-      - publish
+      - release
     steps:
       - name: PREP / Checkout code
         uses: actions/checkout@v4
