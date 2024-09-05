@@ -1,6 +1,6 @@
 {
   "name": "@miragon/camunda-web-modeler",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A browser-native BPMN and DMN modeler based on bpmn.io.",
   "author": "Miragon GmbH <info@miragon.io>",
   "homepage": "https://github.com/Miragon/camunda-web-modeler",
@@ -105,6 +105,9 @@
   },
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0"
+  },
+  "resolutions": {
+    "min-dash": "4.1.1"
   },
   "packageManager": "yarn@4.4.1"
 }

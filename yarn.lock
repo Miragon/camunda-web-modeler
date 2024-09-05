@@ -6177,17 +6177,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"min-dash@npm:^3.0.0, min-dash@npm:^3.5.2":
-  version: 3.8.1
-  resolution: "min-dash@npm:3.8.1"
-  checksum: 10c0/30eff7c7936496de022dc64a541aa0ce1db9eadf45425e3d7dc96e0f076677482b66f2888ef191b951558b079a0c0610d48b9e91e667c1ea6a745d730aeb3360
-  languageName: node
-  linkType: hard
-
-"min-dash@npm:^4.0.0, min-dash@npm:^4.1.0, min-dash@npm:^4.1.1, min-dash@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "min-dash@npm:4.2.1"
-  checksum: 10c0/0c2a42f29b3cc9e20c6e25b424720bc82ce3d15c131d2eb4d0575f191a39e38158c99f1f7aa08260a842ea6e5789bdeba5960587b9ce607d00658b47ebfa0210
+"min-dash@npm:4.1.1":
+  version: 4.1.1
+  resolution: "min-dash@npm:4.1.1"
+  checksum: 10c0/5858451cae6f081168579a68020d9e24aaa07b27225ddf78b3a6ed21b485dc7a53adfcad45d8f35811776ba4fbf34de69ff94067baba95dbc6b11af19635fc47
   languageName: node
   linkType: hard
 
