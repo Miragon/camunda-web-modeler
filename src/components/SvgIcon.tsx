@@ -1,24 +1,23 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
 import React from "react";
+import { tss } from "tss-react";
 
 interface Props {
     path: string;
     className?: string;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "1.5rem",
-        width: "1.5rem"
-    }
+        width: "1.5rem",
+    },
 }));
 
 const SvgIcon: React.FC<Props> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     return (
-        <svg className={clsx(classes.root, props.className)}>
+        <svg className={cx(classes.root, props.className)}>
             <path d={props.path} />
         </svg>
     );

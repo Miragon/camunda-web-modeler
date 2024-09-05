@@ -1,34 +1,40 @@
-import { makeStyles } from "@material-ui/styles";
-import composeRefs from "@seznam/compose-react-refs";
-import MonacoEditor, { MonacoEditorProps, RefEditorInstance } from "@uiw/react-monacoeditor";
-import clsx from "clsx";
+import React, {
+    MutableRefObject,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import deepmerge from "deepmerge";
+import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
-import React, { MutableRefObject, useCallback, useEffect, useMemo, useState } from "react";
+import { tss } from "tss-react";
+
+loader.config({ monaco });
 
 export interface MonacoOptions {
     /**
      * Will receive the reference to the editor instance, the monaco instance, and the container
      * element.
      */
-    refs?: MutableRefObject<RefEditorInstance | null>[];
+    refs?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>[];
 
     /**
      * Additional props to pass to the editor component. This will override the defaults defined by
      * this component.
      */
-    props?: Partial<MonacoEditorProps>;
+    props?: Partial<EditorProps>;
 
     /**
      * Additional options to pass to the editor component. This will override the defaults defined
-     * by this compnent.
+     * by this component.
      */
     options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 }
 
 export interface XmlEditorProps {
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -38,9 +44,9 @@ export interface XmlEditorProps {
     active: boolean;
 
     /**
-     * Callback to execute whenever the diagram's xml changes.
+     * Callback to execute whenever the diagram's XML changes.
      *
-     * @param xml The new xml
+     * @param xml The new XML
      */
     onChanged: (xml: string) => void;
 
@@ -55,31 +61,44 @@ export interface XmlEditorProps {
     className?: string;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "100%",
         "&>div": {
             height: "100%",
-            overflow: "hidden"
-        }
+            overflow: "hidden",
+        },
     },
     hidden: {
-        display: "none"
-    }
+        display: "none",
+    },
 }));
 
 const XmlEditor: React.FC<XmlEditorProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const { xml, onChanged, active, monacoOptions, className } = props;
 
     const [xmlEditorShown, setXmlEditorShown] = useState(false);
 
-    const onXmlChanged = useCallback((value: string) => {
-        if (active) {
-            onChanged(value);
-        }
-    }, [active, onChanged]);
+    const onEditorMount = useCallback(
+        (editor: monaco.editor.IStandaloneCodeEditor) => {
+            monacoOptions?.refs?.forEach(e => {
+                e.current = editor;
+            });
+        },
+        [monacoOptions],
+    );
+
+    const onXmlChanged = useCallback(
+        (value?: string) => {
+            if (active) {
+                const xmlValue = value ?? xml; // value is empty when the editor initialized
+                onChanged(xmlValue);
+            }
+        },
+        [xml, active, onChanged],
+    );
 
     /**
      * Initializes the editor when it is visible for the first time. If it is shown when it is
@@ -91,39 +110,42 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
         }
     }, [xmlEditorShown, active]);
 
-    const options = useMemo(() => deepmerge(
-        {
-            theme: "vs-light",
-            wordWrap: "on",
-            wrappingIndent: "deepIndent",
-            scrollBeyondLastLine: false,
-            minimap: {
-                enabled: false
-            }
-        },
-        monacoOptions?.options || {}
-    ), [monacoOptions?.options]);
+    const options = useMemo(
+        () =>
+            deepmerge(
+                {
+                    theme: "vs-light",
+                    wordWrap: "on",
+                    wrappingIndent: "deepIndent",
+                    scrollBeyondLastLine: false,
+                    minimap: {
+                        enabled: false,
+                    },
+                },
+                monacoOptions?.options ?? {},
+            ),
+        [monacoOptions?.options],
+    );
 
     /**
-     * Only show the editor once it has became active or the editor size will be wrong.
+     * Only show the editor once it has become active or the editor size will be wrong.
      */
     if (!xmlEditorShown) {
         return null;
     }
 
     return (
-        <div className={clsx(classes.root, !active && classes.hidden)}>
-            <MonacoEditor
-                height=""
+        <div className={cx(classes.root, !active && classes.hidden)}>
+            <Editor
+                height="100%"
                 language="xml"
                 value={xml}
                 options={options}
                 className={className}
                 onChange={onXmlChanged}
-                ref={composeRefs<RefEditorInstance>(
-                    undefined, undefined, ...(monacoOptions?.refs || [])
-                )}
-                {...monacoOptions?.props || {}} />
+                onMount={onEditorMount}
+                {...(monacoOptions?.props ?? {})}
+            />
         </div>
     );
 };

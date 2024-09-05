@@ -1,14 +1,7 @@
-import { makeStyles } from "@material-ui/styles";
-import clsx from "clsx";
-import React, {
-    MutableRefObject,
-    ReactNode,
-    useCallback,
-    useEffect,
-    useRef,
-    useState
-} from "react";
-import SplitPane from "react-split-pane";
+import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { tss } from "tss-react";
+
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { Event } from "../events";
@@ -18,7 +11,7 @@ import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesP
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
 
 /**
- * The events that trigger an UI update required event.
+ * The events that trigger a UI update required event.
  */
 const UI_UPDATE_REQUIRED_EVENTS = [
     "import.done",
@@ -32,16 +25,13 @@ const UI_UPDATE_REQUIRED_EVENTS = [
     "directEditing.activate",
     "directEditing.deactivate",
     "searchPad.closed",
-    "searchPad.opened"
+    "searchPad.opened",
 ];
 
 /**
  * The events that trigger a content saved event.
  */
-const CONTENT_SAVED_EVENT = [
-    "import.done",
-    "commandStack.changed"
-];
+const CONTENT_SAVED_EVENT = ["import.done", "commandStack.changed"];
 
 export interface BpmnPropertiesPanelOptions {
     /**
@@ -55,12 +45,12 @@ export interface BpmnPropertiesPanelOptions {
      * Can be in % or px each.
      */
     size?: {
-        // Default "25%"
-        initial?: string;
-        // Default "95%"
-        min?: string;
-        // Default "5%"
-        max?: string;
+        // Default "25"
+        initial?: number;
+        // Default "5"
+        min?: number;
+        // Default "95"
+        max?: number;
     };
 
     /**
@@ -98,12 +88,12 @@ export interface BpmnModelerOptions {
      * Can be in % or px each.
      */
     size?: {
-        // Default "75%"
-        initial?: string;
-        // Default "95%"
-        min?: string;
-        // Default "5%"
-        max?: string;
+        // Default "75"
+        initial?: number;
+        // Default "5"
+        min?: number;
+        // Default "95"
+        max?: number;
     };
 
     /**
@@ -132,7 +122,7 @@ export interface BpmnEditorProps {
     className?: string;
 
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -149,7 +139,7 @@ export interface BpmnEditorProps {
     /**
      * The options passed to the bpmn-js modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     bpmnJsOptions?: any;
@@ -157,7 +147,7 @@ export interface BpmnEditorProps {
     /**
      * The options to control the appearance of the properties panel.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     propertiesPanelOptions?: BpmnPropertiesPanelOptions;
@@ -165,33 +155,33 @@ export interface BpmnEditorProps {
     /**
      * The options to control the appearance of the modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     modelerOptions?: BpmnModelerOptions;
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = tss.create(() => ({
     modeler: {
-        height: "100%"
+        height: "100%",
     },
     propertiesPanel: {
         height: "100%",
         "&>div": {
             height: "100%",
-            overflow: "auto"
-        }
+            overflow: "auto",
+        },
     },
     hidden: {
-        display: "none"
+        display: "none",
     },
     modelerOnly: {
-        height: "100%"
-    }
+        height: "100%",
+    },
 }));
 
 const BpmnEditor: React.FC<BpmnEditorProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
     const {
         active,
@@ -200,84 +190,97 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         className,
         bpmnJsOptions,
         modelerOptions,
-        propertiesPanelOptions
+        propertiesPanelOptions,
     } = props;
 
     const [initializeCount, setInitializeCount] = useState(0);
     const ref = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
-    const handleEvent = useCallback(async (event: string, data: any) => {
-        // TODO: Should bpmn-js events only be forwarded if the editor is currently active?
-        onEvent(createBpmnIoEvent(event, data));
+    const handleEvent = useCallback(
+        (event: string, data: any) => {
+            // TODO: Should bpmn-js events only be forwarded if the editor is currently active?
+            onEvent(createBpmnIoEvent(event, data));
 
-        if (!active) {
-            return;
-        }
-
-        if (event === "elementTemplates.errors") {
-            onEvent(createNotificationEvent(
-                "Importing element templates failed. Check console for details.",
-                "error"
-            ));
-            // eslint-disable-next-line no-console
-            console.error("Importing element templates failed.", data);
-        }
-
-        /**
-         * If the event should trigger an UI update required event, do it.
-         */
-        if (event && UI_UPDATE_REQUIRED_EVENTS.indexOf(event) !== -1) {
-            onEvent(createUIUpdateRequiredEvent(active));
-        }
-
-        /**
-         * If the event should trigger a content saved event, do it.
-         */
-        if (event && CONTENT_SAVED_EVENT.indexOf(event) !== -1 && ref.current) {
-            try {
-                const saved = await ref.current.save();
-                onEvent(createContentSavedEvent(saved.xml, saved.svg, "diagram.changed"));
-            } catch (e) {
-                // eslint-disable-next-line no-console
-                console.warn("Could not save document", e);
+            if (!active) {
+                return;
             }
-        }
-    }, [active, onEvent]);
+
+            if (event === "elementTemplates.errors") {
+                onEvent(
+                    createNotificationEvent(
+                        "Importing element templates failed. Check console for details.",
+                        "error",
+                    ),
+                );
+                console.error("Importing element templates failed.", data);
+            }
+
+            /**
+             * If the event should trigger a UI update required event, do it.
+             */
+            if (event && UI_UPDATE_REQUIRED_EVENTS.includes(event)) {
+                onEvent(createUIUpdateRequiredEvent(active));
+            }
+
+            /**
+             * If the event should trigger a content saved event, do it.
+             */
+            if (event && CONTENT_SAVED_EVENT.includes(event) && ref.current) {
+                ref.current
+                    .save()
+                    .then(saved => {
+                        onEvent(
+                            createContentSavedEvent(
+                                saved.xml,
+                                saved.svg,
+                                "diagram.changed",
+                            ),
+                        );
+                    })
+                    .catch(e => {
+                        console.warn("Could not save document", e);
+                    });
+            }
+        },
+        [active, onEvent],
+    );
 
     /**
      * Instantiates the modeler and properties panel. Only happens once on mount.
      */
     useEffect(() => {
         const modeler = new CustomBpmnJsModeler({
-            container: modelerOptions?.containerId || "#bpmnview",
-            propertiesPanel: propertiesPanelOptions?.hidden ? undefined : propertiesPanelOptions?.containerId || "#bpmnprop",
-            bpmnJsOptions: bpmnJsOptions
+            container: modelerOptions?.containerId ?? "#bpmnview",
+            propertiesPanel: propertiesPanelOptions?.hidden
+                ? undefined
+                : (propertiesPanelOptions?.containerId ?? "#bpmnprop"),
+            bpmnJsOptions: bpmnJsOptions,
         });
 
         ref.current = modeler;
         if (modelerOptions?.refs) {
             modelerOptions.refs.forEach(r => {
-                // eslint-disable-next-line no-param-reassign
                 r.current = modeler;
             });
         }
 
-        setInitializeCount(cur => cur + 1);
+        setInitializeCount(count => count + 1);
 
         return () => {
+            modeler.unregisterGlobalEventListener(handleEvent);
             modeler.destroy();
             ref.current = undefined;
             if (modelerOptions?.refs) {
                 modelerOptions.refs.forEach(r => {
-                    // eslint-disable-next-line no-param-reassign
                     r.current = undefined;
                 });
             }
         };
     }, [
+        handleEvent,
         bpmnJsOptions,
-        modelerOptions,
-        propertiesPanelOptions
+        propertiesPanelOptions,
+        modelerOptions?.containerId,
     ]);
 
     /**
@@ -288,53 +291,67 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      * 3. Import the specified XML if it has changed.
      * 4. Show any errors or warnings that occurred during import.
      */
-    const importXml = useCallback(async (newXml: string) => {
-        if (ref.current) {
-            try {
-                const currentXml = await ref.current?.saveXML({
-                    format: true,
-                    preamble: false
-                });
+    const importXml = useCallback(
+        async (newXml: string) => {
+            if (ref.current) {
+                try {
+                    const currentXml = await ref.current?.saveXML({
+                        format: true,
+                        preamble: false,
+                    });
 
-                if (newXml === currentXml.xml) {
-                    // XML has not changed
-                    return;
+                    if (newXml === currentXml.xml) {
+                        // XML has not changed
+                        return;
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                } catch (e) {
+                    // The editor has not yet loaded any content
+                    // => no definitions loaded, ignores the error
                 }
-            } catch (e) {
-                // The editor has not yet loaded any content
-                // => no definitions loaded, just ignore the error
-            }
 
-            try {
-                const result = await ref.current.importXML(newXml);
-                const count = result.warnings.length;
-                if (count > 0) {
-                    // eslint-disable-next-line no-console
-                    console.log("Imported with warnings", result.warnings);
-                    onEvent(createNotificationEvent(
-                        `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
-                        "warning"
-                    ));
+                try {
+                    const result = ref.current.importXML(newXml);
+                    const count = result.warnings?.length ?? 0;
+                    if (count > 0) {
+                        console.log("Imported with warnings", result.warnings);
+                        onEvent(
+                            createNotificationEvent(
+                                `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
+                                "warning",
+                            ),
+                        );
+                    }
+                } catch (e) {
+                    console.error("Could not import XML", e);
+                    onEvent(
+                        createNotificationEvent(
+                            "Could not import changed XML. Is it invalid? See console for details.",
+                            "error",
+                        ),
+                    );
                 }
-            } catch (e) {
-                // eslint-disable-next-line no-console
-                console.error("Could not import XML", e);
-                onEvent(createNotificationEvent(
-                    "Could not import changed XML. Is it invalid? See console for details.",
-                    "error",
-                ));
             }
-        }
-    }, [onEvent]);
+        },
+        [onEvent],
+    );
 
     /**
      * Imports the document XML whenever it changes.
      */
     useEffect(() => {
         if (initializeCount > 0) {
-            importXml(xml);
+            importXml(xml).catch(e => {
+                console.error("Could not import XML", e);
+                onEvent(
+                    createNotificationEvent(
+                        "Could not import changed XML. Is it invalid? See console for details.",
+                        "error",
+                    ),
+                );
+            });
         }
-    }, [xml, importXml, initializeCount]);
+    }, [xml, importXml, initializeCount, onEvent]);
 
     useEffect(() => {
         const modeler = ref.current;
@@ -360,54 +377,67 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      */
     useEffect(() => {
         if (!propertiesPanelOptions?.hidden) {
-            ref.current?.importElementTemplates(propertiesPanelOptions?.elementTemplates || []);
+            ref.current?.importElementTemplates(
+                propertiesPanelOptions?.elementTemplates ?? [],
+            );
         }
     }, [propertiesPanelOptions?.hidden, propertiesPanelOptions?.elementTemplates]);
 
-    const onPropertiesPanelWidthChanged = useCallback((newWidth: number) => {
-        onEvent(createPropertiesPanelResizedEvent(newWidth));
-    }, [onEvent]);
+    const onPropertiesPanelWidthChanged = useCallback(
+        (sizes: number[]) => {
+            onEvent(createPropertiesPanelResizedEvent(sizes[1]));
+        },
+        [onEvent],
+    );
 
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
-        <div
-            id="bpmnview"
-            className={clsx(classes.modeler, modelerOptions?.className)} />
+        <div id="bpmnview" className={cx(classes.modeler, modelerOptions?.className)} />
     );
 
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
             id="bpmnprop"
-            className={clsx(classes.propertiesPanel, propertiesPanelOptions?.className)} />
+            className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
+        />
     );
 
     if (propertiesPanelOptions?.hidden) {
         return (
-            <div className={clsx(
-                !props.active && classes.hidden,
-                classes.modelerOnly,
-                className
-            )}>
-                {modelerContainer}
-            </div>
+            <div className={cx(classes.modelerOnly, className)}>{modelerContainer}</div>
         );
     }
 
     return (
-        <SplitPane
-            split="vertical"
-            minSize="10%"
-            defaultSize="75%"
-            maxSize="95%"
-            className={clsx(!props.active && classes.hidden, className)}
-            resizerStyle={{
-                cursor: "col-resize",
-                width: "5px",
-                backgroundColor: "rgba(0, 0, 0, 0.25)"
+        <PanelGroup
+            className={className}
+            direction="horizontal"
+            onLayout={onPropertiesPanelWidthChanged}
+            style={{
+                display: props.active ? "flex" : "none",
             }}
-            onChange={onPropertiesPanelWidthChanged}>
-            {modelerContainer}
-            {propertiesPanelContainer}
-        </SplitPane>
+        >
+            <Panel
+                defaultSize={modelerOptions?.size?.initial ?? 75}
+                maxSize={modelerOptions?.size?.max ?? 95}
+                minSize={modelerOptions?.size?.min ?? 5}
+            >
+                {modelerContainer}
+            </Panel>
+            <PanelResizeHandle
+                style={{
+                    cursor: "col-resize",
+                    width: "5px",
+                    backgroundColor: "rgba(0, 0, 0, 0.25)",
+                }}
+            />
+            <Panel
+                defaultSize={propertiesPanelOptions?.size?.initial ?? 25}
+                maxSize={propertiesPanelOptions?.size?.max ?? 95}
+                minSize={propertiesPanelOptions?.size?.min ?? 5}
+            >
+                {propertiesPanelContainer}
+            </Panel>
+        </PanelGroup>
     );
 };
 

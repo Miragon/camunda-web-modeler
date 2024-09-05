@@ -1,13 +1,15 @@
-import typescript from 'rollup-plugin-typescript2';
-import {terser} from "rollup-plugin-terser";
-import json from "rollup-plugin-json";
-import {nodeResolve} from "@rollup/plugin-node-resolve";
-import css from "rollup-plugin-css-only";
+import terser from "@rollup/plugin-terser";
+import json from "@rollup/plugin-json";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from '@rollup/plugin-replace';
+import {nodeResolve} from "@rollup/plugin-node-resolve";
+import typescript from 'rollup-plugin-typescript2';
+import css from "rollup-plugin-css-only";
 import deepmerge from "deepmerge";
 /* import fs from "fs";
 import path from "path"; */
+
+import pkg from "./package.json" with { type: "json" };
 
 const defaultConfig = {
     input: "src/index.ts",
@@ -22,8 +24,9 @@ const defaultConfig = {
         }
     },
     external: [
+        ...Object.keys(pkg.peerDependencies || {}),
         "monaco-editor",
-        "react",
+        // "react",
         "bpmn-js/lib/Modeler",
         "dmn-js/lib/Modeler"
     ],

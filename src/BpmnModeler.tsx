@@ -1,29 +1,35 @@
-import { makeStyles } from "@material-ui/styles";
-import { RefEditorInstance } from "@uiw/react-monacoeditor";
-import clsx from "clsx";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { tss } from "tss-react";
+import * as monaco from "monaco-editor";
+
 import CustomBpmnJsModeler from "./bpmnio/bpmn/CustomBpmnJsModeler";
 import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
-import BpmnEditor, { BpmnModelerOptions, BpmnPropertiesPanelOptions } from "./editor/BpmnEditor";
+import BpmnEditor, {
+    BpmnModelerOptions,
+    BpmnPropertiesPanelOptions,
+} from "./editor/BpmnEditor";
 import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
 import { Event } from "./events";
-import { ContentSavedReason, createContentSavedEvent } from "./events/modeler/ContentSavedEvent";
+import {
+    ContentSavedReason,
+    createContentSavedEvent,
+} from "./events/modeler/ContentSavedEvent";
 
-const useStyles = makeStyles(() => ({
+const useStyles = tss.create(() => ({
     root: {
         height: "100%",
-        overflow: "hidden"
+        overflow: "hidden",
     },
     modeToggle: {
         position: "absolute",
         left: "97px",
         bottom: "32px",
-        backgroundColor: "rgba(255, 255, 255, 0.87)"
+        backgroundColor: "rgba(255, 255, 255, 0.87)",
     },
     icon: {
-        marginTop: "4px"
-    }
+        marginTop: "4px",
+    },
 }));
 
 export interface ModelerTabOptions {
@@ -35,7 +41,7 @@ export interface ModelerTabOptions {
     /**
      * The options passed to the bpmn-js modeler.
      *
-     * CAUTION: When this options object is changed, the old editor instance will be destroyed
+     * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
      */
     bpmnJsOptions?: any;
@@ -80,7 +86,7 @@ export interface BpmnModelerProps {
     className?: string;
 
     /**
-     * The xml to display in the editor.
+     * The XML to display in the editor.
      */
     xml: string;
 
@@ -103,17 +109,11 @@ export interface BpmnModelerProps {
 declare type BpmnViewMode = "bpmn" | "xml";
 
 const BpmnModeler: React.FC<BpmnModelerProps> = props => {
-    const classes = useStyles();
+    const { classes, cx } = useStyles();
 
-    const {
-        onEvent,
-        xml,
-        modelerTabOptions,
-        xmlTabOptions,
-        className
-    } = props;
+    const { onEvent, xml, modelerTabOptions, xmlTabOptions, className } = props;
 
-    const monacoRef = useRef<RefEditorInstance>(null);
+    const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomBpmnJsModeler>();
 
     const [mode, setMode] = useState<BpmnViewMode>("bpmn");
@@ -127,76 +127,76 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const modelerOptions: BpmnModelerOptions = useMemo(() => {
         if (!modelerTabOptions?.modelerOptions) {
             return {
-                refs: [modelerRef]
+                refs: [modelerRef],
             };
         }
 
         return {
             ...modelerTabOptions.modelerOptions,
-            refs: [
-                ...(modelerTabOptions.modelerOptions.refs || []),
-                modelerRef
-            ]
+            refs: [...(modelerTabOptions.modelerOptions.refs ?? []), modelerRef],
         };
     }, [modelerTabOptions]);
 
     const monacoOptions: MonacoOptions = useMemo(() => {
         if (!xmlTabOptions?.monacoOptions) {
             return {
-                refs: [monacoRef]
+                refs: [monacoRef],
             };
         }
 
         return {
             ...xmlTabOptions.monacoOptions,
-            refs: [
-                ...(xmlTabOptions.monacoOptions.refs || []),
-                monacoRef
-            ]
+            refs: [...(xmlTabOptions.monacoOptions.refs ?? []), monacoRef],
         };
     }, [xmlTabOptions]);
 
-    const saveFile = useCallback(async (source: BpmnViewMode, reason: ContentSavedReason) => {
-        switch (source) {
-            case "bpmn": {
-                if (modelerRef.current) {
-                    const saved = await modelerRef.current?.save();
-                    onEvent(createContentSavedEvent(saved.xml, saved.svg, reason));
+    const saveFile = useCallback(
+        async (source: BpmnViewMode, reason: ContentSavedReason) => {
+            switch (source) {
+                case "bpmn": {
+                    if (modelerRef.current) {
+                        const saved = await modelerRef.current?.save();
+                        onEvent(createContentSavedEvent(saved.xml, saved.svg, reason));
+                    }
+                    break;
                 }
-                break;
-            }
-            case "xml": {
-                if (monacoRef.current) {
-                    const saved = await monacoRef.current?.editor?.getValue() || "";
-                    onEvent(createContentSavedEvent(saved, undefined, reason));
+                case "xml": {
+                    if (monacoRef.current) {
+                        //const saved = await monacoRef.current?.editor?.getValue() || "";
+                        const saved = monacoRef.current?.getValue() || "";
+                        onEvent(createContentSavedEvent(saved, undefined, reason));
+                    }
+                    break;
                 }
-                break;
             }
-        }
-    }, [onEvent]);
+        },
+        [onEvent],
+    );
 
-    const changeMode = useCallback(async value => {
-        if (value !== null && value !== mode) {
-            await saveFile(mode, "view.changed");
-            setMode(value);
-        }
-    }, [saveFile, mode]);
+    const changeMode = useCallback(
+        async (value: string) => {
+            const bpmnViewMode = value as BpmnViewMode;
+            if (bpmnViewMode !== null && bpmnViewMode !== mode) {
+                await saveFile(mode, "view.changed");
+                setMode(bpmnViewMode);
+            }
+        },
+        [saveFile, mode],
+    );
 
-    const onXmlChanged = useCallback((value: string) => {
-        onEvent(createContentSavedEvent(
-            value,
-            undefined,
-            "xml.changed"
-        ));
-    }, [onEvent]);
+    const onXmlChanged = useCallback(
+        (value: string) => {
+            onEvent(createContentSavedEvent(value, undefined, "xml.changed"));
+        },
+        [onEvent],
+    );
 
     if (!xml) {
         return null;
     }
 
     return (
-        <div className={clsx(classes.root, className)}>
-
+        <div className={cx(classes.root, className)}>
             {!modelerTabOptions?.disabled && (
                 <BpmnEditor
                     xml={xml}
@@ -205,7 +205,8 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     modelerOptions={modelerOptions}
                     propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
                     bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
-                    className={modelerTabOptions?.className} />
+                    className={modelerTabOptions?.className}
+                />
             )}
 
             {!xmlTabOptions?.disabled && (
@@ -213,7 +214,8 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     xml={xml}
                     active={mode === "xml"}
                     monacoOptions={monacoOptions}
-                    onChanged={onXmlChanged} />
+                    onChanged={onXmlChanged}
+                />
             )}
 
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
@@ -227,8 +229,9 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                                     className={classes.icon}
                                     path="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71
                                         7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 00-1.41
-                                        0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                            )
+                                        0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                />
+                            ),
                         },
                         {
                             id: "xml",
@@ -236,14 +239,15 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                                 <SvgIcon
                                     className={classes.icon}
                                     path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
-                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" />
-                            )
-                        }
+                                        0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
+                                />
+                            ),
+                        },
                     ]}
                     onChange={changeMode}
-                    active={mode} />
+                    active={mode}
+                />
             )}
-
         </div>
     );
 };
