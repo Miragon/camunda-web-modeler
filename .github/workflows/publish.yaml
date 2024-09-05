@@ -19,24 +19,17 @@ jobs:
         with:
           node-version: 20.x
           registry-url: 'https://registry.npmjs.org'
-      - name: Set Yarn Cache Directory
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
-      - name: Restore Yarn Cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'yarn'
       - name: Enable corepack
         run: corepack enable
       - name: Install dependencies
         run: yarn
       - name: Build application
         run: yarn build
-      - name: Add auth token to .yarnrc.yml temporarily
-        run: echo "npmAuthToken=${{ secrets.NPM_PUBLISH_SECRET }} " >> .yarnrc.yml
+      - name: Setup .yarnrc.yml
+        run: yarn config set npmAuthToken $NPM_AUTH_TOKEN
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_SECRET }}
       - name: Publish package
         run: yarn npm publish --access public
         env:
