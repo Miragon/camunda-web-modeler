@@ -21,9 +21,9 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Set Yarn Cache Directory
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
       - name: Restore Yarn Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -35,6 +35,8 @@ jobs:
         run: yarn
       - name: Build application
         run: yarn build
+      - name: Add auth token to .yarnrc.yml temporarily
+        run: echo "npmAuthToken=${{ secrets.NPM_PUBLISH_SECRET }} " >> .yarnrc.yml
       - name: Publish package
         run: yarn npm publish --access public
         env:
