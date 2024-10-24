@@ -1,4 +1,11 @@
-import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+    MutableRefObject,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 import CustomDmnJsModeler, { DmnView } from "../bpmnio/dmn/CustomDmnJsModeler";
@@ -241,7 +248,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     );
 
     const viewsChangedCallback = useCallback(
-        (event, data) => {
+        (event: any, data: any) => {
             void handleEvent(event.type, data);
             if (ref.current?.getActiveViewer()) {
                 void ref.current?.registerGlobalEventListener(handleEvent);
