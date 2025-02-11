@@ -295,22 +295,6 @@ class CustomDmnJsModeler {
     }
 
     /**
-     * Binds the keyboard to the curretn document.
-     * Keyboard shortcuts will trigger actions in the editor after this has been called.
-     */
-    public bindKeyboard(): void {
-        this.modeler.getActiveViewer()?.get("keyboard").bind(document);
-    }
-
-    /**
-     * Unbinds the keyboard from the current document.
-     * Keyboard shortcuts won't work anymore after this has been called.
-     */
-    public unbindKeyboard(): void {
-        this.modeler.getActiveViewer()?.get("keyboard").unbind();
-    }
-
-    /**
      * Returns the current stack index.
      */
     public getStackIndex(): number {

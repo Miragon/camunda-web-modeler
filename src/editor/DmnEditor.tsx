@@ -358,30 +358,6 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         }
     }, [xml, importXml, initializeCount]);
 
-    /**
-     * Binds the current modeler instance to the keyboard when active and unbinds it when inactive.
-     */
-    useEffect(() => {
-        onEvent(createUIUpdateRequiredEvent(active));
-        const modeler = ref.current;
-        if (active) {
-            if (modeler?.getActiveViewer()) {
-                modeler?.bindKeyboard();
-                return () => modeler?.unbindKeyboard();
-            }
-
-            // TODO: Is this still required?
-            // Fallback for first mount
-            // TODO: Is there another way to do this? The way above does not work on first mount
-            const timeout = setTimeout(() => modeler?.bindKeyboard(), 1000);
-            return () => {
-                clearTimeout(timeout);
-                modeler?.unbindKeyboard();
-            };
-        }
-        return undefined;
-    }, [active, activeView, onEvent]);
-
     const onPropertiesPanelWidthChanged = useCallback(
         (sizes: number[]) => {
             onEvent(createPropertiesPanelResizedEvent(sizes[1]));

@@ -1,4 +1,11 @@
-import React, { MutableRefObject, ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+    MutableRefObject,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { tss } from "tss-react";
 
@@ -361,16 +368,6 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         }
         return undefined;
     }, [initializeCount, handleEvent]);
-
-    /**
-     * Binds the current modeler instance to the keyboard when active and unbinds it when inactive.
-     * Also dispatches an update UI event.
-     */
-    useEffect(() => {
-        onEvent(createUIUpdateRequiredEvent(active));
-        const cur = ref.current;
-        active ? cur?.bindKeyboard() : cur?.unbindKeyboard();
-    }, [active, onEvent]);
 
     /**
      * Imports the specified element templates whenever they change.
