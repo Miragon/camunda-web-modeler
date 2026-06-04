@@ -11,7 +11,9 @@ class GlobalEventListenerUtil {
         const fire = eventBus.fire.bind(eventBus);
 
         eventBus.fire = (event: string, data: any) => {
-            this.listeners.forEach(l => l(event, data));
+            this.listeners.forEach(l => {
+                l(event, data);
+            });
             return fire(event, data);
         };
     }

@@ -13,15 +13,14 @@ export interface PropertiesPanelResizedEventData {
 }
 
 export const createPropertiesPanelResizedEvent = (
-    width: number
+    width: number,
 ): Event<PropertiesPanelResizedEventData> => ({
     source: "modeler",
     event: EventName,
-    data: { width }
+    data: { width },
 });
 
 export const isPropertiesPanelResizedEvent = (
-    event: Event<any>
-): event is Event<PropertiesPanelResizedEventData> => (
-    event.source === "modeler" && event.event === EventName
-);
+    event: Event<any>,
+): event is Event<PropertiesPanelResizedEventData> =>
+    event.source === "modeler" && event.event === EventName;

@@ -1,0 +1,99 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch: 
+    inputs: 
+      release-type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bpmn-modeler-prepare-release
+  cancel-in-progress: false
+
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.RELEASE_PAT }}
+
+      - name: Check pinned dependencies
+        uses: Miragon/pin-npm-dependencies@v1
+
+      - name: Corepack enable
+        run: corepack enable
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: yarn
+          
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}"
+
+      - name: Bump version
+        id: version
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
+        run: |
+            PKG_PATH="./package.json"
+            yarn version "${{ inputs.release-type }}"
+            NEW_VERSION=$(node -e "console.log(require('$PKG_PATH').version)")
+            echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure tag does not exist
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists; aborting." && exit 1
+          fi
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: Commit and tag
+        if: success() && github.ref == 'refs/heads/develop'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+          git add package.json
+          git commit -m "chore(release): bump version to ${NEW_VERSION}"
+          git push origin HEAD
+          git tag -a "v${NEW_VERSION}" -m "release v${NEW_VERSION}"
+          git push origin "v${NEW_VERSION}"
+
+      - name: Create GitHub Release
+        if: success() && github.ref == 'refs/heads/develop'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true

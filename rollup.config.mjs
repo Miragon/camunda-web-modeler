@@ -49,7 +49,9 @@ const defaultConfig = {
             include: ["node_modules/**"]
         }),
         json(),
-        typescript(),
+        // Use the build tsconfig so test files (kept in tsconfig.json for ESLint) are
+        // not emitted as declarations into dist.
+        typescript({ tsconfig: "tsconfig.build.json" }),
         css({output: "bundle.css"})
     ]
 };

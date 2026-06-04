@@ -7,12 +7,16 @@ updates:
     labels:
       - "Technical Debt"
     schedule:
-      interval: daily
+      interval: weekly
       time: "05:00"
     commit-message:
-      prefix: fix
+      prefix: chore
       prefix-development: chore
       include: scope
+    groups:
+      npm-all:
+        patterns:
+          - "*"
   # Fetch and update latest `github-actions` packages
   - package-ecosystem: github-actions
     directory: "/"
@@ -23,6 +27,10 @@ updates:
     labels:
       - "Technical Debt"
     commit-message:
-      prefix: fix
+      prefix: chore
       prefix-development: chore
       include: scope
+    groups:
+      github-actions-all:
+        patterns:
+          - "*"

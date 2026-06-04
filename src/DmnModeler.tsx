@@ -200,12 +200,13 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                                 );
                             }
                         })
-                        .catch((e: any) => {
-                            if (e.warnings) {
+                        .catch((e: unknown) => {
+                            const error = e as { warnings?: unknown; error?: unknown };
+                            if (error.warnings) {
                                 console.log(
                                     "Failed to open initial view with warnings",
-                                    e.warnings,
-                                    e.error,
+                                    error.warnings,
+                                    error.error,
                                 );
                             }
                         });

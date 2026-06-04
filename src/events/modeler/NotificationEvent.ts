@@ -2,11 +2,7 @@ import type { Event } from "../Events";
 
 const EventName = "notification";
 
-export type NotificationSeverity =
-    | "success"
-    | "info"
-    | "warning"
-    | "error";
+export type NotificationSeverity = "success" | "info" | "warning" | "error";
 
 /**
  * Indicates any notification, could be a success, info, warning, or failure. This may be displayed
@@ -26,16 +22,17 @@ export interface NotificationEventData {
 
 export const createNotificationEvent = (
     message: string,
-    severity: NotificationSeverity
+    severity: NotificationSeverity,
 ): Event<NotificationEventData> => ({
     source: "modeler",
     event: EventName,
     data: {
         message,
-        severity
-    }
+        severity,
+    },
 });
 
-export const isNotificationEvent = (event: Event<any>): event is Event<NotificationEventData> => (
-    event.source === "modeler" && event.event === EventName
-);
+export const isNotificationEvent = (
+    event: Event<any>,
+): event is Event<NotificationEventData> =>
+    event.source === "modeler" && event.event === EventName;

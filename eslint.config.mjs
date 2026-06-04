@@ -1,156 +1,100 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
-import stylistic from "@stylistic/eslint-plugin";
-import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginImport from "eslint-plugin-import";
-import eslintPluginReact from "eslint-plugin-react";
-import eslintPluginReactHooks from "eslint-plugin-react-hooks";
-import eslintPluginFlowtype from "eslint-plugin-flowtype";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+import prettier from "eslint-config-prettier";
+import globals from "globals";
 
-import { fixupPluginRules } from "@eslint/compat";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-//
-// const compat = new FlatCompat({
-//     baseDirectory: __dirname,
-// });
-
+/**
+ * Flat ESLint config for a browser-targeted React component library that wraps
+ * the (largely untyped) bpmn-js / dmn-js toolkits.
+ *
+ * Guiding principle: maximise detection of real logic defects while suppressing
+ * the noise that exists *only* because the upstream bpmn-js APIs ship no types.
+ * Type-aware linting is therefore enabled at the strict tier, but the handful of
+ * rules that fire purely on `any`-typed interop are disabled (see below).
+ *
+ * Formatting is delegated entirely to Prettier — `eslint-config-prettier` is
+ * loaded last so it switches off every stylistic rule the preceding presets turn
+ * on, preventing ESLint and Prettier from disagreeing.
+ */
 export default tseslint.config(
-    eslint.configs.recommended,
-    ...tseslint.configs.recommendedTypeChecked,
-    ...tseslint.configs.stylisticTypeChecked,
-    eslintConfigPrettier,
     {
         ignores: [
             "dist",
             "**/*.d.ts",
-            "eslint.config.mjs",
-            "rollup.config.mjs",
-            "index.{js,ts}",
+            // Build/tool configs are plain ESM run by Node, not part of the typed
+            // source program; linting them under projectService adds no value.
+            "*.config.mjs",
+            "*.config.mts",
+            "index.js",
+            "index.ts",
         ],
     },
+
+    eslint.configs.recommended,
+    ...tseslint.configs.strictTypeChecked,
+    ...tseslint.configs.stylisticTypeChecked,
+    react.configs.flat.recommended,
+    reactHooks.configs.flat.recommended,
+
     {
         languageOptions: {
-            parser: tseslint.parser,
             parserOptions: {
-                project: true,
+                // projectService is the current type-aware-linting entrypoint; it
+                // resolves each file to its nearest tsconfig automatically.
+                projectService: true,
                 tsconfigRootDir: import.meta.dirname,
-                ecmaFeatures: {
-                    jsx: true,
-                },
             },
+            globals: globals.browser,
         },
         settings: {
-            react: {
-                version: "17.0.0",
-            },
-            flowtype: {
-                onlyFilesWithFlowAnnotation: true,
-            },
+            // react isn't a direct dependency (peer only), so version detection
+            // can't resolve it — pin the lowest officially supported major line.
+            react: { version: "18.3" },
         },
-        plugins: {
-            "@typescript-eslint": tseslint.plugin,
-            import: eslintPluginImport,
-            react: eslintPluginReact,
-            "react-hooks": fixupPluginRules(eslintPluginReactHooks),
-            "@stylistic": stylistic,
-            flowtype: eslintPluginFlowtype,
-        },
+    },
+
+    {
         rules: {
-            ...eslintPluginReactHooks.configs.recommended.rules,
-            "@typescript-eslint/comma-dangle": "off",
-            "@typescript-eslint/no-unused-expressions": [
-                "error",
-                {
-                    allowShortCircuit: true,
-                    allowTernary: true,
-                },
-            ],
-            "@typescript-eslint/no-shadow": [
-                "error",
-                {
-                    ignoreFunctionTypeParameterNameValueShadow: true,
-                },
-            ],
-            "@typescript-eslint/object-curly-spacing": "off",
-            // We need to use any for interfaces towards bpmn-js way too often for this rule to be effective
+            // --- bpmn-js / dmn-js untyped-interop relaxations -------------------
+            // These libraries expose `any`-heavy module APIs. The rules below would
+            // flag every interaction with them as "unsafe" even though the code is
+            // correct, drowning out genuine findings. They are disabled wholesale.
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-return": "off",
             "@typescript-eslint/no-unsafe-argument": "off",
-            "@stylistic/lines-between-class-members": [
+            // `any` values from bpmn-js routinely flow into log/notification strings;
+            // allow primitives + any in template literals while still catching the
+            // genuinely confusing cases (objects, arrays, nullish).
+            "@typescript-eslint/restrict-template-expressions": [
                 "error",
-                "always",
-                {
-                    exceptAfterSingleLine: true,
-                },
+                { allowAny: true, allowNumber: true, allowBoolean: true },
             ],
-            "@stylistic/arrow-parens": ["error", "as-needed"],
-            "react/jsx-indent": [
-                "error",
-                4,
-                {
-                    indentLogicalExpressions: true,
-                    checkAttributes: true,
-                },
-            ],
-            "react/jsx-indent-props": ["error", 4],
-            "react/jsx-closing-bracket-location": [
-                "error",
-                {
-                    nonEmpty: "tag-aligned",
-                    selfClosing: "tag-aligned",
-                },
-            ],
-            // Does not work with TS and arrow functions
-            // https://github.com/yannickcr/eslint-plugin-react/issues/2353
-            "react/prop-types": "off",
-            // Is this the way to go? I think both ways are acceptable, but should not be enforced...
-            "react/destructuring-assignment": "off",
-            // We don't use default props
-            "react/require-default-props": "off",
-            "react/jsx-props-no-spreading": "off",
-            "flowtype/define-flow-type": "off",
-            "flowtype/use-flow-type": "off",
-            // Deprecated rule
-            "object-shorthand": ["error", "consistent-as-needed"],
-            "no-param-reassign": [
-                "error",
-                {
-                    props: false,
-                },
-            ],
-            radix: ["error", "as-needed"],
-            "object-curly-newline": [
-                "error",
-                {
-                    ImportDeclaration: {
-                        multiline: true,
-                    },
-                },
-            ],
-            "no-restricted-syntax": [
-                "error",
-                "ForInStatement",
-                "LabeledStatement",
-                "WithStatement",
-            ],
-            "no-spaced-func": "off",
-            "import/extensions": [
-                "error",
-                "ignorePackages",
-                {
-                    "": "never",
-                    js: "never",
-                    jsx: "never",
-                    ts: "never",
-                    tsx: "never",
-                },
-            ],
-            "import/no-amd": "off",
+            // bpmn-js / dmn-js type shims are deliberately optimistic (non-null),
+            // so the optional-chaining guards the code keeps are defensive against
+            // values that can still be nullish at runtime. Enforcing this rule would
+            // strip real runtime safety in exchange for type-theoretical tidiness.
+            "@typescript-eslint/no-unnecessary-condition": "off",
+            // Bridging the imperative bpmn-js canvas into React legitimately syncs
+            // instance state from inside effects. Keep this React-Compiler readiness
+            // rule as a signal (warning) rather than a hard error.
+            "react-hooks/set-state-in-effect": "warn",
         },
     },
+
+    {
+        // Test files don't ship to consumers; allow the small ergonomic shortcuts
+        // (non-null assertions) that keep tests terse.
+        files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+        rules: {
+            "@typescript-eslint/no-non-null-assertion": "off",
+        },
+    },
+
+    // Must stay last: disables all formatting rules so Prettier is the sole authority.
+    prettier,
 );

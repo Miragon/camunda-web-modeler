@@ -5,9 +5,7 @@ export type ModelerEventType =
     | "properties.panel.resized"
     | "dmn.views.changed";
 
-type EventSource =
-    | "bpmnio"
-    | "modeler";
+type EventSource = "bpmnio" | "modeler";
 
 export interface Event<Data, Source extends EventSource = "modeler"> {
     source: Source;
