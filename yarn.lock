@@ -1641,15 +1641,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bpmn-io/element-templates-validator@npm:^2.3.3":
-  version: 2.3.3
-  resolution: "@bpmn-io/element-templates-validator@npm:2.3.3"
+"@bpmn-io/element-templates-validator@npm:^2.21.0":
+  version: 2.22.0
+  resolution: "@bpmn-io/element-templates-validator@npm:2.22.0"
   dependencies:
-    "@camunda/element-templates-json-schema": "npm:^0.18.1"
-    "@camunda/zeebe-element-templates-json-schema": "npm:^0.22.3"
+    "@camunda/element-templates-json-schema": "npm:^0.21.0"
+    "@camunda/zeebe-element-templates-json-schema": "npm:^0.41.0"
     json-source-map: "npm:^0.6.1"
-    min-dash: "npm:^4.1.1"
-  checksum: 10c0/55d832bf6083d5303002d5410e38fedc06b2ad6d023ac3198acfd552b57a03d6268601e4aafd8ddeeb117e4beb77901c999dc7db16fc4fa5b454507f15cec985
+    min-dash: "npm:^5.0.0"
+  checksum: 10c0/fa1ed8a5d6d4c953508311ac6eaf4ff8b23cb3bde60661c4b50ccc05e3de24acf9d6a17061039a627e6771fc532a06ecb65feb8eb0bf8ca60a53bc6502bb4d72
   languageName: node
   linkType: hard
 
@@ -1659,6 +1659,15 @@ __metadata:
   dependencies:
     min-dash: "npm:^4.0.0"
   checksum: 10c0/12170e8572ec3b249feb71c675f1af21bb2466848df520f5cd0a517bbf9a034988f399aca951fd05fed3660dd91aa9c43beb2d5caebeff2eadb112bb7b0fe33f
+  languageName: node
+  linkType: hard
+
+"@bpmn-io/extract-process-variables@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "@bpmn-io/extract-process-variables@npm:2.2.1"
+  dependencies:
+    min-dash: "npm:^5.0.0"
+  checksum: 10c0/7f6f42a04986d16c20598f8a75e0d516ab317f863436b9d67b4c5da1aea93e61554679fd26777e2db066c9019167f3a444fe06204b1cb9dd3bcb00ecd7f6e33e
   languageName: node
   linkType: hard
 
@@ -1718,12 +1727,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bpmn-io/moddle-utils@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@bpmn-io/moddle-utils@npm:0.2.1"
+"@bpmn-io/moddle-utils@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@bpmn-io/moddle-utils@npm:0.3.0"
   dependencies:
-    min-dash: "npm:^4.1.1"
-  checksum: 10c0/dc4f08e516f65c62d6c0ce9fdae413d88fb9730242dfe6c422e7583738b6ed9163ad58a500bc09ea283645d067e62986316b86f5e44c02d76d25a151cc760fd9
+    min-dash: "npm:^5.0.0"
+  checksum: 10c0/b4ba0bdb9a5b7e7121c7d23cdac308c95ffd63c3ca0f6e7cef467584d1231293caad574177e910fc768ada0bcf140b6dd874257ad7d30b8267337c69844cb73c
   languageName: node
   linkType: hard
 
@@ -1742,17 +1751,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@camunda/element-templates-json-schema@npm:^0.18.1":
-  version: 0.18.1
-  resolution: "@camunda/element-templates-json-schema@npm:0.18.1"
-  checksum: 10c0/b23443b3192033194ef2962e4e1b4f423fa98c2876dc620c22fd0c330a2c4ec4b4cd56f66ce6bda5cc50cce9275e2720d00ab106b106423a110c12ec5f468d5f
+"@bpmn-io/semver-compat@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@bpmn-io/semver-compat@npm:0.1.0"
+  dependencies:
+    semver: "npm:^7.7.2"
+  checksum: 10c0/de2b07340032903b0a768ed5570b6c98cd9bb6d9b37cd07c8b6a306cb718057c2168cb1a15e5824bfed5dbd0948dca74e88b3bf2a9955b0aaecb3bf4af7ea45c
   languageName: node
   linkType: hard
 
-"@camunda/zeebe-element-templates-json-schema@npm:^0.22.3":
-  version: 0.22.3
-  resolution: "@camunda/zeebe-element-templates-json-schema@npm:0.22.3"
-  checksum: 10c0/526b2aee8109f6284cf93bba32f12e5b22f1f128df673b08bc4b3a30b16c45557fd13e3e3a13c08eb3eaed4325d87880db3c368e42a2b33af341324f8c939ad0
+"@camunda/element-templates-json-schema@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "@camunda/element-templates-json-schema@npm:0.21.0"
+  checksum: 10c0/bcfb9b620c60203f296a5468b70f6ae8feb45eb99591ac960d72ea17515ce79300a5e36aa19f8dd6e56c04aebe892692aaf393e3b40ae014606db0c7d5c29c7e
+  languageName: node
+  linkType: hard
+
+"@camunda/zeebe-element-templates-json-schema@npm:^0.41.0":
+  version: 0.41.0
+  resolution: "@camunda/zeebe-element-templates-json-schema@npm:0.41.0"
+  checksum: 10c0/5e28af03228e3d71c5cf1c8f6c8eee6c6e7127f5ebbfa9cc02dcf5cd040e079c3cfeabd27df3a8c9a17689470f80796c3fc81360ac8351ab4257f9ff7bd9e7b5
   languageName: node
   linkType: hard
 
@@ -3593,27 +3611,27 @@ __metadata:
   linkType: hard
 
 "bpmn-js-element-templates@npm:^2.5.2":
-  version: 2.5.2
-  resolution: "bpmn-js-element-templates@npm:2.5.2"
+  version: 2.25.0
+  resolution: "bpmn-js-element-templates@npm:2.25.0"
   dependencies:
-    "@bpmn-io/element-templates-validator": "npm:^2.3.3"
-    "@bpmn-io/extract-process-variables": "npm:^1.0.0"
-    bpmnlint: "npm:^11.0.0"
-    classnames: "npm:^2.3.1"
-    ids: "npm:^1.0.0"
-    min-dash: "npm:^4.0.0"
-    min-dom: "npm:^4.0.3"
+    "@bpmn-io/element-templates-validator": "npm:^2.21.0"
+    "@bpmn-io/extract-process-variables": "npm:^2.2.1"
+    "@bpmn-io/semver-compat": "npm:^0.1.0"
+    bpmnlint: "npm:^11.12.0"
+    classnames: "npm:^2.5.1"
+    ids: "npm:^3.0.0"
+    min-dash: "npm:^5.0.0"
+    min-dom: "npm:^5.3.0"
     preact-markup: "npm:^2.1.1"
-    semver: "npm:^7.6.3"
     semver-compare: "npm:^1.0.0"
-    uuid: "npm:^11.0.0"
+    uuid: "npm:^14.0.0"
   peerDependencies:
-    "@bpmn-io/properties-panel": ">= 2.2"
+    "@bpmn-io/properties-panel": ">= 3.41.3"
     bpmn-js: ">= 11.5"
     bpmn-js-properties-panel: ">= 2"
     camunda-bpmn-js-behaviors: ">= 1.2.1"
     diagram-js: ">= 11.9"
-  checksum: 10c0/adddc8896e03e1d79fd64637127c82b5b4b7f30aa09af82c0c7d7c478016646f72a4b95cbb5a8f9bf47caae389fc025d3f9048d2145e6e0ab00e7778e6514c02
+  checksum: 10c0/9740339eb8608c955d07be1f219a8446d242b986f8985c859f88b2eabfd1ebd875e5bfc88f002eb6b574a431b8d1f1a09259708641820a65cd9cf9602787b27e
   languageName: node
   linkType: hard
 
@@ -3651,6 +3669,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bpmn-moddle@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "bpmn-moddle@npm:10.0.0"
+  dependencies:
+    min-dash: "npm:^5.0.0"
+    moddle: "npm:^8.0.0"
+    moddle-xml: "npm:^12.0.0"
+  checksum: 10c0/fbec9f8225b95d298e77950f51bc1e3b7854ea1624505c9677541d9753b087a16f5d6b3d4fae20b5c03b903cab1c9e932b1de5cb4de0b4a452f97d75e19599c0
+  languageName: node
+  linkType: hard
+
 "bpmn-moddle@npm:^9.0.1":
   version: 9.0.1
   resolution: "bpmn-moddle@npm:9.0.1"
@@ -3669,23 +3698,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bpmnlint@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "bpmnlint@npm:11.0.0"
+"bpmnlint@npm:^11.12.0":
+  version: 11.12.1
+  resolution: "bpmnlint@npm:11.12.1"
   dependencies:
-    "@bpmn-io/moddle-utils": "npm:^0.2.1"
+    "@bpmn-io/moddle-utils": "npm:^0.3.0"
     ansi-colors: "npm:^4.1.3"
-    bpmn-moddle: "npm:^9.0.1"
+    bpmn-moddle: "npm:^10.0.0"
     bpmnlint-utils: "npm:^1.1.1"
     cli-table: "npm:^0.3.11"
     color-support: "npm:^1.1.3"
-    min-dash: "npm:^4.2.2"
+    min-dash: "npm:^5.0.0"
     mri: "npm:^1.2.0"
-    pluralize: "npm:^7.0.0"
+    pluralize: "npm:^8.0.0"
     tiny-glob: "npm:^0.2.9"
   bin:
     bpmnlint: bin/bpmnlint.js
-  checksum: 10c0/a247d74b464f3914fa85caf472b8ab1648fdc08fdb95b52928024f3bd752ce539b1d274494da74641b65040b0470bd47d380a7e6e69cdf79688601d18c2cef49
+  checksum: 10c0/e08307b589308b63a3c1dfbaf6241d8d7cda8d4cf72facbdb2ca1207707f2a176979809860603875c4d0c53a22186264426fd3650a8e275837f696aa665233f3
   languageName: node
   linkType: hard
 
@@ -3861,7 +3890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.3.1":
+"classnames@npm:^2.3.1, classnames@npm:^2.5.1":
   version: 2.5.1
   resolution: "classnames@npm:2.5.1"
   checksum: 10c0/afff4f77e62cea2d79c39962980bf316bacb0d7c49e13a21adaadb9221e1c6b9d3cdb829d8bb1b23c406f4e740507f37e1dcf506f7e3b7113d17c5bab787aa69
@@ -4477,6 +4506,13 @@ __metadata:
   version: 2.0.0
   resolution: "domify@npm:2.0.0"
   checksum: 10c0/7503dcb3bf4029c7a4f59181758a5420633f48da7aa717995e6e62fdcd8aba19eac4cb383cdbc606caa63685bb606277cad9bb422ee965bb4278abdede968151
+  languageName: node
+  linkType: hard
+
+"domify@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "domify@npm:3.0.0"
+  checksum: 10c0/44f2ef6b8b3c7bf3935ffb72a1a67ac17872d7cdb3ce088b5ba09cf51bfdd730b68104ec6a5f99d4b74f940e9158ac548d5ed18113ec391519cec6644fe1fe96
   languageName: node
   linkType: hard
 
@@ -6057,6 +6093,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ids@npm:^3.0.0":
+  version: 3.0.2
+  resolution: "ids@npm:3.0.2"
+  checksum: 10c0/ba2c3692978782e37a5fcdd4a508f75db909bc5b20e2b4a1ffba47c986779cf1a95fd2f9466182a697186c8e67912aa5f6fe8343de4c6ba79b8ae6842799ec77
+  languageName: node
+  linkType: hard
+
 "ignore@npm:^5.2.0, ignore@npm:^5.3.1":
   version: 5.3.2
   resolution: "ignore@npm:5.3.2"
@@ -7083,6 +7126,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"min-dom@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "min-dom@npm:5.3.0"
+  dependencies:
+    domify: "npm:^3.0.0"
+    min-dash: "npm:^5.0.0"
+  checksum: 10c0/86e22a469370c1431d70c4bd698cd33479bbe796088067562a75ffcc3e3af4c0adce020553760da1c2c6b46e61b9dc21311d58821f83fbcdcdeaed163c1410ea
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^10.0.0":
   version: 10.0.1
   resolution: "minimatch@npm:10.0.1"
@@ -7222,6 +7275,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moddle-xml@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "moddle-xml@npm:12.0.0"
+  dependencies:
+    min-dash: "npm:^5.0.0"
+    saxen: "npm:^11.0.2"
+  peerDependencies:
+    moddle: ">= 6.2.0"
+  checksum: 10c0/a28f2be0f17b2ddbd4c00b8830ffda5b76000865a36f354908ab471d0ff949adad6a4522e87853b8fad61e8cda1a5a25f774baf29708bcfa7430dcd11e69ac0e
+  languageName: node
+  linkType: hard
+
 "moddle-xml@npm:^9.0.5":
   version: 9.0.6
   resolution: "moddle-xml@npm:9.0.6"
@@ -7248,6 +7313,15 @@ __metadata:
   dependencies:
     min-dash: "npm:^4.2.1"
   checksum: 10c0/f539c3ab92be62a3e9f53b601b81a7b23a60174b5eae248d109139ff5ea6076e5fa6e8acfd8b8b1601fb840cae08342563124c2081477244a23ab28bedc171c1
+  languageName: node
+  linkType: hard
+
+"moddle@npm:^8.0.0":
+  version: 8.1.0
+  resolution: "moddle@npm:8.1.0"
+  dependencies:
+    min-dash: "npm:^5.0.0"
+  checksum: 10c0/6d9b7db4263973ee7f8c1113de3d7f6ed0d55d40154d8b19f2a64579d46abc2d64a710ad6196dfbd351627cd39422f282252992b4b6a1aa5e3d9025ba6d6ba1b
   languageName: node
   linkType: hard
 
@@ -7691,10 +7765,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pluralize@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "pluralize@npm:7.0.0"
-  checksum: 10c0/b44fd8e4bc487534b804bb8490bc9982bd229997af6e9cc0f51c8205e11c1f31013e8eba3f9b0864fa9f3c0534e06935db46f71f612d1a9633253a14add948e6
+"pluralize@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "pluralize@npm:8.0.0"
+  checksum: 10c0/2044cfc34b2e8c88b73379ea4a36fc577db04f651c2909041b054c981cd863dd5373ebd030123ab058d194ae615d3a97cfdac653991e499d10caf592e8b3dc33
   languageName: node
   linkType: hard
 
@@ -8252,6 +8326,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"saxen@npm:^11.0.2":
+  version: 11.0.2
+  resolution: "saxen@npm:11.0.2"
+  checksum: 10c0/9ca99fb956e57aef2fcf5fe3376343e4ff8bb991475c7320fe741a3b41b24ce077e6a0923be7bae0953ac70ba918f7f87c5d8877dd363506ca8a828a2ca3a0c1
+  languageName: node
+  linkType: hard
+
 "saxen@npm:^8.1.2":
   version: 8.1.2
   resolution: "saxen@npm:8.1.2"
@@ -8309,12 +8390,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.6.3":
-  version: 7.7.1
-  resolution: "semver@npm:7.7.1"
+"semver@npm:^7.7.2":
+  version: 7.8.1
+  resolution: "semver@npm:7.8.1"
   bin:
     semver: bin/semver.js
-  checksum: 10c0/fd603a6fb9c399c6054015433051bdbe7b99a940a8fb44b85c2b524c4004b023d7928d47cb22154f8d054ea7ee8597f586605e05b52047f048278e4ac56ae958
+  checksum: 10c0/92d6871d6347e1f99d0ba396a70f2545ccf2a032cda3d378fa0699edf7506b5c6d266aed55c8b88e72bd91a30d2351e4f39db479375374430fcdc4b58f4e3c1a
   languageName: node
   linkType: hard
 
@@ -9259,12 +9340,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.0.0":
-  version: 11.0.5
-  resolution: "uuid@npm:11.0.5"
+"uuid@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "uuid@npm:14.0.0"
   bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10c0/6f59f0c605e02c14515401084ca124b9cb462b4dcac866916a49862bcf831874508a308588c23a7718269226ad11a92da29b39d761ad2b86e736623e3a33b6e7
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/a57ae7794c45005c1a9208989196c5baf79a7679c30f43c1bee9033a2c4d113a2cea216fa6fcc9663b08b0d55635df1a7c6eb7e7f3d21c3e50688c698fa39a50
   languageName: node
   linkType: hard
 
