@@ -198,7 +198,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         className,
     } = props;
 
-    const [activeView, setActiveView] = useState<DmnView | undefined>(undefined);
+    const [, setActiveView] = useState<DmnView | undefined>(undefined);
     const [initializeCount, setInitializeCount] = useState(0);
     const ref = useRef<CustomDmnJsModeler | null>(null);
 
@@ -239,7 +239,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                             ),
                         );
                     })
-                    .catch(e => {
+                    .catch((e: unknown) => {
                         console.warn("Could not save document", e);
                     });
             }
@@ -249,9 +249,9 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
 
     const viewsChangedCallback = useCallback(
         (event: any, data: any) => {
-            void handleEvent(event.type, data);
+            handleEvent(event.type, data);
             if (ref.current?.getActiveViewer()) {
-                void ref.current?.registerGlobalEventListener(handleEvent);
+                ref.current?.registerGlobalEventListener(handleEvent);
                 return () => ref.current?.unregisterGlobalEventListener(handleEvent);
             }
             return undefined;

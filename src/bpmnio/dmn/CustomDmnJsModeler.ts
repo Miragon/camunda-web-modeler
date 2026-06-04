@@ -105,7 +105,7 @@ class CustomDmnJsModeler {
     constructor(options: CustomDmnJsModelerOptions) {
         const mergedOptions = deepmerge.all([
             // The options passed by the user
-            options.dmnJsOptions || {},
+            options.dmnJsOptions ?? {},
 
             // The library's default options
             {
@@ -291,7 +291,7 @@ class CustomDmnJsModeler {
      * Returns the size of the current selection.
      */
     public getSelectionSize(): number {
-        return this.modeler.getActiveViewer()?.get("selection")?.get()?.length || 0;
+        return this.modeler.getActiveViewer()?.get("selection")?.get()?.length ?? 0;
     }
 
     /**

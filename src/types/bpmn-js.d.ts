@@ -42,7 +42,7 @@ declare module "bpmn-js/lib/Modeler" {
          * @param event The name of the event
          * @param handler The listener to register
          */
-        on(event: string, handler: (event: any & { type: string; }, data: any) => void);
+        on(event: string, handler: (event: any & { type: string }, data: any) => void);
 
         /**
          * Unregisters a previously registered listener for bpmn-js.
@@ -50,7 +50,7 @@ declare module "bpmn-js/lib/Modeler" {
          * @param event The name of the event
          * @param handler The previously registered listener to unregister
          */
-        off(event: string, handler: (event: any & { type: string; }, data: any) => void);
+        off(event: string, handler: (event: any & { type: string }, data: any) => void);
 
         /**
          * Destroys the modeler instance.

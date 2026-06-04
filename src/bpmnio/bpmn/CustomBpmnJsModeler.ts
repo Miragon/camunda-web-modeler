@@ -56,7 +56,7 @@ class CustomBpmnJsModeler extends Modeler {
         const mergedOptions = deepmerge.all(
             [
                 // The options passed by the user
-                options.bpmnJsOptions || {},
+                options.bpmnJsOptions ?? {},
 
                 // The library's default options
                 {

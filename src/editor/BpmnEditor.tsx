@@ -244,7 +244,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                             ),
                         );
                     })
-                    .catch(e => {
+                    .catch((e: unknown) => {
                         console.warn("Could not save document", e);
                     });
             }
@@ -348,7 +348,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      */
     useEffect(() => {
         if (initializeCount > 0) {
-            importXml(xml).catch(e => {
+            importXml(xml).catch((e: unknown) => {
                 console.error("Could not import XML", e);
                 onEvent(
                     createNotificationEvent(
@@ -364,7 +364,9 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         const modeler = ref.current;
         if (initializeCount > 0 && modeler) {
             modeler.registerGlobalEventListener(handleEvent);
-            return () => modeler.unregisterGlobalEventListener(handleEvent);
+            return () => {
+                modeler.unregisterGlobalEventListener(handleEvent);
+            };
         }
         return undefined;
     }, [initializeCount, handleEvent]);

@@ -20,18 +20,17 @@ export interface DmnViewsChangedEventData {
 
 export const createDmnViewsChangedEvent = (
     views: DmnView[],
-    activeView: DmnView | undefined
+    activeView: DmnView | undefined,
 ): Event<DmnViewsChangedEventData> => ({
     source: "modeler",
     event: EventName,
     data: {
         views,
-        activeView
-    }
+        activeView,
+    },
 });
 
 export const isDmnViewsChangedEvent = (
-    event: Event<any>
-): event is Event<DmnViewsChangedEventData> => (
-    event.source === "modeler" && event.event === EventName
-);
+    event: Event<any>,
+): event is Event<DmnViewsChangedEventData> =>
+    event.source === "modeler" && event.event === EventName;

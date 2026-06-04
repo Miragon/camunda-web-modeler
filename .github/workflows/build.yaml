@@ -5,21 +5,71 @@ on:
     branches-ignore: [ develop ]
   pull_request:
     branches: [ develop ]
+    types: [ opened, reopened, synchronize ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Miragon/pin-npm-dependencies@v1
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --immutable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: yarn lint
+      - run: yarn format:check
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Miragon/pin-npm-dependencies@v1
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --immutable
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: yarn npm audit --all --severity high
+        
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-      - name: Enable corepack
-        run: corepack enable
-      - name: Setup NodeJS 20.x
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - run: corepack enable
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20.x
+          node-version: '22'
           cache: 'yarn'
-      - name: Install dependencies
-        run: yarn
-      - name: Build application
-        run: yarn build
+      - run: yarn
+      - run: yarn build
+        
+  ci:
+    if: always()
+    needs: [lint, audit, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs passed or were skipped
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "$results" | jq -e '
+            to_entries | all(
+              .value.result == "success" or .value.result == "skipped"
+            )
+          '

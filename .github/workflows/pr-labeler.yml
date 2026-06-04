@@ -1,0 +1,44 @@
+name: PR Labeler
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label-by-type:
+    name: Label PR By Conventional Commit Type
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply label from PR title prefix
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            const match = title.match(/^(\w+)(\(.*\))?!?:/);
+            if (!match) return;
+
+            const typeMap = {
+              feat:     'feature',
+              fix:      'bug',
+              refactor: 'refactoring',
+              perf:     'refactoring',
+              style:    'refactoring',
+              docs:     'docs',
+              chore:    'chore',
+              test:     'chore',
+              build:    'chore',
+              ci:       'chore',
+            };
+
+            const label = typeMap[match[1]];
+            if (!label) return;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [label],
+            });

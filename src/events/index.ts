@@ -12,10 +12,7 @@ export {
     isPropertiesPanelResizedEvent,
     isNotificationEvent,
     isDmnViewsChangedEvent,
-    isContentSavedEvent
+    isContentSavedEvent,
 };
 
-export type {
-    Event,
-    ContentSavedReason
-};
+export type { Event, ContentSavedReason };
