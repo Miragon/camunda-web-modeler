@@ -1192,11 +1192,11 @@ __metadata:
     "@bpmn-io/properties-panel": "npm:3.24.1"
     "@emotion/react": "npm:11.14.0"
     "@eslint/js": "npm:9.39.4"
-    "@monaco-editor/react": "npm:4.6.0"
+    "@monaco-editor/react": "npm:4.7.0"
     "@rollup/plugin-commonjs": "npm:28.0.2"
     "@rollup/plugin-json": "npm:6.1.0"
-    "@rollup/plugin-node-resolve": "npm:16.0.0"
-    "@rollup/plugin-replace": "npm:6.0.2"
+    "@rollup/plugin-node-resolve": "npm:16.0.3"
+    "@rollup/plugin-replace": "npm:6.0.3"
     "@rollup/plugin-terser": "npm:0.4.4"
     "@seznam/compose-react-refs": "npm:1.0.6"
     "@types/react": "npm:18.3.18"
@@ -1204,7 +1204,7 @@ __metadata:
     bpmn-js-element-templates: "npm:2.5.2"
     bpmn-js-properties-panel: "npm:5.31.1"
     camunda-bpmn-moddle: "npm:7.0.1"
-    camunda-dmn-moddle: "npm:1.3.0"
+    camunda-dmn-moddle: "npm:1.3.1"
     copyfiles: "npm:2.4.1"
     deepmerge: "npm:4.3.1"
     diagram-js-origin: "npm:1.4.0"
@@ -1219,12 +1219,12 @@ __metadata:
     monaco-editor: "npm:0.52.2"
     prettier: "npm:3.5.0"
     react-resizable-panels: "npm:2.1.7"
-    rimraf: "npm:6.0.1"
+    rimraf: "npm:6.1.3"
     rollup: "npm:4.60.4"
-    rollup-plugin-css-only: "npm:4.5.2"
-    rollup-plugin-typescript2: "npm:0.36.0"
+    rollup-plugin-css-only: "npm:4.5.5"
+    rollup-plugin-typescript2: "npm:0.37.0"
     tslib: "npm:2.8.1"
-    tss-react: "npm:4.9.15"
+    tss-react: "npm:4.9.21"
     typedoc: "npm:0.27.7"
     typescript: "npm:5.7.3"
     typescript-eslint: "npm:8.60.1"
@@ -1234,27 +1234,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@monaco-editor/loader@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "@monaco-editor/loader@npm:1.4.0"
+"@monaco-editor/loader@npm:^1.5.0":
+  version: 1.7.0
+  resolution: "@monaco-editor/loader@npm:1.7.0"
   dependencies:
     state-local: "npm:^1.0.6"
-  peerDependencies:
-    monaco-editor: ">= 0.21.0 < 1"
-  checksum: 10c0/68938350adf2f42363a801d87f5d00c87d397d4cba7041141af10a9216bd35c85209b4723a26d56cb32e68eef61471deda2a450f8892891118fbdce7fa1d987d
+  checksum: 10c0/1fd3579cb09b669493cf553dfc0723a93483140a44353ce9a739827edfa7b2c6541b254024d15c48176ece749ef666b6d16cce6cf0e4396c7fa1c5a48012d08a
   languageName: node
   linkType: hard
 
-"@monaco-editor/react@npm:4.6.0":
-  version: 4.6.0
-  resolution: "@monaco-editor/react@npm:4.6.0"
+"@monaco-editor/react@npm:4.7.0":
+  version: 4.7.0
+  resolution: "@monaco-editor/react@npm:4.7.0"
   dependencies:
-    "@monaco-editor/loader": "npm:^1.4.0"
+    "@monaco-editor/loader": "npm:^1.5.0"
   peerDependencies:
     monaco-editor: ">= 0.25.0 < 1"
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/231e9a9b66a530db326f6732de0ebffcce6b79dcfaf4948923d78b9a3d5e2a04b7a06e1f85bbbca45a5ae15c107a124e4c5c46cabadc20a498fb5f2d05f7f379
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/a4e91c6eda1a71f5fd23871bd801de435490ccbc43934d23cba65cefe2be7e9d02c9a57c4ef80fc9fe99e4d4deea51e5db19cb4e0ecf3f51818dda0eb9cdbf12
   languageName: node
   linkType: hard
 
@@ -1456,9 +1454,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rollup/plugin-node-resolve@npm:16.0.0":
-  version: 16.0.0
-  resolution: "@rollup/plugin-node-resolve@npm:16.0.0"
+"@rollup/plugin-node-resolve@npm:16.0.3":
+  version: 16.0.3
+  resolution: "@rollup/plugin-node-resolve@npm:16.0.3"
   dependencies:
     "@rollup/pluginutils": "npm:^5.0.1"
     "@types/resolve": "npm:1.20.2"
@@ -1470,13 +1468,13 @@ __metadata:
   peerDependenciesMeta:
     rollup:
       optional: true
-  checksum: 10c0/b63deb6fc14b37070ccaffacc8c10c9720f28ce7632f4fe2ee77064c0c79bcc3fe060fb77160e673c9fd847307252f25a2983030bd54f1888324063c69ae1399
+  checksum: 10c0/5bafff8e51cd28b5b3b8f415c30a893f5bfdb1a54469e00b3dc6530f26051620f3dfa172f40544361948b46cc3070cb34fd44ade66d38c0677d74c846fbc58dc
   languageName: node
   linkType: hard
 
-"@rollup/plugin-replace@npm:6.0.2":
-  version: 6.0.2
-  resolution: "@rollup/plugin-replace@npm:6.0.2"
+"@rollup/plugin-replace@npm:6.0.3":
+  version: 6.0.3
+  resolution: "@rollup/plugin-replace@npm:6.0.3"
   dependencies:
     "@rollup/pluginutils": "npm:^5.0.1"
     magic-string: "npm:^0.30.3"
@@ -1485,7 +1483,7 @@ __metadata:
   peerDependenciesMeta:
     rollup:
       optional: true
-  checksum: 10c0/71c0dea46f560c8dff59853446d43fa0e8258139a74d2af09fce5790d0540ff3d874c8fd9962cb049577d25327262bfc97485ef90b2a0a21bf28a9d3bd8c6d44
+  checksum: 10c0/93217c52fe86b03363bc534b5f07963ac4fd6b91f19f6070a66809b0c65a036b3b234624a65a8bfcc01a8dc0e42838feae03c021b0d1e5e91753c503c4d70cd6
   languageName: node
   linkType: hard
 
@@ -2625,12 +2623,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"camunda-dmn-moddle@npm:1.3.0":
-  version: 1.3.0
-  resolution: "camunda-dmn-moddle@npm:1.3.0"
-  dependencies:
-    min-dash: "npm:^4.1.1"
-  checksum: 10c0/ba82abbf4024eaf960453b8fc22f6a38098dafd8da5770feb55ddcd7ef0cdc8a1e02e524d6efe6f9fa0ca9c15bf70d3b9295ba1e17c55ca2761b111a355644b4
+"camunda-dmn-moddle@npm:1.3.1":
+  version: 1.3.1
+  resolution: "camunda-dmn-moddle@npm:1.3.1"
+  checksum: 10c0/d8a5176b6452364b26c3762ddaf4e39380656fa874d4abe62b9930adf8f3de3102365472d329e3fed3419c0ebb7cb8edb327a73699dc46db02e313046d9d0392
   languageName: node
   linkType: hard
 
@@ -4247,19 +4243,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "glob@npm:11.0.0"
+"glob@npm:^13.0.3":
+  version: 13.0.6
+  resolution: "glob@npm:13.0.6"
   dependencies:
-    foreground-child: "npm:^3.1.0"
-    jackspeak: "npm:^4.0.1"
-    minimatch: "npm:^10.0.0"
-    minipass: "npm:^7.1.2"
-    package-json-from-dist: "npm:^1.0.0"
-    path-scurry: "npm:^2.0.0"
-  bin:
-    glob: dist/esm/bin.mjs
-  checksum: 10c0/419866015d8795258a8ac51de5b9d1a99c72634fc3ead93338e4da388e89773ab21681e494eac0fbc4250b003451ca3110bb4f1c9393d15d14466270094fdb4e
+    minimatch: "npm:^10.2.2"
+    minipass: "npm:^7.1.3"
+    path-scurry: "npm:^2.0.2"
+  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
   languageName: node
   linkType: hard
 
@@ -5061,19 +5052,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jackspeak@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "jackspeak@npm:4.0.1"
-  dependencies:
-    "@isaacs/cliui": "npm:^8.0.2"
-    "@pkgjs/parseargs": "npm:^0.11.0"
-  dependenciesMeta:
-    "@pkgjs/parseargs":
-      optional: true
-  checksum: 10c0/c87997d9c9c5b7366259b1f2a444ef148692f8eedad5307caca939babbb60af2b47d306e5c63bf9d5fefbab2ab48d4da275188c3de525d0e716cc21b784bbccb
-  languageName: node
-  linkType: hard
-
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -5614,15 +5592,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.0.0":
-  version: 10.0.1
-  resolution: "minimatch@npm:10.0.1"
-  dependencies:
-    brace-expansion: "npm:^2.0.1"
-  checksum: 10c0/e6c29a81fe83e1877ad51348306be2e8aeca18c88fdee7a99df44322314279e15799e41d7cb274e4e8bb0b451a3bc622d6182e157dfa1717d6cda75e9cd8cd5d
-  languageName: node
-  linkType: hard
-
 "minimatch@npm:^10.2.2":
   version: 10.2.5
   resolution: "minimatch@npm:10.2.5"
@@ -5730,6 +5699,13 @@ __metadata:
   version: 7.1.2
   resolution: "minipass@npm:7.1.2"
   checksum: 10c0/b0fd20bb9fb56e5fa9a8bfac539e8915ae07430a619e4b86ff71f5fc757ef3924b23b2c4230393af1eda647ed3d75739e4e0acb250a6b1eb277cf7f8fe449557
+  languageName: node
+  linkType: hard
+
+"minipass@npm:^7.1.3":
+  version: 7.1.3
+  resolution: "minipass@npm:7.1.3"
+  checksum: 10c0/539da88daca16533211ea5a9ee98dc62ff5742f531f54640dd34429e621955e91cc280a91a776026264b7f9f6735947629f920944e9c1558369e8bf22eb33fbb
   languageName: node
   linkType: hard
 
@@ -6109,6 +6085,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"package-json-from-dist@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "package-json-from-dist@npm:1.0.1"
+  checksum: 10c0/62ba2785eb655fec084a257af34dbe24292ab74516d6aecef97ef72d4897310bc6898f6c85b5cd22770eaa1ce60d55a0230e150fb6a966e3ecd6c511e23d164b
+  languageName: node
+  linkType: hard
+
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -6184,13 +6167,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-scurry@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "path-scurry@npm:2.0.0"
+"path-scurry@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "path-scurry@npm:2.0.2"
   dependencies:
     lru-cache: "npm:^11.0.0"
     minipass: "npm:^7.1.2"
-  checksum: 10c0/3da4adedaa8e7ef8d6dc4f35a0ff8f05a9b4d8365f2b28047752b62d4c1ad73eec21e37b1579ef2d075920157856a3b52ae8309c480a6f1a8bbe06ff8e52b33c
+  checksum: 10c0/b35ad37cf6557a87fd057121ce2be7695380c9138d93e87ae928609da259ea0a170fac6f3ef1eb3ece8a068e8b7f2f3adf5bb2374cf4d4a57fe484954fcc9482
   languageName: node
   linkType: hard
 
@@ -6540,15 +6523,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:6.0.1":
-  version: 6.0.1
-  resolution: "rimraf@npm:6.0.1"
+"rimraf@npm:6.1.3":
+  version: 6.1.3
+  resolution: "rimraf@npm:6.1.3"
   dependencies:
-    glob: "npm:^11.0.0"
-    package-json-from-dist: "npm:^1.0.0"
+    glob: "npm:^13.0.3"
+    package-json-from-dist: "npm:^1.0.1"
   bin:
     rimraf: dist/esm/bin.mjs
-  checksum: 10c0/b30b6b072771f0d1e73b4ca5f37bb2944ee09375be9db5f558fcd3310000d29dfcfa93cf7734d75295ad5a7486dc8e40f63089ced1722a664539ffc0c3ece8c6
+  checksum: 10c0/4a56537850102e20ba5d5eb49f366b4b7b2435389734b4b8480cf0e0eb0f6f5d0c44120a171aeb0d8f9ab40312a10d2262f3f50acbad803e32caef61b6cf86fc
   languageName: node
   linkType: hard
 
@@ -6610,20 +6593,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup-plugin-css-only@npm:4.5.2":
-  version: 4.5.2
-  resolution: "rollup-plugin-css-only@npm:4.5.2"
+"rollup-plugin-css-only@npm:4.5.5":
+  version: 4.5.5
+  resolution: "rollup-plugin-css-only@npm:4.5.5"
   dependencies:
     "@rollup/pluginutils": "npm:5"
   peerDependencies:
     rollup: <5
-  checksum: 10c0/22bcb5c499662249fbd88b6733bec9b52f59d4659be229a87f32cb2b8165362b96203de230ecc12ed4d65ca321961673bddb609c7a6004a5d498ae7854cf7d47
+  checksum: 10c0/02a883e231f5520b900360c4b3624d0b329f9f487e232a76592db41e998b7aad590b5417589eb353cbddf4b199a99c2b3f59624405bed5deac9040cb9060851e
   languageName: node
   linkType: hard
 
-"rollup-plugin-typescript2@npm:0.36.0":
-  version: 0.36.0
-  resolution: "rollup-plugin-typescript2@npm:0.36.0"
+"rollup-plugin-typescript2@npm:0.37.0":
+  version: 0.37.0
+  resolution: "rollup-plugin-typescript2@npm:0.37.0"
   dependencies:
     "@rollup/pluginutils": "npm:^4.1.2"
     find-cache-dir: "npm:^3.3.2"
@@ -6633,7 +6616,7 @@ __metadata:
   peerDependencies:
     rollup: ">=1.26.3"
     typescript: ">=2.4.0"
-  checksum: 10c0/3c8d17cd852ded36eaad2759caf170f90e091d8f86ff7b016d1823bc8b507b8f689156bcccda348fc88471681dc79cc9eb13ddb09a4dfcf0d07ac9a249e2d79b
+  checksum: 10c0/737a9ab65df5fe1d222f58e4a5bec83d84518d0319541b1e46d3aec291d51e61c04a566d95a9b240a75bc42feb2cee040f118d0771db9a78333e4d5e9691ee10
   languageName: node
   linkType: hard
 
@@ -7518,9 +7501,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tss-react@npm:4.9.15":
-  version: 4.9.15
-  resolution: "tss-react@npm:4.9.15"
+"tss-react@npm:4.9.21":
+  version: 4.9.21
+  resolution: "tss-react@npm:4.9.21"
   dependencies:
     "@emotion/cache": "npm:*"
     "@emotion/serialize": "npm:*"
@@ -7528,7 +7511,7 @@ __metadata:
   peerDependencies:
     "@emotion/react": ^11.4.1
     "@emotion/server": ^11.4.0
-    "@mui/material": ^5.0.0 || ^6.0.0
+    "@mui/material": ^5.0.0 || ^6.0.0 || ^7.0.0 || ^9.0.0
     "@types/react": ^16.8.0 || ^17.0.2 || ^18.0.0 || ^19.0.0
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
@@ -7536,7 +7519,7 @@ __metadata:
       optional: true
     "@mui/material":
       optional: true
-  checksum: 10c0/f11069b19ec276f34a26f5f4a987c53f7898a16dcb344b3102c977070ce1a378ae14fa8a84330b2554564206d15c781cd7d181df89fc1c5039ce84047f6c9f33
+  checksum: 10c0/7a68a8f149b4d94b5a370ae1e0008856c4e464181790a5b02bd695372efd1fe37c1f3b59c93cca69f40009d845d91127d411ed0d40c35d0f8288d861ff1909a9
   languageName: node
   linkType: hard
 
