@@ -69,7 +69,7 @@
     "dmn-js": "17.8.1",
     "dmn-js-properties-panel": "3.11.1",
     "monaco-editor": "0.55.1",
-    "react-resizable-panels": "3.0.6",
+    "react-resizable-panels": "4.11.2",
     "tss-react": "4.9.21"
   },
   "devDependencies": {
@@ -89,7 +89,7 @@
     "jsdom": "29.1.1",
     "prettier": "3.8.3",
     "rimraf": "6.1.3",
-    "rollup": "4.60.4",
+    "rollup": "4.61.1",
     "rollup-plugin-css-only": "4.5.5",
     "rollup-plugin-typescript2": "0.37.0",
     "tslib": "2.8.1",
