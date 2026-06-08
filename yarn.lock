@@ -1251,7 +1251,6 @@ __metadata:
     jsdom: "npm:29.1.1"
     monaco-editor: "npm:0.55.1"
     prettier: "npm:3.8.3"
-    react-resizable-panels: "npm:3.0.6"
     rimraf: "npm:6.1.3"
     rollup: "npm:4.60.4"
     rollup-plugin-css-only: "npm:4.5.5"
@@ -6258,16 +6257,6 @@ __metadata:
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 10c0/33977da7a5f1a287936a0c85639fec6ca74f4f15ef1e59a6bc20338fc73dc69555381e211f7a3529b8150a1f71e4225525b41b60b52965bda53ce7d47377ada1
-  languageName: node
-  linkType: hard
-
-"react-resizable-panels@npm:3.0.6":
-  version: 3.0.6
-  resolution: "react-resizable-panels@npm:3.0.6"
-  peerDependencies:
-    react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-    react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
-  checksum: 10c0/e6a6a2a7f438aaf3d4411c39626c1cab5c23af6f25d5ff1fdb8446916388fec549be63d65c47fe17bcc82522b1b5fc7fffa77a550ca9d0b8d21e340d83bdb3c0
   languageName: node
   linkType: hard
 

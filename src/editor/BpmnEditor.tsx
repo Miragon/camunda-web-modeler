@@ -6,9 +6,9 @@ import React, {
     useRef,
     useState,
 } from "react";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { tss } from "tss-react";
 
+import ResizablePanels from "../components/ResizablePanels";
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { Event } from "../events";
@@ -383,8 +383,8 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     }, [propertiesPanelOptions?.hidden, propertiesPanelOptions?.elementTemplates]);
 
     const onPropertiesPanelWidthChanged = useCallback(
-        (sizes: number[]) => {
-            onEvent(createPropertiesPanelResizedEvent(sizes[1]));
+        (_first: number, second: number) => {
+            onEvent(createPropertiesPanelResizedEvent(second));
         },
         [onEvent],
     );
@@ -407,36 +407,15 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     }
 
     return (
-        <PanelGroup
+        <ResizablePanels
             className={className}
-            direction="horizontal"
-            onLayout={onPropertiesPanelWidthChanged}
-            style={{
-                display: props.active ? "flex" : "none",
-            }}
-        >
-            <Panel
-                defaultSize={modelerOptions?.size?.initial ?? 75}
-                maxSize={modelerOptions?.size?.max ?? 95}
-                minSize={modelerOptions?.size?.min ?? 5}
-            >
-                {modelerContainer}
-            </Panel>
-            <PanelResizeHandle
-                style={{
-                    cursor: "col-resize",
-                    width: "5px",
-                    backgroundColor: "rgba(0, 0, 0, 0.25)",
-                }}
-            />
-            <Panel
-                defaultSize={propertiesPanelOptions?.size?.initial ?? 25}
-                maxSize={propertiesPanelOptions?.size?.max ?? 95}
-                minSize={propertiesPanelOptions?.size?.min ?? 5}
-            >
-                {propertiesPanelContainer}
-            </Panel>
-        </PanelGroup>
+            active={props.active}
+            firstPanel={modelerContainer}
+            secondPanel={propertiesPanelContainer}
+            firstPanelSize={modelerOptions?.size}
+            secondPanelSize={propertiesPanelOptions?.size}
+            onResize={onPropertiesPanelWidthChanged}
+        />
     );
 };
 
