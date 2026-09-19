@@ -107,7 +107,8 @@
     "react": "^17.0.0 || ^18.0.0"
   },
   "resolutions": {
-    "min-dash": "4.1.1"
+    "min-dash": "4.1.1",
+    "dompurify": "3.4.15"
   },
   "packageManager": "yarn@4.16.0"
 }
