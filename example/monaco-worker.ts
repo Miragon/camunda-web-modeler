@@ -1,5 +1,5 @@
 import type * as monaco from "monaco-editor";
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 
 declare global {
     interface Window {
