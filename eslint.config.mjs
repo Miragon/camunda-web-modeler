@@ -27,8 +27,7 @@ export default tseslint.config(
             // source program; linting them under projectService adds no value.
             "*.config.mjs",
             "*.config.mts",
-            "index.js",
-            "index.ts",
+            "scripts",
         ],
     },
 

@@ -58,7 +58,9 @@ jobs:
       - run: yarn
       - run: yarn test
       - run: yarn build
-        
+      - name: Check package contents and exports
+        run: yarn lint:package
+
   react-19:
     # devDependencies stay on React 18 so the library keeps compiling against the
     # oldest supported types; this job checks the upper end of the peer range.

@@ -12,7 +12,7 @@ import DmnEditor, {
     DmnModelerOptions,
     DmnPropertiesPanelOptions,
 } from "./editor/DmnEditor";
-import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
+import XmlEditor, { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
 import { Event, isBpmnIoEvent } from "./events";
 import {
     ContentSavedReason,
@@ -20,7 +20,7 @@ import {
 } from "./events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "./events/modeler/NotificationEvent";
 
-export interface ModelerTabOptions {
+export interface DmnModelerTabOptions {
     /**
      * This option disables the modeler tab.
      */
@@ -50,23 +50,6 @@ export interface ModelerTabOptions {
     className?: string;
 }
 
-export interface XmlTabOptions {
-    /**
-     * This option disables the XML tab.
-     */
-    disabled?: boolean;
-
-    /**
-     * The options to pass to the monaco editor.
-     */
-    monacoOptions?: MonacoOptions;
-
-    /**
-     * The class name applied to the host of the modeler.
-     */
-    className?: string;
-}
-
 export interface DmnModelerProps {
     /**
      * The class name applied to the root element.
@@ -86,7 +69,7 @@ export interface DmnModelerProps {
     /**
      * Options to customize the modeler tab.
      */
-    modelerTabOptions?: ModelerTabOptions;
+    modelerTabOptions?: DmnModelerTabOptions;
 
     /**
      * Options to customize the XML tab.
@@ -295,6 +278,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     monacoOptions={monacoOptions}
                     active={mode === "xml"}
                     onChanged={onXmlChanged}
+                    className={xmlTabOptions?.className}
                 />
             )}
 

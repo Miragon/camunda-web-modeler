@@ -26,6 +26,23 @@ export interface MonacoOptions {
     options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 }
 
+export interface XmlTabOptions {
+    /**
+     * This option disables the XML tab.
+     */
+    disabled?: boolean;
+
+    /**
+     * The options to pass to the monaco editor.
+     */
+    monacoOptions?: MonacoOptions;
+
+    /**
+     * The class name applied to the root element of the XML tab.
+     */
+    className?: string;
+}
+
 export interface XmlEditorProps {
     /**
      * The XML to display in the editor.
@@ -50,7 +67,7 @@ export interface XmlEditorProps {
     monacoOptions?: MonacoOptions;
 
     /**
-     * The class name applied to the host of the modeler.
+     * The class name applied to the root element.
      */
     className?: string;
 }
@@ -127,13 +144,12 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     }
 
     return (
-        <div className={cx(classes.root, !active && classes.hidden)}>
+        <div className={cx(classes.root, !active && classes.hidden, className)}>
             <Editor
                 height="100%"
                 language="xml"
                 value={xml}
                 options={options}
-                className={className}
                 onChange={onXmlChanged}
                 onMount={onEditorMount}
                 {...(monacoOptions?.props ?? {})}

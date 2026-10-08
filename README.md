@@ -20,20 +20,23 @@ and DMN in your browser application. It has lots of configuration options and of
 
 # Usage
 
-> [!IMPORTANT]
-> There is a known issue with the latest version of `min-dash`
-> (read about
-> it [here](https://forum.bpmn.io/t/camunda-properties-provider-not-working-properly-in-react-app/10660/10)).
-> To fix this, you can force the version of `min-dash` to below `4.2` in your `package.json` or configure your bundler
-> to also include `.cjs` and/or `.mjs` files.
->
-> | npm                                                                   | yarn                                                                    |
-> |-----------------------------------------------------------------------|-------------------------------------------------------------------------|
-> | <pre>"overrides":&nbsp;{<br>&nbsp;&nbsp;"min-dash":&nbsp;"4.1.1"<br>} | <pre>"resolutions":&nbsp;{<br>&nbsp;&nbsp;"min-dash":&nbsp;"4.1.1"<br>} |
+## Requirements
+
+- React 17, 18 or 19 (`react` and `react-dom` are peer dependencies).
+- A bundler such as Vite, webpack 5 or Next.js. The package is published as ES modules and
+  imports the bpmn.io and dmn.io stylesheets itself, so it does not run in Node without a
+  bundler. For server-side rendering, load the modeler on the client only, e.g. with
+  Next.js: `dynamic(() => import("@miragon/camunda-web-modeler").then(m => m.BpmnModeler), { ssr: false })`.
+- The XML tab uses [monaco-editor](https://github.com/microsoft/monaco-editor), which needs
+  its editor worker. With Vite, register it before the modeler is loaded:
+
+```ts
+import EditorWorker from "monaco-editor/editor/editor.worker?worker";
+
+self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
+```
 
 ## Getting Started
-
-Supported React versions: 17, 18 and 19 (`react` and `react-dom` are peer dependencies).
 
 1. Add this dependency to your application:
 
@@ -272,104 +275,6 @@ consistent between the two components.
 You can find more examples in our examples
 repository [camunda-web-modeler-examples](https://github.com/FlowSquad/camunda-web-modeler-examples).
 
-# Usage without npm
-
-You can also use the modeler without npm. However, you should note that this support is only experimental and not
-thoroughly tested.
-
-**index.html**
-
-```html
-<!DOCTYPE html>
-<html style="height: 100%">
-
-<head>
-    <title>Modeler Test</title>
-    <script src="/index.js"></script>
-</head>
-
-<body style="margin: 0; height: 100%">
-<div id="root" style="height: 100%"></div>
-
-<!-- React -->
-<script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-
-<!-- bpmn-js -->
-<link rel="stylesheet" href="https://unpkg.com/bpmn-js@8.7.0/dist/assets/diagram-js.css" />
-<link rel="stylesheet" href="https://unpkg.com/bpmn-js@8.7.0/dist/assets/bpmn-font/css/bpmn.css" />
-
-<!-- dmn-js -->
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/diagram-js.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-js-shared.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-js-drd.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-js-decision-table.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-js-decision-table-controls.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-js-literal-expression.css">
-<link rel="stylesheet" href="https://unpkg.com/dmn-js@11.0.1/dist/assets/dmn-font/css/dmn.css">
-
-<!-- Monaco Editor -->
-<link rel="stylesheet" href="https://unpkg.com/@miragon/camunda-web-modeler@latest/dist/bundle.css" />
-<link rel="stylesheet" data-name="vs/editor/editor.main"
-      href="https://unpkg.com/monaco-editor@0.25.2/min/vs/editor/editor.main.css">
-<script src="https://unpkg.com/requirejs@2.3.6/require.js"></script>
-<script>
-    require.config({
-        paths: {
-            'vs': 'https://unpkg.com/monaco-editor@0.25.2/min/vs',
-            'modeler': 'https://unpkg.com/@miragon/camunda-web-modeler@latest/dist',
-            'bpmn-js/lib/Modeler': 'https://unpkg.com/bpmn-js@8.7.0/dist/bpmn-modeler.development',
-            'dmn-js/lib/Modeler': 'https://unpkg.com/dmn-js@11.0.1/dist/dmn-modeler.development'
-        },
-        map: {
-            '*': {
-                'monaco-editor': 'vs/editor/editor.main'
-            }
-        }
-    });
-    define('react', () => window.React);
-    require(['vs/editor/editor.main', 'modeler/bundle.min'], (monaco, modeler) => {
-        this.MiragonModeler = modeler;
-        initialize();
-    });
-</script>
-</body>
-
-</html>
-```
-
-**index.js**
-
-```javascript
-const XML = /* ... */;
-
-initialize = () => {
-    var xml = XML;
-    const domContainer = document.querySelector('#root');
-
-    var render = () => {
-        ReactDOM.render(React.createElement(MiragonModeler.BpmnModeler, { // or MiragonModeler.DmnModeler
-            modelerTabOptions: {
-                propertiesPanelOptions: {
-                    hidden: false
-                }
-            },
-            xml: xml,
-            onEvent: (event) => {
-                if (event.source === "modeler" && event.event === "content.saved" && event.data.reason === "view.changed") {
-                    console.log("XML has been saved", xml);
-                    xml = event.data.xml;
-                    render();
-                }
-            }
-        }), domContainer);
-    };
-    render();
-};
-
-
-```
-
 # Issues and Questions
 
 If you experience any bugs or have questions concerning the usage or further development plans, don't hesitate to create
@@ -381,11 +286,6 @@ For the API reference, start with the type definitions in these files and work y
 
 - [BpmnModeler.tsx](./src/BpmnModeler.tsx)
 - [DmnModeler.tsx](./src/DmnModeler.tsx)
-
-You can also use the documentation that you can find here:
-
-- [BPMNModeler](https://unpkg.com/@miragon/camunda-web-modeler@latest/dist/docs/modules/bpmnmodeler.html)
-- [DMNModeler](https://unpkg.com/@miragon/camunda-web-modeler@latest/dist/docs/modules/dmnmodeler.html)
 
 ## Engage with the Miragon team
 
