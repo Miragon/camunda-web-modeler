@@ -3,3 +3,7 @@
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+
+# Per-user files
+/$CACHE_FILE$
+/saveactions_settings.xml
