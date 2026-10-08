@@ -29,7 +29,7 @@ export interface ContentSavedEventData {
     xml: string;
 
     /**
-     * The new SVG model. Only filled if the reason for the change is the bpmnjs / dmnjs editor.
+     * The new SVG model. Only filled by the BPMN modeler, for changes made in the diagram.
      */
     svg: string | undefined;
 

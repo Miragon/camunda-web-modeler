@@ -170,7 +170,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const changeMode = useCallback(
         async (value: string) => {
             const bpmnViewMode = value as BpmnViewMode;
-            if (bpmnViewMode !== null && bpmnViewMode !== mode) {
+            if (bpmnViewMode !== mode) {
                 // Don't leave the XML tab with a document the diagram cannot show, the
                 // user would end up on an empty canvas without their text.
                 if (mode === "xml" && modelerRef.current && monacoRef.current) {

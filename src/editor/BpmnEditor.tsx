@@ -50,15 +50,15 @@ export interface BpmnPropertiesPanelOptions {
     hidden?: boolean;
 
     /**
-     * The initial, minimum, and maximum sizes of the properties panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the properties panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "25"
+        // Default 25
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 
@@ -96,15 +96,15 @@ export interface BpmnModelerOptions {
     refs?: MutableRefObject<CustomBpmnJsModeler | undefined>[];
 
     /**
-     * The initial, minimum, and maximum sizes of the modeler panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "75"
+        // Default 75
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 

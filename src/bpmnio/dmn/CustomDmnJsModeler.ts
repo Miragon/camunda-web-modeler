@@ -146,7 +146,7 @@ class CustomDmnJsModeler {
     private modeler: Modeler;
 
     /**
-     * Creates a new instance of the bpmn-js modeler.
+     * Creates a new instance of the dmn-js modeler.
      *
      * @param options The options to include
      */

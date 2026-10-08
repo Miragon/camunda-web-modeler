@@ -27,7 +27,7 @@ export interface DmnModelerTabOptions {
     disabled?: boolean;
 
     /**
-     * The options passed to the bpmn-js modeler.
+     * The options passed to the dmn-js modeler.
      *
      * CAUTION: When this option object is changed, the old editor instance will be destroyed
      * and a new one will be created without automatic saving!
