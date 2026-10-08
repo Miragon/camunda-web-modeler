@@ -27,8 +27,8 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn install --immutable
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check lockfile is deduplicated
+        run: yarn dedupe --check
       - run: yarn lint
       - run: yarn format:check
 
@@ -44,8 +44,6 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn install --immutable
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: yarn npm audit --all --severity high
         
   build:
