@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { tss } from "tss-react";
 import * as monaco from "monaco-editor";
 
@@ -15,9 +15,12 @@ import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
+import { createNotificationEvent } from "./events/modeler/NotificationEvent";
 
 const useStyles = tss.create(() => ({
     root: {
+        // Positioning context for the absolutely positioned mode toggle.
+        position: "relative",
         height: "100%",
         overflow: "hidden",
     },
@@ -114,15 +117,23 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const { onEvent, xml, modelerTabOptions, xmlTabOptions, className } = props;
 
     const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-    const modelerRef = useRef<CustomBpmnJsModeler>();
+    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
-    const [mode, setMode] = useState<BpmnViewMode>("bpmn");
+    const [selectedMode, setMode] = useState<BpmnViewMode>("bpmn");
 
-    useEffect(() => {
-        if (modelerTabOptions?.disabled && !xmlTabOptions?.disabled) {
-            setMode("xml");
-        }
-    }, [modelerTabOptions, xmlTabOptions]);
+    // A disabled tab can never be the visible one, even if it is disabled while active.
+    const mode: BpmnViewMode = modelerTabOptions?.disabled
+        ? "xml"
+        : xmlTabOptions?.disabled
+          ? "bpmn"
+          : selectedMode;
+
+    // Only the first render waits for XML. Afterwards an empty document (e.g. the user
+    // cleared the XML editor) must not unmount the editors and their undo history.
+    const [hasLoaded, setHasLoaded] = useState(!!xml);
+    if (xml && !hasLoaded) {
+        setHasLoaded(true);
+    }
 
     const modelerOptions: BpmnModelerOptions = useMemo(() => {
         if (!modelerTabOptions?.modelerOptions) {
@@ -177,11 +188,41 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         async (value: string) => {
             const bpmnViewMode = value as BpmnViewMode;
             if (bpmnViewMode !== null && bpmnViewMode !== mode) {
-                await saveFile(mode, "view.changed");
+                // Don't leave the XML tab with a document the diagram cannot show, the
+                // user would end up on an empty canvas without their text.
+                if (mode === "xml" && modelerRef.current && monacoRef.current) {
+                    try {
+                        await modelerRef.current.validate(monacoRef.current.getValue());
+                    } catch (e) {
+                        console.error("Invalid XML, staying in XML view", e);
+                        onEvent(
+                            createNotificationEvent(
+                                "The XML is invalid. Fix it before switching to the diagram. See console for details.",
+                                "error",
+                            ),
+                        );
+                        return;
+                    }
+                }
+
+                try {
+                    await saveFile(mode, "view.changed");
+                } catch (e) {
+                    // A failed save (e.g. no definitions loaded after an invalid import)
+                    // must never block switching, otherwise the user cannot reach the
+                    // XML tab anymore to fix the document.
+                    console.error("Could not save content before switching view", e);
+                    onEvent(
+                        createNotificationEvent(
+                            "Could not serialize diagram. Switching anyway. See console for details.",
+                            "warning",
+                        ),
+                    );
+                }
                 setMode(bpmnViewMode);
             }
         },
-        [saveFile, mode],
+        [saveFile, mode, onEvent],
     );
 
     const onXmlChanged = useCallback(
@@ -191,7 +232,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         [onEvent],
     );
 
-    if (!xml) {
+    if (!hasLoaded) {
         return null;
     }
 
@@ -221,9 +262,11 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
                 <ToggleGroup
                     className={classes.modeToggle}
+                    label="View"
                     options={[
                         {
                             id: "bpmn",
+                            label: "Diagram",
                             node: (
                                 <SvgIcon
                                     className={classes.icon}
@@ -235,6 +278,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                         },
                         {
                             id: "xml",
+                            label: "XML",
                             node: (
                                 <SvgIcon
                                     className={classes.icon}

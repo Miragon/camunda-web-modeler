@@ -1,10 +1,4 @@
-import React, {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import React, { MutableRefObject, useCallback, useMemo, useState } from "react";
 import deepmerge from "deepmerge";
 import Editor, { EditorProps, loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
@@ -104,11 +98,9 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
      * Initializes the editor when it is visible for the first time. If it is shown when it is
      * first mounted, the size is wrong.
      */
-    useEffect(() => {
-        if (active && !xmlEditorShown) {
-            setXmlEditorShown(true);
-        }
-    }, [xmlEditorShown, active]);
+    if (active && !xmlEditorShown) {
+        setXmlEditorShown(true);
+    }
 
     const options = useMemo(
         () =>

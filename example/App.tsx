@@ -22,6 +22,18 @@ const toolbarStyle: React.CSSProperties = {
 };
 
 /**
+ * Hands host-level events to browser tests: a test defines `window.__cwmEvents` (e.g.
+ * via Playwright's `addInitScript`) and inspects what the host received. bpmn.io's own
+ * events are skipped, they are far too many.
+ */
+const recordEvent = (modeler: Mode, event: Event<any, any>) => {
+    const sink = (window as unknown as { __cwmEvents?: unknown[] }).__cwmEvents;
+    if (sink && event.source !== "bpmnio") {
+        sink.push({ modeler, source: event.source, event: event.event, data: event.data });
+    }
+};
+
+/**
  * Playground host (issue #190): a single page that toggles between the real
  * `BpmnModeler` and `DmnModeler` for manual UI/UX testing.
  *
@@ -36,12 +48,14 @@ const App: React.FC = () => {
     const [dmnXml, setDmnXml] = useState<string>(EMPTY_DMN);
 
     const onBpmnEvent = useCallback((event: Event<any, any>) => {
+        recordEvent("bpmn", event);
         if (isContentSavedEvent(event)) {
             setBpmnXml(event.data.xml);
         }
     }, []);
 
     const onDmnEvent = useCallback((event: Event<any, any>) => {
+        recordEvent("dmn", event);
         if (isContentSavedEvent(event)) {
             setDmnXml(event.data.xml);
         }

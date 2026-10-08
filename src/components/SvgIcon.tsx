@@ -17,7 +17,12 @@ const SvgIcon: React.FC<Props> = props => {
     const { classes, cx } = useStyles();
 
     return (
-        <svg className={cx(classes.root, props.className)}>
+        <svg
+            className={cx(classes.root, props.className)}
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+        >
             <path d={props.path} />
         </svg>
     );

@@ -63,16 +63,15 @@ export interface DmnViewer {
 
 export interface CustomDmnJsModelerOptions {
     /**
-     * The ID of the div to use as host for the properties panel. The div must be present inside
-     * the page HTML. If missing or undefined is passed, no properties panel will be initialized.
+     * The element (or a CSS selector for it) to use as host for the properties panel. If
+     * missing or undefined is passed, no properties panel will be initialized.
      */
-    propertiesPanel?: string;
+    propertiesPanel?: string | HTMLElement;
 
     /**
-     * The ID of the div to use as host for the editor itself. The div must be present inside the
-     * page HTML.
+     * The element (or a CSS selector for it) to use as host for the editor itself.
      */
-    container: string;
+    container: string | HTMLElement;
 
     /**
      * The options passed to dmn-js. Will be merged with the options defined by this library,
@@ -94,6 +93,17 @@ interface Injector {
     get: (name: string, strict?: boolean) => any;
 }
 
+const isArrayOrPlainObject = (value: unknown): boolean => {
+    if (Array.isArray(value)) {
+        return true;
+    }
+    if (value === null || typeof value !== "object") {
+        return false;
+    }
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+};
+
 class CustomDmnJsModeler {
     private modeler: Modeler;
 
@@ -103,46 +113,56 @@ class CustomDmnJsModeler {
      * @param options The options to include
      */
     constructor(options: CustomDmnJsModelerOptions) {
-        const mergedOptions = deepmerge.all([
-            // The options passed by the user
-            options.dmnJsOptions ?? {},
+        const mergedOptions = deepmerge.all(
+            [
+                // The options passed by the user
+                options.dmnJsOptions ?? {},
 
-            // The library's default options
-            {
-                container: options.container,
-                drd: {
-                    additionalModules: [
-                        diagramOriginModule,
-                        {
-                            __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
-                        },
-                    ],
+                // The library's default options
+                {
+                    container: options.container,
+                    drd: {
+                        additionalModules: [
+                            diagramOriginModule,
+                            {
+                                __init__: ["globalEventListenerUtil"],
+                                globalEventListenerUtil: [
+                                    "type",
+                                    GlobalEventListenerUtil,
+                                ],
+                            },
+                        ],
+                    },
+                    decisionTable: {
+                        additionalModules: [
+                            {
+                                __init__: ["globalEventListenerUtil"],
+                                globalEventListenerUtil: [
+                                    "type",
+                                    GlobalEventListenerUtil,
+                                ],
+                            },
+                        ],
+                    },
+                    literalExpression: {
+                        additionalModules: [
+                            {
+                                __init__: ["globalEventListenerUtil"],
+                                globalEventListenerUtil: [
+                                    "type",
+                                    GlobalEventListenerUtil,
+                                ],
+                            },
+                        ],
+                    },
+                    moddleExtensions: {
+                        camunda: camundaModdleDescriptor,
+                    },
                 },
-                decisionTable: {
-                    additionalModules: [
-                        {
-                            __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
-                        },
-                    ],
-                },
-                literalExpression: {
-                    additionalModules: [
-                        {
-                            __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
-                        },
-                    ],
-                },
-                moddleExtensions: {
-                    camunda: camundaModdleDescriptor,
-                },
-            },
 
-            // The options required to display the properties panel (if desired)
-            // prettier-ignore
-            options.propertiesPanel
+                // The options required to display the properties panel (if desired)
+                // prettier-ignore
+                options.propertiesPanel
                 ? {
                     drd: {
                         propertiesPanel: {
@@ -155,7 +175,13 @@ class CustomDmnJsModeler {
                     },
                 }
                 : {},
-        ]);
+            ],
+            {
+                // Only merge (and thereby copy) arrays and plain objects. Everything else,
+                // e.g. DOM elements passed as containers or module instances, is used as-is.
+                isMergeableObject: isArrayOrPlainObject,
+            },
+        );
 
         this.modeler = new Modeler(mergedOptions);
     }
@@ -198,6 +224,26 @@ class CustomDmnJsModeler {
             }
             throw error;
         }
+    }
+
+    /**
+     * Checks that the XML can be parsed as DMN without importing it.
+     *
+     * @param xml The XML to check
+     * @throws Rejects if the XML is not a parsable DMN document
+     */
+    public async validate(xml: string): Promise<void> {
+        // dmn-js has no public accessor for its moddle instance; importXML would clear
+        // the current view, which is exactly what validation must not do.
+        await (this.modeler as any)._moddle.fromXML(xml, "dmn:Definitions");
+    }
+
+    /**
+     * Notifies the active viewer's canvas (if it has one) that its container has been
+     * resized or shown.
+     */
+    public resized(): void {
+        this.modeler.getActiveViewer()?.get("canvas", false)?.resized();
     }
 
     public get(param: any) {

@@ -16,6 +16,8 @@ import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
+import { EchoTracker } from "./EchoTracker";
+import { useLatest } from "./useLatest";
 
 /**
  * The events that trigger a UI update required event.
@@ -38,7 +40,7 @@ const UI_UPDATE_REQUIRED_EVENTS = [
 /**
  * The events that trigger a content saved event.
  */
-const CONTENT_SAVED_EVENT = ["import.done", "commandStack.changed"];
+const CONTENT_SAVED_EVENT = ["commandStack.changed"];
 
 export interface BpmnPropertiesPanelOptions {
     /**
@@ -87,6 +89,9 @@ export interface BpmnPropertiesPanelOptions {
 export interface BpmnModelerOptions {
     /**
      * Will receive the reference to the modeler instance.
+     *
+     * While the XML tab is shown, the instance keeps the state from before switching; changes
+     * made in the XML tab are imported when switching back.
      */
     refs?: MutableRefObject<CustomBpmnJsModeler | undefined>[];
 
@@ -154,16 +159,16 @@ export interface BpmnEditorProps {
     /**
      * The options to control the appearance of the properties panel.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: Changing `hidden` or `containerId` destroys the editor instance and creates a
+     * new one without automatic saving!
      */
     propertiesPanelOptions?: BpmnPropertiesPanelOptions;
 
     /**
      * The options to control the appearance of the modeler.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: Changing `containerId` destroys the editor instance and creates a new one
+     * without automatic saving!
      */
     modelerOptions?: BpmnModelerOptions;
 }
@@ -200,20 +205,41 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         propertiesPanelOptions,
     } = props;
 
-    const [initializeCount, setInitializeCount] = useState(0);
-    const ref = useRef<CustomBpmnJsModeler | undefined>(undefined);
+    const [modeler, setModeler] = useState<CustomBpmnJsModeler | undefined>(undefined);
 
+    const modelerContainerRef = useRef<HTMLDivElement | null>(null);
+    const propertiesPanelContainerRef = useRef<HTMLDivElement | null>(null);
+
+    const onEventRef = useLatest(onEvent);
+    const activeRef = useLatest(active);
+    const currentModelerRef = useLatest(modeler);
+    const echoes = useRef(new EchoTracker());
+    /** The XML last imported into (or confirmed as echo by) the current instance. */
+    const lastImportRef = useRef<
+        { modeler: CustomBpmnJsModeler; xml: string } | undefined
+    >(undefined);
+
+    const panelHidden = !!propertiesPanelOptions?.hidden;
+    const panelContainerId = propertiesPanelOptions?.containerId;
+    const modelerContainerId = modelerOptions?.containerId;
+
+    /**
+     * Forwards bpmn-js events to the host. Stable for the lifetime of the component, so
+     * neither a new `onEvent` identity nor switching tabs recreates the modeler.
+     */
     const handleEvent = useCallback(
         (event: string, data: any) => {
-            // TODO: Should bpmn-js events only be forwarded if the editor is currently active?
-            onEvent(createBpmnIoEvent(event, data));
+            const emit = onEventRef.current;
 
-            if (!active) {
+            // TODO: Should bpmn-js events only be forwarded if the editor is currently active?
+            emit(createBpmnIoEvent(event, data));
+
+            if (!activeRef.current) {
                 return;
             }
 
             if (event === "elementTemplates.errors") {
-                onEvent(
+                emit(
                     createNotificationEvent(
                         "Importing element templates failed. Check console for details.",
                         "error",
@@ -226,17 +252,18 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
              * If the event should trigger a UI update required event, do it.
              */
             if (event && UI_UPDATE_REQUIRED_EVENTS.includes(event)) {
-                onEvent(createUIUpdateRequiredEvent(active));
+                emit(createUIUpdateRequiredEvent(true));
             }
 
             /**
              * If the event should trigger a content saved event, do it.
              */
-            if (event && CONTENT_SAVED_EVENT.includes(event) && ref.current) {
-                ref.current
-                    .save()
+            if (event && CONTENT_SAVED_EVENT.includes(event)) {
+                currentModelerRef.current
+                    ?.save()
                     .then(saved => {
-                        onEvent(
+                        echoes.current.emitted(saved.xml);
+                        onEventRef.current(
                             createContentSavedEvent(
                                 saved.xml,
                                 saved.svg,
@@ -249,167 +276,174 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                     });
             }
         },
-        [active, onEvent],
+        [onEventRef, activeRef, currentModelerRef],
     );
 
     /**
-     * Instantiates the modeler and properties panel. Only happens once on mount.
+     * Instantiates the modeler and properties panel. The instance lives as long as the
+     * component and is only recreated if options that bpmn-js reads on construction change.
      */
     useEffect(() => {
-        const modeler = new CustomBpmnJsModeler({
-            container: modelerOptions?.containerId ?? "#bpmnview",
-            propertiesPanel: propertiesPanelOptions?.hidden
-                ? undefined
-                : (propertiesPanelOptions?.containerId ?? "#bpmnprop"),
-            bpmnJsOptions: bpmnJsOptions,
-        });
-
-        ref.current = modeler;
-        if (modelerOptions?.refs) {
-            modelerOptions.refs.forEach(r => {
-                r.current = modeler;
-            });
+        const modelerContainer = modelerContainerId ?? modelerContainerRef.current;
+        if (!modelerContainer) {
+            return undefined;
         }
 
-        setInitializeCount(count => count + 1);
+        const instance = new CustomBpmnJsModeler({
+            container: modelerContainer,
+            propertiesPanel: panelHidden
+                ? undefined
+                : (panelContainerId ?? propertiesPanelContainerRef.current ?? undefined),
+            bpmnJsOptions: bpmnJsOptions,
+        });
+        instance.registerGlobalEventListener(handleEvent);
+        echoes.current.reset();
+        setModeler(instance);
 
         return () => {
-            modeler.unregisterGlobalEventListener(handleEvent);
-            modeler.destroy();
-            ref.current = undefined;
-            if (modelerOptions?.refs) {
-                modelerOptions.refs.forEach(r => {
-                    r.current = undefined;
-                });
-            }
+            instance.unregisterGlobalEventListener(handleEvent);
+            instance.destroy();
+            setModeler(undefined);
         };
-    }, [
-        handleEvent,
-        bpmnJsOptions,
-        propertiesPanelOptions,
-        modelerOptions?.containerId,
-    ]);
+    }, [handleEvent, bpmnJsOptions, panelHidden, panelContainerId, modelerContainerId]);
 
     /**
-     * Imports the specified XML. The following steps are executed:
-     *
-     * 1. Export the currently loaded XML.
-     * 2. Check if it is different from the specified XML.
-     * 3. Import the specified XML if it has changed.
-     * 4. Show any errors or warnings that occurred during import.
+     * Hands the instance to the refs passed by the host.
      */
-    const importXml = useCallback(
-        async (newXml: string) => {
-            if (ref.current) {
-                try {
-                    const currentXml = await ref.current?.saveXML({
-                        format: true,
-                        preamble: false,
-                    });
+    const refs = modelerOptions?.refs;
+    useEffect(() => {
+        refs?.forEach(r => {
+            r.current = modeler;
+        });
+        return () => {
+            refs?.forEach(r => {
+                r.current = undefined;
+            });
+        };
+    }, [modeler, refs]);
 
-                    if (newXml === currentXml.xml) {
-                        // XML has not changed
-                        return;
-                    }
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                } catch (e) {
-                    // The editor has not yet loaded any content
-                    // => no definitions loaded, ignores the error
-                }
+    /**
+     * Imports the document XML whenever it changes. Imports are deferred while the editor
+     * is hidden, so typing in the XML tab does not re-render the diagram on every key
+     * stroke; the latest XML is imported once the editor becomes visible again. The
+     * editor's own content coming back from the host is not re-imported.
+     */
+    useEffect(() => {
+        if (!modeler || !active || !xml.trim()) {
+            return;
+        }
 
-                try {
-                    const result = ref.current.importXML(newXml);
-                    const count = result.warnings?.length ?? 0;
-                    if (count > 0) {
-                        console.log("Imported with warnings", result.warnings);
-                        onEvent(
-                            createNotificationEvent(
-                                `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
-                                "warning",
-                            ),
-                        );
-                    }
-                } catch (e) {
-                    console.error("Could not import XML", e);
-                    onEvent(
+        const last = lastImportRef.current;
+        if (last?.modeler === modeler && last.xml === xml) {
+            return;
+        }
+        if (last?.modeler === modeler && echoes.current.consume(xml)) {
+            lastImportRef.current = { modeler, xml };
+            return;
+        }
+
+        lastImportRef.current = { modeler, xml };
+        echoes.current.reset();
+        modeler
+            .importXML(xml)
+            .then(result => {
+                const count = result.warnings?.length ?? 0;
+                if (count > 0) {
+                    console.log("Imported with warnings", result.warnings);
+                    onEventRef.current(
                         createNotificationEvent(
-                            "Could not import changed XML. Is it invalid? See console for details.",
-                            "error",
+                            `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
+                            "warning",
                         ),
                     );
                 }
-            }
-        },
-        [onEvent],
-    );
-
-    /**
-     * Imports the document XML whenever it changes.
-     */
-    useEffect(() => {
-        if (initializeCount > 0) {
-            importXml(xml).catch((e: unknown) => {
+            })
+            .catch((e: unknown) => {
                 console.error("Could not import XML", e);
-                onEvent(
+                onEventRef.current(
                     createNotificationEvent(
                         "Could not import changed XML. Is it invalid? See console for details.",
                         "error",
                     ),
                 );
             });
-        }
-    }, [xml, importXml, initializeCount, onEvent]);
-
-    useEffect(() => {
-        const modeler = ref.current;
-        if (initializeCount > 0 && modeler) {
-            modeler.registerGlobalEventListener(handleEvent);
-            return () => {
-                modeler.unregisterGlobalEventListener(handleEvent);
-            };
-        }
-        return undefined;
-    }, [initializeCount, handleEvent]);
+    }, [modeler, xml, active, onEventRef]);
 
     /**
-     * Imports the specified element templates whenever they change.
+     * Imports the specified element templates whenever they or the instance change.
+     */
+    const elementTemplates = propertiesPanelOptions?.elementTemplates;
+    useEffect(() => {
+        if (modeler && !panelHidden) {
+            modeler.importElementTemplates(elementTemplates ?? []);
+        }
+    }, [modeler, panelHidden, elementTemplates]);
+
+    /**
+     * Keeps the canvas informed about size changes (divider drag, window resize, being
+     * shown again after the XML tab), otherwise zoom and scroll use stale dimensions.
      */
     useEffect(() => {
-        if (!propertiesPanelOptions?.hidden) {
-            ref.current?.importElementTemplates(
-                propertiesPanelOptions?.elementTemplates ?? [],
-            );
+        const container = modelerContainerRef.current;
+        if (!modeler || !container || typeof ResizeObserver === "undefined") {
+            return undefined;
         }
-    }, [propertiesPanelOptions?.hidden, propertiesPanelOptions?.elementTemplates]);
+        let frame: number | undefined;
+        const observer = new ResizeObserver(() => {
+            if (frame !== undefined) {
+                cancelAnimationFrame(frame);
+            }
+            frame = requestAnimationFrame(() => {
+                frame = undefined;
+                if (container.offsetParent !== null) {
+                    modeler.resized();
+                }
+            });
+        });
+        observer.observe(container);
+        return () => {
+            observer.disconnect();
+            if (frame !== undefined) {
+                cancelAnimationFrame(frame);
+            }
+        };
+    }, [modeler]);
 
     const onPropertiesPanelWidthChanged = useCallback(
         (_first: number, second: number) => {
-            onEvent(createPropertiesPanelResizedEvent(second));
+            onEventRef.current(createPropertiesPanelResizedEvent(second));
         },
-        [onEvent],
+        [onEventRef],
     );
 
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
-        <div id="bpmnview" className={cx(classes.modeler, modelerOptions?.className)} />
+        <div
+            ref={modelerContainerRef}
+            className={cx(classes.modeler, modelerOptions?.className)}
+        />
     );
 
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
-            id="bpmnprop"
+            ref={propertiesPanelContainerRef}
             className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
         />
     );
 
-    if (propertiesPanelOptions?.hidden) {
+    if (panelHidden) {
         return (
-            <div className={cx(classes.modelerOnly, className)}>{modelerContainer}</div>
+            <div
+                className={cx(classes.modelerOnly, !active && classes.hidden, className)}
+            >
+                {modelerContainer}
+            </div>
         );
     }
 
     return (
         <ResizablePanels
             className={className}
-            active={props.active}
+            active={active}
             firstPanel={modelerContainer}
             secondPanel={propertiesPanelContainer}
             firstPanelSize={modelerOptions?.size}

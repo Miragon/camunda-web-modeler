@@ -33,35 +33,38 @@ and DMN in your browser application. It has lots of configuration options and of
 
 ## Getting Started
 
+Supported React versions: 17, 18 and 19 (`react` and `react-dom` are peer dependencies).
+
 1. Add this dependency to your application:
 
-```
-
+```sh
+npm install @miragon/camunda-web-modeler
+# or
 yarn add @miragon/camunda-web-modeler
-
 ```
 
 2. Include it in your application:
 
-```typescript
+```tsx
 import {
     BpmnModeler,
     CustomBpmnJsModeler,
     Event,
     isContentSavedEvent
 } from "@miragon/camunda-web-modeler";
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import './App.css';
+import React, { useCallback, useMemo, useRef, useState } from "react";
+
+// Your BPMN 2.0 XML, e.g. loaded from your backend.
+const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
 
 const App: React.FC = () => {
-    const modelerRef = useRef<CustomBpmnJsModeler>();
+    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
     const [xml, setXml] = useState<string>(BPMN);
 
-    const onEvent = useCallback(async (event: Event<any>) => {
+    const onEvent = useCallback((event: Event<any>) => {
         if (isContentSavedEvent(event)) {
             setXml(event.data.xml);
-            return;
         }
     }, []);
 
@@ -78,27 +81,22 @@ const App: React.FC = () => {
     }), []);
 
     return (
-        <div style = {
-    {
-        height: "100vh"
-    }
-}>
-    <BpmnModeler
-        xml = { xml }
-    onEvent = { onEvent }
-    modelerTabOptions = { modelerTabOptions }
-    />
-    < /div>
-)
-    ;
-}
+        <div style={{ height: "100vh" }}>
+            <BpmnModeler
+                xml={xml}
+                onEvent={onEvent}
+                modelerTabOptions={modelerTabOptions}
+            />
+        </div>
+    );
+};
 
 export default App;
-
-const BPMN = /* ... */;
 ```
 
-3. Include your BPMN in the last line and run the application!
+3. Replace `BPMN` with your diagram XML and run the application!
+
+The modeler fills its parent element, so give the host element a height.
 
 ## Full example
 
@@ -109,7 +107,7 @@ cycles that can lead to bugs that are difficult to debug.
 Using the `bpmnJsOptions`, you can pass any options that you would normally pass into bpmn.io. The component will merge
 these with its own options and use it to create the modeler instance.
 
-```typescript
+```tsx
 import {
     BpmnModeler,
     ContentSavedReason,
@@ -120,12 +118,14 @@ import {
     isNotificationEvent,
     isPropertiesPanelResizedEvent,
     isUIUpdateRequiredEvent
-} from "@miragon/camunda-web-modeler-test";
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import './App.css';
+} from "@miragon/camunda-web-modeler";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+
+// Your BPMN 2.0 XML, e.g. loaded from your backend.
+const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
 
 const App: React.FC = () => {
-    const modelerRef = useRef<CustomBpmnJsModeler>();
+    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
     const [xml, setXml] = useState<string>(BPMN);
 
@@ -150,7 +150,7 @@ const App: React.FC = () => {
         console.log("Saved model!", result.xml, result.svg);
     }, []);
 
-    const onEvent = useCallback(async (event: Event<any>) => {
+    const onEvent = useCallback((event: Event<any>) => {
         if (isContentSavedEvent(event)) {
             // Content has been saved, e.g. because user edited the model or because he switched
             // from BPMN to XML.
@@ -234,67 +234,32 @@ const App: React.FC = () => {
     }), [bpmnJsOptions, modelerOptions, propertiesPanelOptions]);
 
     return (
-        <div style = {
-    {
-        height: "100vh"
-    }
-}>
+        <div style={{ height: "100vh", position: "relative" }}>
+            <button
+                onClick={onSaveClicked}
+                style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    top: 25,
+                    left: "calc(50% - 100px)",
+                    minWidth: "200px",
+                    minHeight: "40px"
+                }}
+            >
+                Save Diagram
+            </button>
 
-    <button
-        onClick = { onSaveClicked }
-    style = {
-    {
-        position: "absolute",
-            zIndex
-    :
-        100,
-            top
-    :
-        25,
-            left
-    :
-        "calc(50% - 100px)",
-            textTransform
-    :
-        "none",
-            fontWeight
-    :
-        "bold",
-            minWidth
-    :
-        "200px",
-            minHeight
-    :
-        "40px",
-            backgroundColor
-    :
-        "yellow",
-            borderWidth
-    :
-        "1px",
-            borderRadius
-    :
-        "4px"
-    }
-}>
-    Save
-    Diagram
-    < /button>
-
-    < BpmnModeler
-    xml = { xml }
-    onEvent = { onEvent }
-    xmlTabOptions = { xmlTabOptions }
-    modelerTabOptions = { modelerTabOptions }
-    />
-    < /div>
-)
-    ;
-}
+            <BpmnModeler
+                xml={xml}
+                onEvent={onEvent}
+                xmlTabOptions={xmlTabOptions}
+                modelerTabOptions={modelerTabOptions}
+            />
+        </div>
+    );
+};
 
 export default App;
-
-const BPMN = /* .... */;
 ```
 
 ## Usage with DMN
