@@ -179,6 +179,11 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
 
     const handlePointerMove = useCallback(
         (event: ReactPointerEvent<HTMLDivElement>) => {
+            // Only resize while a drag is in progress (pointer captured on pointerdown);
+            // plain hovering over the divider must not move it.
+            if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+                return;
+            }
             const rawPct = sizeFromPointer(event.clientX);
             if (rawPct !== undefined) {
                 applyRawSize(rawPct);
@@ -196,13 +201,23 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         document.body.style.userSelect = "none";
     }, []);
 
-    const endDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId);
-        }
+    const resetBodyDragStyles = useCallback(() => {
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
     }, []);
+
+    const endDrag = useCallback(
+        (event: ReactPointerEvent<HTMLDivElement>) => {
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+            resetBodyDragStyles();
+        },
+        [resetBodyDragStyles],
+    );
+
+    // Don't leave the document stuck in drag styling if we unmount mid-drag.
+    useEffect(() => resetBodyDragStyles, [resetBodyDragStyles]);
 
     const handleKeyDown = useCallback(
         (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -239,6 +254,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
                 onPointerMove={handlePointerMove}
                 onPointerUp={endDrag}
                 onPointerCancel={endDrag}
+                onLostPointerCapture={resetBodyDragStyles}
                 onKeyDown={handleKeyDown}
             >
                 {collapsed && (
