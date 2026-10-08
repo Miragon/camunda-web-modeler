@@ -1,11 +1,3 @@
-import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
-import "bpmn-js-element-templates/dist/assets/element-templates.css";
-import "@bpmn-io/element-template-chooser/dist/element-template-chooser.css";
-// diagram-js ships its own stylesheet; the copies inside bpmn-js and dmn-js lag behind
-// the installed diagram-js version.
-import "diagram-js/assets/diagram-js.css";
-import "bpmn-js/dist/assets/bpmn-js.css";
-import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
 import {
     BpmnPropertiesPanelModule,

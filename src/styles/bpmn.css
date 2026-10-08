@@ -1,0 +1,7 @@
+/* Styles of the BPMN modeler: diagram-js, bpmn-js, the properties panel and element templates. */
+@import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
+@import "bpmn-js-element-templates/dist/assets/element-templates.css";
+@import "@bpmn-io/element-template-chooser/dist/element-template-chooser.css";
+@import "diagram-js/assets/diagram-js.css";
+@import "bpmn-js/dist/assets/bpmn-js.css";
+@import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";

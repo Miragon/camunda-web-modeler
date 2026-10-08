@@ -1,0 +1,3 @@
+/* Styles of both modelers. Shared stylesheets are included once. */
+@import "./bpmn.css";
+@import "./dmn.css";

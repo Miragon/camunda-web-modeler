@@ -1,15 +1,3 @@
-import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
-// diagram-js ships its own stylesheet; the copies inside bpmn-js and dmn-js lag behind
-// the installed diagram-js version.
-import "diagram-js/assets/diagram-js.css";
-import "dmn-js/dist/assets/dmn-font/css/dmn-embedded.css";
-import "dmn-js/dist/assets/dmn-js-decision-table-controls.css";
-import "dmn-js/dist/assets/dmn-js-decision-table.css";
-import "dmn-js/dist/assets/dmn-js-drd.css";
-import "dmn-js/dist/assets/dmn-js-literal-expression.css";
-import "dmn-js/dist/assets/dmn-js-shared.css";
-import "dmn-js/dist/assets/dmn-js-boxed-expression.css";
-import "dmn-js/dist/assets/dmn-js-boxed-expression-controls.css";
 import camundaModdleDescriptor from "camunda-dmn-moddle/resources/camunda.json";
 
 import {

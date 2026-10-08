@@ -23,10 +23,12 @@ and DMN in your browser application. It has lots of configuration options and of
 ## Requirements
 
 - React 17, 18 or 19 (`react` and `react-dom` are peer dependencies).
-- A bundler such as Vite, webpack 5 or Next.js. The package is published as ES modules and
-  imports the bpmn.io and dmn.io stylesheets itself, so it does not run in Node without a
-  bundler. For server-side rendering, load the modeler on the client only, e.g. with
-  Next.js: `dynamic(() => import("@miragon/camunda-web-modeler").then(m => m.BpmnModeler), { ssr: false })`.
+- A bundler such as Vite, webpack 5 or Next.js. The package is published as ES modules, and
+  its dependencies (bpmn-js, dmn-js, Monaco) only run in the browser. For server-side
+  rendering, load the modeler on the client only, e.g. with Next.js:
+  `dynamic(() => import("@miragon/camunda-web-modeler").then(m => m.BpmnModeler), { ssr: false })`.
+- The stylesheet, imported once: `@miragon/camunda-web-modeler/style.css` for both
+  modelers, or `bpmn.css` / `dmn.css` if you only use one of them.
 - The XML tab uses [monaco-editor](https://github.com/microsoft/monaco-editor), which needs
   its editor worker. With Vite, register it before the modeler is loaded:
 
@@ -50,6 +52,7 @@ yarn add @miragon/camunda-web-modeler
 
 ```tsx
 import { BpmnModeler, isContentSavedEvent, ModelerEvent } from "@miragon/camunda-web-modeler";
+import "@miragon/camunda-web-modeler/style.css";
 import React, { useCallback, useState } from "react";
 
 // Your BPMN 2.0 XML, e.g. loaded from your backend.

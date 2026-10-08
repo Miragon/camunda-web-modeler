@@ -2,6 +2,9 @@
 // is evaluated. See monaco-worker.ts for why this lives in its own module.
 import "./monaco-worker";
 
+// The library's stylesheet, as hosts import it from "@miragon/camunda-web-modeler/style.css".
+import "../src/styles/style.css";
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 
