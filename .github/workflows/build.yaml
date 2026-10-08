@@ -74,7 +74,8 @@ jobs:
           cache: yarn
       - name: Install dependencies
         run: yarn install --immutable
-      - run: yarn test
+      - name: Test with coverage
+        run: yarn test:coverage
       - run: yarn build
       - name: Check package contents and exports
         run: yarn lint:package

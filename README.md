@@ -285,6 +285,7 @@ corepack enable
 yarn install
 yarn dev        # playground with BPMN and DMN at http://localhost:5173
 yarn test       # unit and component tests
+yarn test:coverage  # the same with a coverage report (coverage/index.html)
 yarn lint       # ESLint, warnings fail the check
 yarn typecheck  # sources, tests and playground
 yarn build      # library output in dist/
