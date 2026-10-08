@@ -13,6 +13,10 @@ updates:
       prefix: chore
       prefix-development: chore
       include: scope
+    ignore:
+      # typescript-eslint supports TypeScript < 6.1 only; lift this once it does.
+      - dependency-name: typescript
+        versions: [">=6.1.0"]
     groups:
       npm-all:
         patterns:

@@ -211,7 +211,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     const activeRef = useLatest(active);
     const viewIdRef = useLatest(viewId);
     const currentModelerRef = useLatest(modeler);
-    const echoes = useRef(new EchoTracker());
+    const echoesRef = useRef(new EchoTracker());
     /** The XML last imported into (or confirmed as echo by) the current instance. */
     const lastImportRef = useRef<
         { modeler: CustomDmnJsModeler; xml: string } | undefined
@@ -264,7 +264,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                 currentModelerRef.current
                     ?.save({ format: true })
                     .then(saved => {
-                        echoes.current.emitted(saved.xml);
+                        echoesRef.current.emitted(saved.xml);
                         // TODO: Save SVG (but which viewer?)
                         onEventRef.current(
                             createContentSavedEvent(
@@ -329,7 +329,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         };
         instance.on("views.changed", onViewsChanged);
 
-        echoes.current.reset();
+        echoesRef.current.reset();
         queueRef.current = Promise.resolve();
         setModeler(instance);
 
@@ -395,13 +395,13 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         if (last?.modeler === modeler && last.xml === xml) {
             return;
         }
-        if (last?.modeler === modeler && echoes.current.consume(xml)) {
+        if (last?.modeler === modeler && echoesRef.current.consume(xml)) {
             lastImportRef.current = { modeler, xml };
             return;
         }
 
         lastImportRef.current = { modeler, xml };
-        echoes.current.reset();
+        echoesRef.current.reset();
         enqueue(async () => {
             try {
                 // Opens the previously active view again (or the first one).

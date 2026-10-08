@@ -210,7 +210,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     const onEventRef = useLatest(onEvent);
     const activeRef = useLatest(active);
     const currentModelerRef = useLatest(modeler);
-    const echoes = useRef(new EchoTracker());
+    const echoesRef = useRef(new EchoTracker());
     /** The XML last imported into (or confirmed as echo by) the current instance. */
     const lastImportRef = useRef<
         { modeler: CustomBpmnJsModeler; xml: string } | undefined
@@ -259,7 +259,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                 currentModelerRef.current
                     ?.save()
                     .then(saved => {
-                        echoes.current.emitted(saved.xml);
+                        echoesRef.current.emitted(saved.xml);
                         onEventRef.current(
                             createContentSavedEvent(
                                 saved.xml,
@@ -310,7 +310,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             return undefined;
         }
         instance.registerGlobalEventListener(handleEvent);
-        echoes.current.reset();
+        echoesRef.current.reset();
         setModeler(instance);
 
         return () => {
@@ -357,13 +357,13 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         if (last?.modeler === modeler && last.xml === xml) {
             return;
         }
-        if (last?.modeler === modeler && echoes.current.consume(xml)) {
+        if (last?.modeler === modeler && echoesRef.current.consume(xml)) {
             lastImportRef.current = { modeler, xml };
             return;
         }
 
         lastImportRef.current = { modeler, xml };
-        echoes.current.reset();
+        echoesRef.current.reset();
         modeler
             .importXML(xml)
             .then(result => {

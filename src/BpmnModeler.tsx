@@ -106,7 +106,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
     const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
-    const [selectedMode, setMode] = useState<BpmnViewMode>("bpmn");
+    const [selectedMode, setSelectedMode] = useState<BpmnViewMode>("bpmn");
 
     // A disabled tab can never be the visible one, even if it is disabled while active.
     const mode: BpmnViewMode = modelerTabOptions?.disabled
@@ -206,7 +206,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                         ),
                     );
                 }
-                setMode(bpmnViewMode);
+                setSelectedMode(bpmnViewMode);
             }
         },
         [saveFile, mode, onEvent],

@@ -346,6 +346,9 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             <div
                 className={cx(classes.dividerArea, secondPanelHidden && classes.hidden)}
             >
+                {/* A focusable separator is the WAI-ARIA window splitter widget, which
+                    jsx-a11y does not know as interactive. */}
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
                 <div
                     className={classes.divider}
                     role="separator"
@@ -359,6 +362,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
                         collapsed ? "Collapsed" : `${String(Math.round(secondSize))} %`
                     }
                     data-dragging={dragging}
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- see above
                     tabIndex={0}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}

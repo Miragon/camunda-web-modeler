@@ -1,17 +1,31 @@
 import { defineConfig } from "vitest/config";
 
 /**
- * Vitest configuration for the unit/smoke test suite.
+ * Vitest configuration for unit and component tests (jsdom + Testing Library).
  *
- * `jsdom` is selected so that React component tests can be added later without
- * reconfiguring the environment; the current pure-function smoke tests don't
- * need it but inherit it harmlessly. `passWithNoTests` keeps CI green even if
- * the suite is ever emptied, so the release pipeline never blocks on it.
+ * bpmn-js, dmn-js and Monaco need a real browser; component tests replace them with
+ * fakes, and the playground covers the real thing.
  */
 export default defineConfig({
     test: {
         environment: "jsdom",
         include: ["src/**/*.{test,spec}.{ts,tsx}"],
-        passWithNoTests: true,
+        setupFiles: ["src/test/setup.ts"],
+        coverage: {
+            provider: "v8",
+            include: ["src/**/*.{ts,tsx}"],
+            // The bpmn.io wrappers need a real browser (the playground covers them);
+            // jsdom coverage of them would be misleading.
+            exclude: [
+                "src/bpmnio/**",
+                "src/types/**",
+                "src/test/**",
+                "src/**/*.test.{ts,tsx}",
+            ],
+            reporter: ["text-summary", "html"],
+            // A floor against regressions, set below the current level on purpose:
+            // no incentive for brittle tests of the bpmn.io fakes.
+            thresholds: { statements: 75, branches: 65, functions: 75, lines: 75 },
+        },
     },
 });
