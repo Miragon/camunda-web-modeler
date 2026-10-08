@@ -14,8 +14,8 @@ import {
 import { ElementTemplatesPropertiesProviderModule } from "bpmn-js-element-templates";
 import ElementTemplateChooserModule from "@bpmn-io/element-template-chooser";
 import Modeler from "bpmn-js/lib/Modeler";
-import deepmerge from "deepmerge";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
+import { mergeBpmnJsOptions } from "../mergeOptions";
 
 export interface CustomBpmnJsModelerOptions {
     /**
@@ -30,8 +30,10 @@ export interface CustomBpmnJsModelerOptions {
     container: string | HTMLElement;
 
     /**
-     * The options passed to bpmn-js. Will be merged with the options defined by this library,
-     * with the latter taking precedence in case of conflict.
+     * The options passed to bpmn-js. They are merged with the options this library needs:
+     * modules are registered after the library's (and can override its services), values
+     * override the library defaults, and moddle extensions are merged by key. Only the
+     * containers are always the component's.
      * CAUTION: If you pass invalid properties, the modeler can break!
      */
     bpmnJsOptions?: any;
@@ -55,46 +57,27 @@ class CustomBpmnJsModeler extends Modeler {
      * @param options The options to include
      */
     constructor(options: CustomBpmnJsModelerOptions) {
-        const mergedOptions = deepmerge.all(
-            [
-                // The options passed by the user
-                options.bpmnJsOptions ?? {},
-
-                // The library's default options
-                {
-                    container: options.container,
-                    additionalModules: [
-                        {
-                            __init__: ["globalEventListenerUtil"],
-                            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
-                        },
-                    ],
-                    moddleExtensions: {
-                        camunda: camundaModdleDescriptor,
-                    },
-                },
-
-                // The options required to display the properties panel (if desired)
-                // prettier-ignore
-                options.propertiesPanel
-                    ? {
-                        propertiesPanel: {
-                            parent: options.propertiesPanel,
-                        },
-                        additionalModules: [
-                            BpmnPropertiesPanelModule,
-                            BpmnPropertiesProviderModule,
-                            ElementTemplatesPropertiesProviderModule,
-                            ElementTemplateChooserModule,
-                        ],
-                    }
-                    : {},
-            ],
+        const mergedOptions = mergeBpmnJsOptions(
             {
-                // Deprecated, but @dominikhorn93 said it's okay because it's gonna stay that way for
-                // at least 5 years (or forever)
-                clone: false,
+                container: options.container,
+                propertiesPanel: options.propertiesPanel,
+                modules: [
+                    {
+                        __init__: ["globalEventListenerUtil"],
+                        globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+                    },
+                ],
+                propertiesPanelModules: [
+                    BpmnPropertiesPanelModule,
+                    BpmnPropertiesProviderModule,
+                    ElementTemplatesPropertiesProviderModule,
+                    ElementTemplateChooserModule,
+                ],
+                moddleExtensions: {
+                    camunda: camundaModdleDescriptor,
+                },
             },
+            options.bpmnJsOptions,
         );
         super(mergedOptions);
     }
