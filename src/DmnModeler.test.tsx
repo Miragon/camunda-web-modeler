@@ -327,7 +327,9 @@ describe("DmnModeler", () => {
     it("hides the properties panel in views it cannot show anything for", async () => {
         await render(<Host />);
         const divider = container.querySelector<HTMLElement>('[role="separator"]')!;
-        const panelVisible = () => getComputedStyle(divider).display !== "none";
+        // The separator and its toggle share a wrapper that is hidden as a whole.
+        const panelVisible = () =>
+            getComputedStyle(divider.parentElement!).display !== "none";
 
         expect(panelVisible()).toBe(true);
         await click("Decision 1");
