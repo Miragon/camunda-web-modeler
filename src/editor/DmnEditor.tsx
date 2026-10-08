@@ -7,7 +7,7 @@ import React, {
     useState,
 } from "react";
 import ResizablePanels from "../components/ResizablePanels";
-import CustomDmnJsModeler, { DmnView } from "../bpmnio/dmn/CustomDmnJsModeler";
+import CustomDmnJsModeler from "../bpmnio/dmn/CustomDmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { Event } from "../events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
@@ -15,6 +15,8 @@ import { createDmnViewsChangedEvent } from "../events/modeler/DmnViewsChangedEve
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
+import { EchoTracker } from "./EchoTracker";
+import { useLatest } from "./useLatest";
 import { tss } from "tss-react";
 
 /**
@@ -36,13 +38,7 @@ const UI_UPDATE_REQUIRED_EVENTS = [
 /**
  * The events that trigger a content saved event.
  */
-const CONTENT_SAVED_EVENT = [
-    "import.done",
-    "view.contentChanged",
-    "dmn.views.changed",
-    "views.changed",
-    "elements.changed",
-];
+const CONTENT_SAVED_EVENT = ["elements.changed"];
 
 export interface DmnPropertiesPanelOptions {
     /**
@@ -85,6 +81,9 @@ export interface DmnPropertiesPanelOptions {
 export interface DmnModelerOptions {
     /**
      * Will receive the reference to the modeler instance.
+     *
+     * While the XML tab is shown, the instance keeps the state from before switching; changes
+     * made in the XML tab are imported when switching back.
      */
     refs?: MutableRefObject<CustomDmnJsModeler | undefined>[];
 
@@ -132,6 +131,11 @@ export interface DmnEditorProps {
     active: boolean;
 
     /**
+     * The ID of the view to show. If undefined, dmn-js opens its initial view.
+     */
+    viewId?: string;
+
+    /**
      * Called whenever an event occurs.
      */
     onEvent: (event: Event<any, any>) => void;
@@ -152,16 +156,16 @@ export interface DmnEditorProps {
     /**
      * The options to control the appearance of the properties panel.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: Changing `hidden` or `containerId` destroys the editor instance and creates a
+     * new one without automatic saving!
      */
     propertiesPanelOptions?: DmnPropertiesPanelOptions;
 
     /**
      * The options to control the appearance of the modeler.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: Changing `containerId` destroys the editor instance and creates a new one
+     * without automatic saving!
      */
     modelerOptions?: DmnModelerOptions;
 }
@@ -190,6 +194,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     const {
         xml,
         active,
+        viewId,
         onEvent,
         dmnJsOptions,
         propertiesPanelOptions,
@@ -197,40 +202,71 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         className,
     } = props;
 
-    const [, setActiveView] = useState<DmnView | undefined>(undefined);
-    const [initializeCount, setInitializeCount] = useState(0);
-    const ref = useRef<CustomDmnJsModeler | null>(null);
+    const [modeler, setModeler] = useState<CustomDmnJsModeler | undefined>(undefined);
 
+    const modelerContainerRef = useRef<HTMLDivElement | null>(null);
+    const propertiesPanelContainerRef = useRef<HTMLDivElement | null>(null);
+
+    const onEventRef = useLatest(onEvent);
+    const activeRef = useLatest(active);
+    const viewIdRef = useLatest(viewId);
+    const currentModelerRef = useLatest(modeler);
+    const echoes = useRef(new EchoTracker());
+    /** The XML last imported into (or confirmed as echo by) the current instance. */
+    const lastImportRef = useRef<
+        { modeler: CustomDmnJsModeler; xml: string } | undefined
+    >(undefined);
+    /**
+     * dmn-js clears and reopens views during an import, so imports and view switches
+     * must not interleave. Every such operation is chained onto this promise.
+     */
+    const queueRef = useRef<Promise<void>>(Promise.resolve());
+    const enqueue = useCallback((operation: () => Promise<void>) => {
+        queueRef.current = queueRef.current.then(operation).catch((e: unknown) => {
+            console.error("DMN operation failed", e);
+        });
+    }, []);
+
+    const panelHidden = !!propertiesPanelOptions?.hidden;
+    const panelContainerId = propertiesPanelOptions?.containerId;
+    const modelerContainerId = modelerOptions?.containerId;
+
+    /**
+     * Forwards dmn-js events to the host. Stable for the lifetime of the component, so
+     * neither a new `onEvent` identity nor switching tabs recreates the modeler.
+     */
     const handleEvent = useCallback(
         (event: string, data: any) => {
-            // TODO: Should dmn-js events only be forwarded if the editor is currently active?
-            onEvent(createBpmnIoEvent(event, data));
+            const emit = onEventRef.current;
 
-            if (!active) {
+            // TODO: Should dmn-js events only be forwarded if the editor is currently active?
+            emit(createBpmnIoEvent(event, data));
+
+            if (!activeRef.current) {
                 return;
             }
 
             if (event === "views.changed") {
-                setActiveView(data.activeView);
-                onEvent(createDmnViewsChangedEvent(data.views, data.activeView));
+                emit(createDmnViewsChangedEvent(data.views, data.activeView));
             }
 
             /**
              * If the event should trigger a UI update required event, do it.
              */
             if (event && UI_UPDATE_REQUIRED_EVENTS.includes(event)) {
-                onEvent(createUIUpdateRequiredEvent(active));
+                emit(createUIUpdateRequiredEvent(true));
             }
 
             /**
              * If the event should trigger a content saved event, do it.
              */
-            if (event && CONTENT_SAVED_EVENT.includes(event) && ref.current) {
-                ref.current
-                    .save({ format: true })
+            if (event && CONTENT_SAVED_EVENT.includes(event)) {
+                currentModelerRef.current
+                    ?.save({ format: true })
                     .then(saved => {
+                        echoes.current.emitted(saved.xml);
                         // TODO: Save SVG (but which viewer?)
-                        onEvent(
+                        onEventRef.current(
                             createContentSavedEvent(
                                 saved.xml,
                                 undefined,
@@ -243,148 +279,205 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                     });
             }
         },
-        [active, onEvent],
-    );
-
-    const viewsChangedCallback = useCallback(
-        (event: any, data: any) => {
-            handleEvent(event.type, data);
-            if (ref.current?.getActiveViewer()) {
-                ref.current?.registerGlobalEventListener(handleEvent);
-                return () => ref.current?.unregisterGlobalEventListener(handleEvent);
-            }
-            return undefined;
-        },
-        [handleEvent],
+        [onEventRef, activeRef, currentModelerRef],
     );
 
     /**
-     * Instantiates the modeler and properties panel. Only happens once on mount.
+     * Instantiates the modeler and properties panel. The instance lives as long as the
+     * component and is only recreated if options that dmn-js reads on construction change.
      */
     useEffect(() => {
-        const modeler = new CustomDmnJsModeler({
-            container: modelerOptions?.containerId ?? "#dmnview",
-            propertiesPanel: propertiesPanelOptions?.hidden
+        const modelerContainer = modelerContainerId ?? modelerContainerRef.current;
+        if (!modelerContainer) {
+            return undefined;
+        }
+
+        const instance = new CustomDmnJsModeler({
+            container: modelerContainer,
+            propertiesPanel: panelHidden
                 ? undefined
-                : (propertiesPanelOptions?.containerId ?? "#dmnprop"),
+                : (panelContainerId ?? propertiesPanelContainerRef.current ?? undefined),
             dmnJsOptions: dmnJsOptions,
         });
 
-        ref.current = modeler;
-        if (modelerOptions?.refs) {
-            modelerOptions.refs.forEach(r => {
-                r.current = modeler;
-            });
-        }
+        // Every view has its own viewer with its own event bus. Viewers are created
+        // lazily on first open, so (re-)register whenever the active view changes. The
+        // registration is idempotent. The listener must return nothing: a return value
+        // stops the event's propagation in diagram-js.
+        const onViewsChanged = (event: { type: string }, data: any) => {
+            instance.registerGlobalEventListener(handleEvent);
+            handleEvent(event.type, data);
+        };
+        instance.on("views.changed", onViewsChanged);
 
-        setInitializeCount(cur => cur + 1);
+        echoes.current.reset();
+        queueRef.current = Promise.resolve();
+        setModeler(instance);
 
         return () => {
-            if (modelerOptions?.refs) {
-                modelerOptions.refs.forEach(r => {
-                    r.current = undefined;
-                });
-            }
-            modeler.destroy();
+            instance.off("views.changed", onViewsChanged);
+            instance.destroy();
+            setModeler(undefined);
         };
-    }, [dmnJsOptions, modelerOptions?.containerId, propertiesPanelOptions]);
-
-    useEffect(() => {
-        const modeler = ref.current;
-        modeler?.on("views.changed", viewsChangedCallback);
-        return () => modeler?.off("views.changed", viewsChangedCallback);
-    }, [viewsChangedCallback]);
+    }, [handleEvent, dmnJsOptions, panelHidden, panelContainerId, modelerContainerId]);
 
     /**
-     * Imports the specified XML. The following steps are executed:
-     *
-     * 1. Export the currently loaded XML.
-     * 2. Check if it is different from the specified XML.
-     * 3. Import the specified XML if it has changed.
-     * 4. Show any errors or warnings that occurred during import.
+     * Hands the instance to the refs passed by the host.
      */
-    const importXml = useCallback(
-        async (newXml: string, open = false): Promise<void> => {
-            if (ref.current) {
-                try {
-                    const currentXml = await ref.current?.save({
-                        format: true,
-                    });
+    const refs = modelerOptions?.refs;
+    useEffect(() => {
+        refs?.forEach(r => {
+            r.current = modeler;
+        });
+        return () => {
+            refs?.forEach(r => {
+                r.current = undefined;
+            });
+        };
+    }, [modeler, refs]);
 
-                    if (newXml === currentXml.xml) {
-                        // XML has not changed
-                        return;
-                    }
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                } catch (e) {
-                    // The editor has not yet loaded any content
-                    // ⇒ no definitions loaded, ignore the error
-                }
+    /**
+     * Opens the requested view if it is not the active one.
+     */
+    const openRequestedView = useCallback(
+        async (instance: CustomDmnJsModeler) => {
+            const requested = viewIdRef.current;
+            if (!requested || instance.getActiveView()?.id === requested) {
+                return;
+            }
+            const view = instance.getViews().find(v => v.id === requested);
+            if (view) {
+                await instance.open(view);
+            }
+        },
+        [viewIdRef],
+    );
 
-                try {
-                    const result = await ref.current.import(newXml, open);
-                    const count = result.warnings.length;
-                    if (count > 0) {
-                        console.log("Imported with warnings", result.warnings);
-                        onEvent(
-                            createNotificationEvent(
-                                `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
-                                "warning",
-                            ),
-                        );
-                    }
-                } catch (e) {
-                    console.error("Could not import XML", e);
-                    onEvent(
+    /**
+     * Imports the document XML whenever it changes. Imports are deferred while the editor
+     * is hidden, so typing in the XML tab neither re-renders the diagram on every key
+     * stroke nor switches the view back; the latest XML is imported once the editor
+     * becomes visible again. The editor's own content coming back from the host is not
+     * re-imported.
+     */
+    useEffect(() => {
+        if (!modeler || !active || !xml.trim()) {
+            return;
+        }
+
+        const last = lastImportRef.current;
+        if (last?.modeler === modeler && last.xml === xml) {
+            return;
+        }
+        if (last?.modeler === modeler && echoes.current.consume(xml)) {
+            lastImportRef.current = { modeler, xml };
+            return;
+        }
+
+        lastImportRef.current = { modeler, xml };
+        echoes.current.reset();
+        enqueue(async () => {
+            try {
+                // Opens the previously active view again (or the first one).
+                const result = await modeler.import(xml, true);
+                const count = result.warnings.length;
+                if (count > 0) {
+                    console.log("Imported with warnings", result.warnings);
+                    onEventRef.current(
                         createNotificationEvent(
-                            "Could not import changed XML. Is it invalid? See console for details.",
-                            "error",
+                            `Imported with ${count} warning${count === 1 ? "" : "s"}. See console for details.`,
+                            "warning",
                         ),
                     );
                 }
+            } catch (e) {
+                console.error("Could not import XML", e);
+                onEventRef.current(
+                    createNotificationEvent(
+                        "Could not import changed XML. Is it invalid? See console for details.",
+                        "error",
+                    ),
+                );
+                return;
             }
-        },
-        [onEvent],
-    );
+            await openRequestedView(modeler);
+        });
+    }, [modeler, xml, active, enqueue, openRequestedView, onEventRef]);
 
     /**
-     * Imports the document XML whenever it changes.
+     * Switches to the requested view.
      */
     useEffect(() => {
-        if (initializeCount > 0) {
-            // Only open the view on first render
-            void importXml(xml, initializeCount === 1);
+        if (modeler && active && viewId) {
+            enqueue(() => openRequestedView(modeler));
         }
-    }, [xml, importXml, initializeCount]);
+    }, [modeler, active, viewId, enqueue, openRequestedView]);
+
+    /**
+     * Keeps the canvas informed about size changes (divider drag, window resize, being
+     * shown again after the XML tab), otherwise zoom and scroll use stale dimensions.
+     */
+    useEffect(() => {
+        const container = modelerContainerRef.current;
+        if (!modeler || !container || typeof ResizeObserver === "undefined") {
+            return undefined;
+        }
+        let frame: number | undefined;
+        const observer = new ResizeObserver(() => {
+            if (frame !== undefined) {
+                cancelAnimationFrame(frame);
+            }
+            frame = requestAnimationFrame(() => {
+                frame = undefined;
+                if (container.offsetParent !== null) {
+                    modeler.resized();
+                }
+            });
+        });
+        observer.observe(container);
+        return () => {
+            observer.disconnect();
+            if (frame !== undefined) {
+                cancelAnimationFrame(frame);
+            }
+        };
+    }, [modeler]);
 
     const onPropertiesPanelWidthChanged = useCallback(
         (_first: number, second: number) => {
-            onEvent(createPropertiesPanelResizedEvent(second));
+            onEventRef.current(createPropertiesPanelResizedEvent(second));
         },
-        [onEvent],
+        [onEventRef],
     );
 
     const modelerContainer: ReactNode = modelerOptions?.container ?? (
-        <div id="dmnview" className={cx(classes.modeler, modelerOptions?.className)} />
+        <div
+            ref={modelerContainerRef}
+            className={cx(classes.modeler, modelerOptions?.className)}
+        />
     );
 
     const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
         <div
-            id="dmnprop"
+            ref={propertiesPanelContainerRef}
             className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
         />
     );
 
-    if (propertiesPanelOptions?.hidden) {
+    if (panelHidden) {
         return (
-            <div className={cx(classes.modelerOnly, className)}>{modelerContainer}</div>
+            <div
+                className={cx(classes.modelerOnly, !active && classes.hidden, className)}
+            >
+                {modelerContainer}
+            </div>
         );
     }
 
     return (
         <ResizablePanels
             className={className}
-            active={props.active}
+            active={active}
             firstPanel={modelerContainer}
             secondPanel={propertiesPanelContainer}
             firstPanelSize={modelerOptions?.size}

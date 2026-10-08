@@ -16,16 +16,15 @@ import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUt
 
 export interface CustomBpmnJsModelerOptions {
     /**
-     * The ID of the div to use as host for the properties panel. The div must be present inside
-     * the page HTML. If missing or undefined is passed, no properties panel will be initialized.
+     * The element (or a CSS selector for it) to use as host for the properties panel. If
+     * missing or undefined is passed, no properties panel will be initialized.
      */
-    propertiesPanel?: string;
+    propertiesPanel?: string | HTMLElement;
 
     /**
-     * The ID of the div to use as host for the editor itself. The div must be present inside the
-     * page HTML.
+     * The element (or a CSS selector for it) to use as host for the editor itself.
      */
-    container: string;
+    container: string | HTMLElement;
 
     /**
      * The options passed to bpmn-js. Will be merged with the options defined by this library,
@@ -102,6 +101,23 @@ class CustomBpmnJsModeler extends Modeler {
      */
     getInjector(): Injector {
         return this.get("injector");
+    }
+
+    /**
+     * Checks that the XML can be parsed as BPMN without importing it.
+     *
+     * @param xml The XML to check
+     * @throws Rejects if the XML is not a parsable BPMN document
+     */
+    async validate(xml: string): Promise<void> {
+        await this.get("moddle").fromXML(xml, "bpmn:Definitions");
+    }
+
+    /**
+     * Notifies the canvas that its container has been resized or shown.
+     */
+    resized(): void {
+        this.get("canvas").resized();
     }
 
     /**

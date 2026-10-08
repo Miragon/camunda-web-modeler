@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { tss } from "tss-react";
 import * as monaco from "monaco-editor";
 
@@ -94,6 +94,14 @@ export interface DmnModelerProps {
     xmlTabOptions?: XmlTabOptions;
 }
 
+declare type DmnViewMode = "modeler" | "xml";
+
+/**
+ * Toggle option ID of the XML tab. "#" is not allowed in XML names, so it cannot collide
+ * with the ID of a DMN element (and thus of a view).
+ */
+const XML_OPTION_ID = "#xml";
+
 const useStyles = tss.create(() => ({
     root: {
         // Positioning context for the absolutely positioned mode toggle.
@@ -129,71 +137,85 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     const modelerRef = useRef<CustomDmnJsModeler | undefined>(undefined);
 
     const [views, setViews] = useState<DmnView[]>([]);
-    const [activeView, setActiveView] = useState<string | undefined>(undefined);
+    // The dmn-js view last shown. Kept while the XML tab is open, so switching back
+    // returns to it.
+    const [viewId, setViewId] = useState<string | undefined>(undefined);
+    const [selectedMode, setMode] = useState<DmnViewMode>("modeler");
 
-    useEffect(() => {
-        if (modelerTabOptions?.disabled && !xmlTabOptions?.disabled) {
-            setActiveView("xml");
-        }
-    }, [modelerTabOptions, xmlTabOptions]);
+    // A disabled tab can never be the visible one, even if it is disabled while active.
+    const mode: DmnViewMode = modelerTabOptions?.disabled
+        ? "xml"
+        : xmlTabOptions?.disabled
+          ? "modeler"
+          : selectedMode;
+
+    // Only the first render waits for XML. Afterwards an empty document (e.g. the user
+    // cleared the XML editor) must not unmount the editors and their undo history.
+    const [hasLoaded, setHasLoaded] = useState(!!xml);
+    if (xml && !hasLoaded) {
+        setHasLoaded(true);
+    }
 
     const saveFile = useCallback(
-        async (source: string | undefined, reason: ContentSavedReason) => {
-            switch (source) {
-                case "xml": {
-                    if (monacoRef.current) {
-                        const saved = monacoRef.current?.getValue() || "";
-                        onEvent(createContentSavedEvent(saved, undefined, reason));
-                    }
-                    break;
+        async (source: DmnViewMode, reason: ContentSavedReason) => {
+            if (source === "xml") {
+                if (monacoRef.current) {
+                    const saved = monacoRef.current.getValue() || "";
+                    onEvent(createContentSavedEvent(saved, undefined, reason));
                 }
-                case undefined: {
-                    break;
-                }
-                default: {
-                    if (modelerRef.current) {
-                        const saved = await modelerRef.current?.save({ format: true });
-                        onEvent(createContentSavedEvent(saved.xml, undefined, reason));
-                    }
-                    break;
-                }
+            } else if (modelerRef.current) {
+                const saved = await modelerRef.current.save({ format: true });
+                onEvent(createContentSavedEvent(saved.xml, undefined, reason));
             }
         },
         [onEvent],
     );
 
     const changeMode = useCallback(
-        async (viewId: string | undefined) => {
-            if (viewId && activeView !== viewId) {
-                // View has been changed from or to XML, save it so the user can reimport it
-                if (viewId === "xml" || activeView === "xml") {
+        async (optionId: string) => {
+            const nextMode: DmnViewMode = optionId === XML_OPTION_ID ? "xml" : "modeler";
+
+            if (nextMode !== mode) {
+                // Don't leave the XML tab with a document the diagram cannot show, the
+                // user would end up on an empty view without their text.
+                if (mode === "xml" && modelerRef.current && monacoRef.current) {
                     try {
-                        await saveFile(activeView, "view.changed");
+                        await modelerRef.current.validate(monacoRef.current.getValue());
                     } catch (e) {
-                        // Never block switching on a failed save, otherwise the user may
-                        // be unable to reach the XML tab to fix the document.
-                        console.error("Could not save content before switching view", e);
+                        console.error("Invalid XML, staying in XML view", e);
                         onEvent(
                             createNotificationEvent(
-                                "Could not serialize diagram. Switching anyway. See console for details.",
-                                "warning",
+                                "The XML is invalid. Fix it before switching to the diagram. See console for details.",
+                                "error",
                             ),
                         );
+                        return;
                     }
                 }
 
-                setActiveView(viewId);
-
-                // View is a dmn-js view, open it
-                if (viewId !== "xml") {
-                    const view = modelerRef.current
-                        ?.getViews()
-                        .find(v => v.id === viewId);
-                    await (view && modelerRef.current?.open(view));
+                // Save so the other view starts with the latest content.
+                try {
+                    await saveFile(mode, "view.changed");
+                } catch (e) {
+                    // Never block switching on a failed save, otherwise the user may
+                    // be unable to reach the XML tab to fix the document.
+                    console.error("Could not save content before switching view", e);
+                    onEvent(
+                        createNotificationEvent(
+                            "Could not serialize diagram. Switching anyway. See console for details.",
+                            "warning",
+                        ),
+                    );
                 }
+                setMode(nextMode);
+            }
+
+            // DmnEditor opens the requested view once it is visible.
+            if (nextMode === "modeler") {
+                setViewId(optionId);
             }
         },
-        [activeView, saveFile, onEvent],
+        [mode, saveFile, onEvent],
     );
 
     const localOnEvent = useCallback(
@@ -201,32 +223,10 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
             if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
                 const data = event.data as ViewsChangedEvent;
                 setViews(data.views);
-
-                if (!data.activeView) {
-                    const initialView = data.views[0];
-                    setActiveView(initialView.id);
-                    modelerRef.current
-                        ?.open(data.views[0])
-                        .then(result => {
-                            if (result.warnings.length > 0) {
-                                console.log(
-                                    "Opened initial view with warnings",
-                                    result.warnings,
-                                );
-                            }
-                        })
-                        .catch((e: unknown) => {
-                            const error = e as { warnings?: unknown; error?: unknown };
-                            if (error.warnings) {
-                                console.log(
-                                    "Failed to open initial view with warnings",
-                                    error.warnings,
-                                    error.error,
-                                );
-                            }
-                        });
-                } else {
-                    setActiveView(data.activeView.id);
+                // dmn-js reports no active view while it clears the canvas during an
+                // import; keep the last one in that case.
+                if (data.activeView) {
+                    setViewId(data.activeView.id);
                 }
             }
             onEvent(event);
@@ -270,7 +270,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     // Only offer the toggle if there is something to switch between.
     const toggleOptionCount = views.length + (xmlTabOptions?.disabled ? 0 : 1);
 
-    if (!xml) {
+    if (!hasLoaded) {
         return null;
     }
 
@@ -279,7 +279,8 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
             {!modelerTabOptions?.disabled && (
                 <DmnEditor
                     xml={xml}
-                    active={activeView !== "xml"}
+                    active={mode === "modeler"}
+                    viewId={viewId}
                     onEvent={localOnEvent}
                     modelerOptions={modelerOptions}
                     propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
@@ -292,7 +293,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                 <XmlEditor
                     xml={xml}
                     monacoOptions={monacoOptions}
-                    active={activeView === "xml"}
+                    active={mode === "xml"}
                     onChanged={onXmlChanged}
                 />
             )}
@@ -330,7 +331,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                             ? []
                             : [
                                   {
-                                      id: "xml",
+                                      id: XML_OPTION_ID,
                                       label: "XML",
                                       node: (
                                           <SvgIcon
@@ -343,7 +344,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                               ]),
                     ]}
                     onChange={changeMode}
-                    active={activeView ?? ""}
+                    active={mode === "xml" ? XML_OPTION_ID : (viewId ?? "")}
                 />
             )}
         </div>
