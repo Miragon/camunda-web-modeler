@@ -16,13 +16,13 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Validate test + build + pack + publish without releasing'
+        description: "Validate test + build + pack + publish without releasing"
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  pull-requests: write
+# Every job declares what it needs. release-please works with the GitHub App token,
+# not with GITHUB_TOKEN.
+permissions: {}
 
 concurrency:
   group: release-please
@@ -33,6 +33,7 @@ jobs:
     name: Maintain release PR
     if: github.event_name != 'workflow_dispatch' || !inputs.dry_run
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
     steps:
@@ -51,21 +52,21 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  publish:
-    name: Publish to npm
+  # Install, test, build and pack without the permission to publish: install
+  # scripts and dev tooling never get near an OIDC token.
+  package:
+    name: Build package
     needs: release-please
     # Runs on a real release, or on a manual dry run (release-please is skipped then).
     if: >-
-      always() && (needs.release-please.outputs.release_created == 'true'
+      !cancelled() && (needs.release-please.outputs.release_created == 'true'
       || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
     runs-on: ubuntu-latest
-    # Real publishes go through the `npm` environment; dry runs stay ungated
-    # (an empty name means no environment).
-    environment:
-      name: ${{ !inputs.dry_run && 'npm' || '' }}
     permissions:
       contents: read
-      id-token: write # npm Trusted Publishing (OIDC): tokenless publish + provenance
+    outputs:
+      name: ${{ steps.meta.outputs.name }}
+      version: ${{ steps.meta.outputs.version }}
 
     steps:
       - name: Checkout
@@ -79,12 +80,11 @@ jobs:
       - name: Corepack enable
         run: corepack enable
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22'
+          node-version: "24"
           cache: yarn
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -110,9 +110,44 @@ jobs:
       - name: Pack tarball
         run: yarn pack --out "$RUNNER_TEMP/package.tgz"
 
-      # Trusted Publishing needs npm >= 11.5.1; Node 22 ships npm 10.
-      - name: Upgrade npm for Trusted Publishing
-        run: npm install -g npm@11
+      - name: Upload tarball
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package
+          path: ${{ runner.temp }}/package.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish to npm
+    needs: package
+    if: ${{ !cancelled() && needs.package.result == 'success' }}
+    runs-on: ubuntu-latest
+    # Real publishes go through the `npm` environment; dry runs stay ungated
+    # (an empty name means no environment).
+    environment:
+      name: ${{ !inputs.dry_run && 'npm' || '' }}
+    permissions:
+      id-token: write # npm Trusted Publishing (OIDC): tokenless publish + provenance
+
+    # No checkout and no install: this job only publishes the tarball built above.
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: package
+          path: ${{ runner.temp }}
+
+      - name: Setup Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing needs npm >= 11.5.1. Pinned, so the publishing tool does
+      # not change between releases without a reviewed commit.
+      - name: Install npm for Trusted Publishing
+        run: npm install -g npm@11.21.0
 
       - name: Publish (dry-run)
         if: inputs.dry_run
@@ -120,9 +155,11 @@ jobs:
 
       - name: Publish to npm
         if: ${{ !inputs.dry_run }}
+        env:
+          PACKAGE: ${{ needs.package.outputs.name }}@${{ needs.package.outputs.version }}
         run: |
-          if npm view "${{ steps.meta.outputs.name }}@${{ steps.meta.outputs.version }}" version > /dev/null 2>&1; then
-            echo "${{ steps.meta.outputs.name }}@${{ steps.meta.outputs.version }} is already on npm — skipping"
+          if npm view "$PACKAGE" version > /dev/null 2>&1; then
+            echo "$PACKAGE is already on npm — skipping"
           else
             npm publish "$RUNNER_TEMP/package.tgz" --provenance --access public
           fi
