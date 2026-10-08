@@ -117,7 +117,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const { onEvent, xml, modelerTabOptions, xmlTabOptions, className } = props;
 
     const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-    const modelerRef = useRef<CustomBpmnJsModeler>();
+    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
 
     const [mode, setMode] = useState<BpmnViewMode>("bpmn");
 

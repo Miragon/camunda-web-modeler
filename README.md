@@ -33,6 +33,8 @@ and DMN in your browser application. It has lots of configuration options and of
 
 ## Getting Started
 
+Supported React versions: 17, 18 and 19 (`react` and `react-dom` are peer dependencies).
+
 1. Add this dependency to your application:
 
 ```sh

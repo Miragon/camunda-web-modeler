@@ -126,7 +126,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
 
     const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-    const modelerRef = useRef<CustomDmnJsModeler>();
+    const modelerRef = useRef<CustomDmnJsModeler | undefined>(undefined);
 
     const [views, setViews] = useState<DmnView[]>([]);
     const [activeView, setActiveView] = useState<string | undefined>(undefined);
