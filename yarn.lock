@@ -3930,10 +3930,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"min-dash@npm:4.1.1":
-  version: 4.1.1
-  resolution: "min-dash@npm:4.1.1"
-  checksum: 10c0/5858451cae6f081168579a68020d9e24aaa07b27225ddf78b3a6ed21b485dc7a53adfcad45d8f35811776ba4fbf34de69ff94067baba95dbc6b11af19635fc47
+"min-dash@npm:^5.0.0, min-dash@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "min-dash@npm:5.1.0"
+  checksum: 10c0/44d977d9a8dc45526e3b1badc903adb9d511937d7c895643d252947a7c6371970b89ac48f205a7207eed2f1426d6e538a1d95511d9e815ea48d23d35ef7c0ba5
   languageName: node
   linkType: hard
 
