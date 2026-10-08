@@ -5,10 +5,10 @@ import type { ModelerEvent } from "../Events";
  */
 export interface PropertiesPanelResizedEventData {
     /**
-     * The new width of the properties panel in percent of the editor width; 0 if it has
-     * been collapsed. Can be passed back as `size.initial`.
+     * The new size of the properties panel in percent of the editor width; 0 if it has
+     * been collapsed. Can be passed back as `propertiesPanel.size.initial`.
      */
-    width: number;
+    sizePercent: number;
 }
 
 export interface PropertiesPanelResizedEvent {
@@ -18,11 +18,11 @@ export interface PropertiesPanelResizedEvent {
 }
 
 export const createPropertiesPanelResizedEvent = (
-    width: number,
+    sizePercent: number,
 ): PropertiesPanelResizedEvent => ({
     source: "modeler",
     event: "properties.panel.resized",
-    data: { width },
+    data: { sizePercent },
 });
 
 export const isPropertiesPanelResizedEvent = (

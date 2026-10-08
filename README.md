@@ -156,7 +156,7 @@ const App: React.FC = () => {
             // Update your toolbar, e.g. undo / redo buttons via the ref.
         } else if (isPropertiesPanelResizedEvent(event)) {
             // In percent of the editor width; can be passed back as propertiesPanel.size.
-            console.log(`Properties panel resized to ${event.data.width} %`);
+            console.log(`Properties panel resized to ${event.data.sizePercent} %`);
         } else if (isBpmnIoEvent(event)) {
             // Any bpmn-js event, forwarded as is.
         }
