@@ -9,3 +9,4 @@
 @import "dmn-js/dist/assets/dmn-js-shared.css";
 @import "dmn-js/dist/assets/dmn-js-boxed-expression.css";
 @import "dmn-js/dist/assets/dmn-js-boxed-expression-controls.css";
+@import "./canvas.css";
