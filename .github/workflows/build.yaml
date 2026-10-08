@@ -99,6 +99,8 @@ jobs:
         run: yarn install --immutable
       - run: yarn up react@^19 react-dom@^19 @types/react@^19 @types/react-dom@^19
       - run: yarn typecheck
+      # Catches APIs deprecated in the React 19 typings.
+      - run: yarn lint
       - run: yarn test
       - run: yarn build
 

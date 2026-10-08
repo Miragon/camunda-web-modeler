@@ -1,10 +1,4 @@
-import React, {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import deepmerge from "deepmerge";
 import Editor, { loader, OnChange, OnMount } from "@monaco-editor/react";
 import type * as monaco from "monaco-editor";
@@ -12,6 +6,7 @@ import { tss } from "tss-react";
 
 import type { XmlEditorOptions } from "../options";
 import { useLatest } from "./useLatest";
+import type { MutableRef } from "./MutableRef";
 
 export interface XmlEditorProps {
     /**
@@ -44,7 +39,7 @@ export interface XmlEditorProps {
     /**
      * Receives the editor instance while it is mounted.
      */
-    editorRef?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>;
+    editorRef?: MutableRef<monaco.editor.IStandaloneCodeEditor | null>;
 
     /**
      * The class name applied to the root element.

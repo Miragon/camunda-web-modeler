@@ -1,10 +1,4 @@
-import React, {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { tss } from "tss-react";
 
 import ResizablePanels from "../components/ResizablePanels";
@@ -19,6 +13,7 @@ import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredE
 import { EchoTracker } from "./EchoTracker";
 import { useLatest } from "./useLatest";
 import type { ModelerClasses, PanelSize, PropertiesPanelOptions } from "../options";
+import type { MutableRef } from "./MutableRef";
 
 /**
  * The events that trigger a UI update required event.
@@ -78,7 +73,7 @@ export interface BpmnEditorProps {
     /**
      * Receives the modeler instance while it exists.
      */
-    modelerRef?: MutableRefObject<CustomBpmnJsModeler | undefined>;
+    modelerRef?: MutableRef<CustomBpmnJsModeler | undefined>;
 
     classes?: Pick<ModelerClasses, "diagram" | "canvas" | "propertiesPanel">;
 }

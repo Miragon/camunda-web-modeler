@@ -1,10 +1,4 @@
-import React, {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ResizablePanels from "../components/ResizablePanels";
 import CustomDmnJsModeler from "../bpmnio/dmn/CustomDmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
@@ -18,6 +12,7 @@ import { EchoTracker } from "./EchoTracker";
 import { useLatest } from "./useLatest";
 import type { ModelerClasses, PanelSize, PropertiesPanelOptions } from "../options";
 import { tss } from "tss-react";
+import type { MutableRef } from "./MutableRef";
 
 /**
  * The events that trigger a UI update required event.
@@ -76,7 +71,7 @@ export interface DmnEditorProps {
     /**
      * Receives the modeler instance while it exists.
      */
-    modelerRef?: MutableRefObject<CustomDmnJsModeler | undefined>;
+    modelerRef?: MutableRef<CustomDmnJsModeler | undefined>;
 
     classes?: Pick<ModelerClasses, "diagram" | "canvas" | "propertiesPanel">;
 }
