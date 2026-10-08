@@ -127,7 +127,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     // The dmn-js view last shown. Kept while the XML tab is open, so switching back
     // returns to it.
     const [viewId, setViewId] = useState<string | undefined>(undefined);
-    const [selectedMode, setMode] = useState<DmnViewMode>("modeler");
+    const [selectedMode, setSelectedMode] = useState<DmnViewMode>("modeler");
 
     // A disabled tab can never be the visible one, even if it is disabled while active.
     const mode: DmnViewMode = modelerTabOptions?.disabled
@@ -194,7 +194,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                         ),
                     );
                 }
-                setMode(nextMode);
+                setSelectedMode(nextMode);
             }
 
             // DmnEditor opens the requested view once it is visible.

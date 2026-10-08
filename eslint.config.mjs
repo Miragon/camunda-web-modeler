@@ -1,7 +1,9 @@
+import { defineConfig } from "eslint/config";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
+import eslintReact from "@eslint-react/eslint-plugin";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import vitest from "@vitest/eslint-plugin";
 import prettier from "eslint-config-prettier";
 import globals from "globals";
 
@@ -14,14 +16,19 @@ import globals from "globals";
  * Type-aware linting is therefore enabled at the strict tier, but the handful of
  * rules that fire purely on `any`-typed interop are disabled (see below).
  *
+ * React rules (including the hooks and React Compiler rules) come from
+ * @eslint-react, which supports ESLint 10; accessibility from jsx-a11y; test files
+ * additionally get the Vitest rules.
+ *
  * Formatting is delegated entirely to Prettier — `eslint-config-prettier` is
  * loaded last so it switches off every stylistic rule the preceding presets turn
  * on, preventing ESLint and Prettier from disagreeing.
  */
-export default tseslint.config(
+export default defineConfig(
     {
         ignores: [
             "dist",
+            "coverage",
             "**/*.d.ts",
             // Build/tool configs are plain ESM run by Node, not part of the typed
             // source program; linting them under projectService adds no value.
@@ -32,10 +39,10 @@ export default tseslint.config(
     },
 
     eslint.configs.recommended,
-    ...tseslint.configs.strictTypeChecked,
-    ...tseslint.configs.stylisticTypeChecked,
-    react.configs.flat.recommended,
-    reactHooks.configs.flat.recommended,
+    tseslint.configs.strictTypeChecked,
+    tseslint.configs.stylisticTypeChecked,
+    eslintReact.configs["strict-type-checked"],
+    jsxA11y.flatConfigs.recommended,
 
     {
         languageOptions: {
@@ -49,8 +56,9 @@ export default tseslint.config(
         },
         settings: {
             // react isn't a direct dependency (peer only), so version detection
-            // can't resolve it — pin the lowest officially supported major line.
-            react: { version: "18.3" },
+            // can't resolve it. Pin the lowest supported line, which also keeps
+            // rules from suggesting React 19-only APIs.
+            "react-x": { version: "17.0.2" },
         },
     },
 
@@ -78,10 +86,8 @@ export default tseslint.config(
             // values that can still be nullish at runtime. Enforcing this rule would
             // strip real runtime safety in exchange for type-theoretical tidiness.
             "@typescript-eslint/no-unnecessary-condition": "off",
-            // Bridging the imperative bpmn-js canvas into React legitimately syncs
-            // instance state from inside effects. Keep this React-Compiler readiness
-            // rule as a signal (warning) rather than a hard error.
-            "react-hooks/set-state-in-effect": "warn",
+            // forwardRef is still required for React 17/18 support.
+            "@eslint-react/no-forward-ref": "off",
         },
     },
 
@@ -89,8 +95,14 @@ export default tseslint.config(
         // Test files don't ship to consumers; allow the small ergonomic shortcuts
         // (non-null assertions) that keep tests terse.
         files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+        ...vitest.configs.recommended,
         rules: {
+            ...vitest.configs.recommended.rules,
             "@typescript-eslint/no-non-null-assertion": "off",
+            "vitest/consistent-test-it": ["error", { fn: "it" }],
+            "vitest/no-focused-tests": "error",
+            "vitest/no-disabled-tests": "error",
+            "vitest/prefer-to-have-length": "error",
         },
     },
 
