@@ -17,6 +17,16 @@ updates:
       # typescript-eslint supports TypeScript < 6.1 only; lift this once it does.
       - dependency-name: typescript
         versions: [">=6.1.0"]
+      # Development and tests stay on the oldest supported React major (see
+      # peerDependencies); the react-19 CI job covers the newest one.
+      - dependency-name: react
+        update-types: ["version-update:semver-major"]
+      - dependency-name: react-dom
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-all:
         patterns:
