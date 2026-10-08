@@ -29,7 +29,12 @@ const toolbarStyle: React.CSSProperties = {
 const recordEvent = (modeler: Mode, event: Event<any, any>) => {
     const sink = (window as unknown as { __cwmEvents?: unknown[] }).__cwmEvents;
     if (sink && event.source !== "bpmnio") {
-        sink.push({ modeler, source: event.source, event: event.event, data: event.data });
+        sink.push({
+            modeler,
+            source: event.source,
+            event: event.event,
+            data: event.data,
+        });
     }
 };
 
@@ -69,7 +74,8 @@ const App: React.FC = () => {
                     disabled={mode === "bpmn"}
                     onClick={() => {
                         setMode("bpmn");
-                    }}>
+                    }}
+                >
                     BPMN
                 </button>
                 <button
@@ -77,7 +83,8 @@ const App: React.FC = () => {
                     disabled={mode === "dmn"}
                     onClick={() => {
                         setMode("dmn");
-                    }}>
+                    }}
+                >
                     DMN
                 </button>
             </div>

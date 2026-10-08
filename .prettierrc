@@ -3,5 +3,18 @@
   "singleQuote": false,
   "trailingComma": "all",
   "tabWidth": 4,
-  "arrowParens": "avoid"
+  "arrowParens": "avoid",
+  "overrides": [
+    {
+      "files": [
+        "*.json",
+        "*.yml",
+        "*.yaml",
+        "*.md"
+      ],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }

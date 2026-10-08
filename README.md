@@ -275,6 +275,24 @@ consistent between the two components.
 You can find more examples in our examples
 repository [camunda-web-modeler-examples](https://github.com/FlowSquad/camunda-web-modeler-examples).
 
+# Development
+
+You need Node.js 22 or newer (see `.nvmrc`) and Yarn 4 via [Corepack](https://github.com/nodejs/corepack).
+Node.js 25 and newer no longer ship Corepack, install it with `npm install -g corepack` there.
+
+```sh
+corepack enable
+yarn install
+yarn dev        # playground with BPMN and DMN at http://localhost:5173
+yarn test       # unit and component tests
+yarn lint       # ESLint, warnings fail the check
+yarn typecheck  # sources, tests and playground
+yarn build      # library output in dist/
+```
+
+Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/); releases are
+created by release-please from them.
+
 # Issues and Questions
 
 If you experience any bugs or have questions concerning the usage or further development plans, don't hesitate to create
