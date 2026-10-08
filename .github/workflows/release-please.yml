@@ -1,0 +1,128 @@
+name: Release Please
+
+# release-please keeps a release PR on `develop` up to date (package.json version
+# + CHANGELOG.md), derived from the Conventional Commit titles of squash-merged PRs.
+# Merging that PR tags vX.Y.Z, creates the GitHub release and publishes the package
+# to npm via Trusted Publishing (OIDC) — no npm token involved.
+#
+# The npm trusted publisher is bound to this workflow file (release-please.yml) and
+# the `npm` environment, so a real publish only happens from here. Dispatch this
+# workflow manually with `dry_run` to validate test + build + pack + publish
+# without releasing; to re-run a failed publish, re-run the `publish` job.
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate test + build + pack + publish without releasing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Maintain release PR
+    if: github.event_name != 'workflow_dispatch' || !inputs.dry_run
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+    steps:
+      # A GitHub App token (not the default GITHUB_TOKEN) so the release PR
+      # triggers CI and works with branch protection.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_PLEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish to npm
+    needs: release-please
+    # Runs on a real release, or on a manual dry run (release-please is skipped then).
+    if: >-
+      always() && (needs.release-please.outputs.release_created == 'true'
+      || (github.event_name == 'workflow_dispatch' && inputs.dry_run))
+    runs-on: ubuntu-latest
+    # Real publishes go through the `npm` environment; dry runs stay ungated
+    # (an empty name means no environment).
+    environment:
+      name: ${{ !inputs.dry_run && 'npm' || '' }}
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC): tokenless publish + provenance
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check pinned dependencies
+        uses: Miragon/pin-npm-dependencies@3f7f02fa2454cdd2cdb65df19b081c0d77d301a5 # v1.2.2
+
+      - name: Corepack enable
+        run: corepack enable
+
+      - name: Setup Node 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: yarn
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      # npm refuses even a dry-run publish of a version that is already on the
+      # registry, so a dry run packs a throwaway prerelease version instead.
+      - name: Use prerelease version (dry-run)
+        if: inputs.dry_run
+        run: npm pkg set version="$(node -p "require('./package.json').version")-dry-run.${{ github.run_id }}"
+
+      - name: Resolve package metadata
+        id: meta
+        run: |
+          echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Pack tarball
+        run: yarn pack --out "$RUNNER_TEMP/package.tgz"
+
+      # Trusted Publishing needs npm >= 11.5.1; Node 22 ships npm 10.
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@11
+
+      - name: Publish (dry-run)
+        if: inputs.dry_run
+        run: npm publish "$RUNNER_TEMP/package.tgz" --dry-run --access public --tag dry-run
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if npm view "${{ steps.meta.outputs.name }}@${{ steps.meta.outputs.version }}" version > /dev/null 2>&1; then
+            echo "${{ steps.meta.outputs.name }}@${{ steps.meta.outputs.version }} is already on npm — skipping"
+          else
+            npm publish "$RUNNER_TEMP/package.tgz" --provenance --access public
+          fi

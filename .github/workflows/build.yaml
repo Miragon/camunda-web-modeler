@@ -58,6 +58,7 @@ jobs:
           node-version: '22'
           cache: 'yarn'
       - run: yarn
+      - run: yarn test
       - run: yarn build
         
   ci:

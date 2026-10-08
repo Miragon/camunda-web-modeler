@@ -1,0 +1,39 @@
+name: Lint PR Title
+
+# Squash-merge makes the PR title the commit that lands on `develop`, and
+# release-please parses it for the version bump + changelog entry — so a
+# malformed title silently yields no release. This gate fails loud at PR time.
+#
+# `edited` is required: fixing a bad title fires only `edited` (not
+# `synchronize`), so the check would otherwise stay red until an unrelated push.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Conventional Commit title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Restricted to the types release-please acts on: feat/fix bump the
+          # version, and all five are changelog-sections in
+          # release-please-config.json. Other types never reach the changelog —
+          # fold them into `chore`.
+          types: |
+            feat
+            fix
+            refactor
+            docs
+            chore
+          requireScope: false
