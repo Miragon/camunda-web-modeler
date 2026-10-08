@@ -362,8 +362,6 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/git,node,react,linux,macos,windows,typings,intellij,webstorm,visualstudiocode
 
 build/
-index.js
-index.d.ts
 
 # Yarn (without zero-installs)
 .pnp.*

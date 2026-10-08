@@ -9,12 +9,12 @@
     "url": "git+https://github.com/Miragon/camunda-web-modeler.git"
   },
   "scripts": {
-    "clean": "rimraf dist index.js index.d.ts",
+    "clean": "rimraf dist",
     "dev": "vite example",
-    "docs": "typedoc src --exclude src/index.ts --exclude src/types --exclude src/components --exclude src/bpmnio --exclude \"src/**/*.test.ts\" --exclude \"src/**/*.test.tsx\" --disableSources --out dist/docs",
+    "docs": "typedoc src --exclude src/types --exclude src/components --exclude src/bpmnio --exclude \"src/**/*.test.ts\" --exclude \"src/**/*.test.tsx\" --disableSources --out dist/docs",
     "watch": "tsc -w",
-    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.index.json && yarn docs && yarn bundle && copyfiles -u 1 \"src/types/*.d.ts\" dist",
-    "bundle": "rollup -c",
+    "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/strip-css-imports-from-dts.mjs",
+    "lint:package": "publint --level error",
     "lint": "eslint -c eslint.config.mjs .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -34,14 +34,24 @@
   ],
   "license": "Apache-2.0",
   "files": [
-    "dist/",
-    "index.d.ts",
-    "index.js"
+    "dist",
+    "!dist/docs"
   ],
-  "main": "index.js",
-  "directories": {
-    "lib": "dist/"
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
   },
+  "sideEffects": [
+    "**/*.css",
+    "./dist/editor/XmlEditor.js"
+  ],
   "browserslist": {
     "production": [
       ">0.2%",
@@ -74,15 +84,9 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@rollup/plugin-commonjs": "29.0.3",
-    "@rollup/plugin-json": "6.1.0",
-    "@rollup/plugin-node-resolve": "16.0.3",
-    "@rollup/plugin-replace": "6.0.3",
-    "@rollup/plugin-terser": "1.0.0",
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "6.1.1",
-    "copyfiles": "2.4.1",
     "eslint": "10.12.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react": "7.37.5",
@@ -90,13 +94,10 @@
     "globals": "17.13.0",
     "jsdom": "30.1.1",
     "prettier": "3.9.9",
+    "publint": "0.3.25",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "rimraf": "6.1.3",
-    "rollup": "4.64.0",
-    "rollup-plugin-css-only": "4.5.5",
-    "rollup-plugin-typescript2": "0.37.0",
-    "tslib": "2.8.1",
     "typedoc": "0.28.20",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",
