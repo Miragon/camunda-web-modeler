@@ -149,3 +149,15 @@ SVG fonts) are no longer included.
 
 **Who is affected:** everyone. Without the stylesheet the canvas, palette and properties
 panel are unstyled.
+
+## Deep imports are closed (#234)
+
+Only the package root and the stylesheets can be imported:
+
+- `@miragon/camunda-web-modeler`
+- `@miragon/camunda-web-modeler/style.css`, `/bpmn.css`, `/dmn.css`
+
+Deep imports like `@miragon/camunda-web-modeler/dist/editor/XmlEditor` no longer resolve.
+Everything meant for hosts is exported from the package root.
+
+**Who is affected:** hosts that import files under `dist/`.
