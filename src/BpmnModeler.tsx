@@ -26,9 +26,13 @@ const useStyles = tss.create(() => ({
     },
     modeToggle: {
         position: "absolute",
+        // Rendered before the editors (tab order), so it needs to be lifted above them.
+        zIndex: 10,
         left: "97px",
         bottom: "32px",
-        backgroundColor: "rgba(255, 255, 255, 0.87)",
+        // Many DMN views scroll instead of overflowing the modeler.
+        maxWidth: "calc(100% - 97px - 32px)",
+        overflowX: "auto",
     },
     icon: {
         marginTop: "4px",
@@ -170,7 +174,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
     const changeMode = useCallback(
         async (value: string) => {
             const bpmnViewMode = value as BpmnViewMode;
-            if (bpmnViewMode !== null && bpmnViewMode !== mode) {
+            if (bpmnViewMode !== mode) {
                 // Don't leave the XML tab with a document the diagram cannot show, the
                 // user would end up on an empty canvas without their text.
                 if (mode === "xml" && modelerRef.current && monacoRef.current) {
@@ -221,28 +225,6 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
 
     return (
         <div className={cx(classes.root, className)}>
-            {!modelerTabOptions?.disabled && (
-                <BpmnEditor
-                    xml={xml}
-                    active={mode === "bpmn"}
-                    onEvent={onEvent}
-                    modelerOptions={modelerOptions}
-                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
-                    bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
-                    className={modelerTabOptions?.className}
-                />
-            )}
-
-            {!xmlTabOptions?.disabled && (
-                <XmlEditor
-                    xml={xml}
-                    active={mode === "xml"}
-                    monacoOptions={monacoOptions}
-                    onChanged={onXmlChanged}
-                    className={xmlTabOptions?.className}
-                />
-            )}
-
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
                 <ToggleGroup
                     className={classes.modeToggle}
@@ -274,6 +256,28 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     ]}
                     onChange={changeMode}
                     active={mode}
+                />
+            )}
+
+            {!modelerTabOptions?.disabled && (
+                <BpmnEditor
+                    xml={xml}
+                    active={mode === "bpmn"}
+                    onEvent={onEvent}
+                    modelerOptions={modelerOptions}
+                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
+                    bpmnJsOptions={modelerTabOptions?.bpmnJsOptions}
+                    className={modelerTabOptions?.className}
+                />
+            )}
+
+            {!xmlTabOptions?.disabled && (
+                <XmlEditor
+                    xml={xml}
+                    active={mode === "xml"}
+                    monacoOptions={monacoOptions}
+                    onChanged={onXmlChanged}
+                    className={xmlTabOptions?.className}
                 />
             )}
         </div>

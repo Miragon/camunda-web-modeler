@@ -38,7 +38,10 @@ vi.mock("./bpmnio/bpmn/CustomBpmnJsModeler", () => {
         imports: string[] = [];
         templates: unknown[] | undefined = undefined;
 
-        constructor() {
+        constructor(options: { bpmnJsOptions?: { failOnCreate?: boolean } }) {
+            if (options.bpmnJsOptions?.failOnCreate) {
+                throw new Error("broken module");
+            }
             instances.push(this);
         }
 
@@ -307,6 +310,55 @@ describe("BpmnModeler", () => {
 
         expect(instances).toHaveLength(1);
         expect(instances[0].templates).toBe(templates);
+    });
+
+    it("calls monacoOptions.props.onMount in addition to filling the refs", async () => {
+        const onMount = vi.fn();
+        const editorRef: { current: unknown } = { current: null };
+        const MonacoHost = () => {
+            const xmlTabOptions = useMemo(
+                () => ({
+                    monacoOptions: { refs: [editorRef as never], props: { onMount } },
+                }),
+                [],
+            );
+            return (
+                <BpmnModeler
+                    xml="<A/>"
+                    onEvent={() => undefined}
+                    xmlTabOptions={xmlTabOptions}
+                />
+            );
+        };
+        await render(<MonacoHost />);
+        await click("XML");
+
+        expect(onMount).toHaveBeenCalledTimes(1);
+        expect(editorRef.current).not.toBeNull();
+    });
+
+    it("reports a modeler that cannot be created instead of crashing the host", async () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        const BrokenHost = () => {
+            const options = useMemo(
+                () => ({ bpmnJsOptions: { failOnCreate: true } }),
+                [],
+            );
+            return (
+                <BpmnModeler
+                    xml="<A/>"
+                    onEvent={e => {
+                        received.push(e);
+                    }}
+                    modelerTabOptions={options}
+                />
+            );
+        };
+        await render(<BrokenHost />);
+
+        expect(container.querySelector('[role="group"]')).not.toBeNull();
+        expect(notifications().map(e => e.data.severity)).toEqual(["error"]);
+        error.mockRestore();
     });
 
     it("does not ping-pong with a host that applies content.saved late", async () => {

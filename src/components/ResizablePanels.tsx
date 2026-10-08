@@ -1,7 +1,6 @@
 import React, {
     PointerEvent as ReactPointerEvent,
     KeyboardEvent as ReactKeyboardEvent,
-    MouseEvent as ReactMouseEvent,
     ReactNode,
     useCallback,
     useEffect,
@@ -34,13 +33,26 @@ export interface ResizablePanelsProps {
     firstPanelSize?: PanelSize;
     /** Second-panel size constraints in %. Defaults 25 / 5 / 95. */
     secondPanelSize?: PanelSize;
+    /**
+     * Hides the second panel and the divider while true. The panel stays mounted (its
+     * content may be owned by bpmn-js / dmn-js) and keeps its size for when it is shown
+     * again.
+     */
+    secondPanelHidden?: boolean;
     /** Fired on mount with the initial sizes and on every subsequent change. */
     onResize?: (firstSize: number, secondSize: number) => void;
 }
 
-const DIVIDER_WIDTH = 5;
+/** Visible width of the divider line in px. The grab area is wider, see `divider`. */
+const DIVIDER_WIDTH = 1;
 /** Step (in %) applied per ArrowLeft/ArrowRight press on the focused divider. */
 const KEYBOARD_STEP = 1;
+/** Step (in %) applied per Shift+ArrowLeft/ArrowRight press. */
+const KEYBOARD_STEP_LARGE = 10;
+
+const ACCENT = "var(--cwm-accent-color, hsl(205, 100%, 40%))";
+
+let panelIdCounter = 0;
 
 const useStyles = tss.create(() => ({
     root: {
@@ -57,17 +69,49 @@ const useStyles = tss.create(() => ({
         minWidth: 0,
         overflow: "hidden",
     },
-    divider: {
+    dividerArea: {
         flex: "none",
         position: "relative",
+        // Above both panels, so the widened grab area and the toggle are not covered.
+        zIndex: 1,
         width: `${DIVIDER_WIDTH}px`,
+    },
+    divider: {
+        position: "absolute",
+        inset: 0,
         cursor: "col-resize",
-        backgroundColor: "rgba(0, 0, 0, 0.25)",
         touchAction: "none",
+        backgroundColor: "var(--cwm-divider-color, rgba(0, 0, 0, 0.15))",
+        transition: "background-color 120ms ease-out",
+        outline: "none",
+        // Widens the grab area without widening the visible line.
+        "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: "-4px",
+            right: "-4px",
+        },
+        "&:hover, &[data-dragging='true']": {
+            backgroundColor: ACCENT,
+        },
+        "&:focus-visible": {
+            backgroundColor: ACCENT,
+            boxShadow: `0 0 0 2px ${ACCENT}`,
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+            transition: "none",
+        },
     },
     secondPanel: {
         flex: "none",
         overflow: "hidden",
+    },
+    collapsedPanel: {
+        // Keeps the content mounted (bpmn-js / dmn-js own it) but takes it out of the
+        // tab order and the accessibility tree.
+        visibility: "hidden",
     },
     toggleButton: {
         position: "absolute",
@@ -77,20 +121,23 @@ const useStyles = tss.create(() => ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: "20px",
+        width: "24px",
         height: "40px",
         padding: 0,
-        border: "none",
-        cursor: "pointer",
-        color: "rgba(0, 0, 0, 0.54)",
-        fill: "rgba(0, 0, 0, 0.54)",
-        backgroundColor: "rgba(0, 0, 0, 0.1)",
+        border: "1px solid var(--cwm-divider-color, rgba(0, 0, 0, 0.15))",
+        borderRight: "none",
         borderTopLeftRadius: "4px",
         borderBottomLeftRadius: "4px",
+        cursor: "pointer",
+        color: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "var(--cwm-surface-color, #fff)",
         "&:hover": {
             color: "rgba(0, 0, 0, 0.87)",
-            fill: "rgba(0, 0, 0, 0.87)",
-            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            backgroundColor: "var(--cwm-hover-color, rgba(0, 0, 0, 0.06))",
+        },
+        "&:focus-visible": {
+            outline: `2px solid ${ACCENT}`,
+            outlineOffset: "-2px",
         },
     },
 }));
@@ -103,6 +150,9 @@ const useStyles = tss.create(() => ({
  * Only the second (properties) panel's size is tracked as state; the first (modeler)
  * panel flexes to the remainder. Keeping a single source of truth makes the math 1:1
  * with the emitted `onResize` second value.
+ *
+ * The divider follows the WAI-ARIA window splitter pattern: arrow keys resize (Shift
+ * for larger steps), Enter toggles, Home collapses and End maximizes the panel.
  */
 const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
     const {
@@ -112,6 +162,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         secondPanel,
         firstPanelSize,
         secondPanelSize,
+        secondPanelHidden = false,
         onResize,
     } = props;
 
@@ -122,12 +173,20 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         [firstPanelSize, secondPanelSize],
     );
 
-    const initialSize = secondPanelSize?.initial ?? 25;
+    const clampToBounds = useCallback(
+        (pct: number) => Math.min(bounds.max, Math.max(bounds.min, pct)),
+        [bounds],
+    );
 
     // `sizePct` is the panel's size while expanded; `collapsed` overrides it to 0 for
     // both layout and the emitted event, while preserving a size to restore on reopen.
-    const [sizePct, setSizePct] = useState(initialSize);
+    // An initial size outside the bounds would otherwise render a 0 px panel.
+    const [sizePct, setSizePct] = useState(() =>
+        clampToBounds(secondPanelSize?.initial ?? 25),
+    );
     const [collapsed, setCollapsed] = useState(false);
+    const [dragging, setDragging] = useState(false);
+    const [panelId] = useState(() => `cwm-resizable-panel-${String(++panelIdCounter)}`);
 
     const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -159,6 +218,14 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         },
         [bounds],
     );
+
+    /**
+     * Shows the panel again at the width it had before it was collapsed.
+     */
+    const expand = useCallback(() => {
+        setCollapsed(false);
+        setSizePct(clampToBounds);
+    }, [clampToBounds]);
 
     /**
      * Translates a pointer x-coordinate into the second panel's percentage. The second
@@ -195,13 +262,15 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
     const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
+        setDragging(true);
         // Suppress text selection / cursor flicker across the whole document while
         // dragging, mirroring react-resizable-panels' drag affordance.
         document.body.style.cursor = "col-resize";
         document.body.style.userSelect = "none";
     }, []);
 
-    const resetBodyDragStyles = useCallback(() => {
+    const resetDrag = useCallback(() => {
+        setDragging(false);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
     }, []);
@@ -211,32 +280,61 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                 event.currentTarget.releasePointerCapture(event.pointerId);
             }
-            resetBodyDragStyles();
+            resetDrag();
         },
-        [resetBodyDragStyles],
+        [resetDrag],
     );
 
     // Don't leave the document stuck in drag styling if we unmount mid-drag.
-    useEffect(() => resetBodyDragStyles, [resetBodyDragStyles]);
+    useEffect(
+        () => () => {
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+        },
+        [],
+    );
 
     const handleKeyDown = useCallback(
         (event: ReactKeyboardEvent<HTMLDivElement>) => {
-            // ArrowLeft grows the right-hand panel (divider moves left); ArrowRight shrinks it.
-            if (event.key === "ArrowLeft") {
-                event.preventDefault();
-                applyRawSize(secondSize + KEYBOARD_STEP);
-            } else if (event.key === "ArrowRight") {
-                event.preventDefault();
-                applyRawSize(secondSize - KEYBOARD_STEP);
+            const step = event.shiftKey ? KEYBOARD_STEP_LARGE : KEYBOARD_STEP;
+            switch (event.key) {
+                // ArrowLeft grows the right-hand panel (divider moves left); on a
+                // collapsed panel it reopens it.
+                case "ArrowLeft":
+                    if (collapsed) {
+                        expand();
+                    } else {
+                        applyRawSize(sizePct + step);
+                    }
+                    break;
+                case "ArrowRight":
+                    if (!collapsed) {
+                        applyRawSize(sizePct - step);
+                    }
+                    break;
+                case "Enter":
+                    if (collapsed) {
+                        expand();
+                    } else {
+                        setCollapsed(true);
+                    }
+                    break;
+                case "Home":
+                    setCollapsed(true);
+                    break;
+                case "End":
+                    setCollapsed(false);
+                    setSizePct(bounds.max);
+                    break;
+                default:
+                    return;
             }
+            event.preventDefault();
         },
-        [applyRawSize, secondSize],
+        [applyRawSize, bounds.max, collapsed, expand, sizePct],
     );
 
-    const openPanel = useCallback(() => {
-        setCollapsed(false);
-        setSizePct(initialSize);
-    }, [initialSize]);
+    const toggleLabel = collapsed ? "Open properties panel" : "Close properties panel";
 
     return (
         <div
@@ -246,48 +344,63 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             <div className={classes.firstPanel}>{firstPanel}</div>
 
             <div
-                className={classes.divider}
-                role="separator"
-                aria-orientation="vertical"
-                tabIndex={0}
-                onPointerDown={handlePointerDown}
-                onPointerMove={handlePointerMove}
-                onPointerUp={endDrag}
-                onPointerCancel={endDrag}
-                onLostPointerCapture={resetBodyDragStyles}
-                onKeyDown={handleKeyDown}
+                className={cx(classes.dividerArea, secondPanelHidden && classes.hidden)}
             >
-                {collapsed && (
-                    <button
-                        type="button"
-                        className={classes.toggleButton}
-                        aria-label="Open properties panel"
-                        title="Open properties panel"
-                        // Prevent the click from initiating a divider drag.
-                        onPointerDown={(e: ReactPointerEvent) => {
-                            e.stopPropagation();
-                        }}
-                        onMouseDown={(e: ReactMouseEvent) => {
-                            e.stopPropagation();
-                        }}
-                        onClick={openPanel}
-                    >
-                        <svg width="12" height="12" viewBox="0 0 24 24">
-                            <path
-                                d="M15 6l-6 6 6 6"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                            />
-                        </svg>
-                    </button>
-                )}
+                <div
+                    className={classes.divider}
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-label="Resize properties panel"
+                    aria-controls={panelId}
+                    aria-valuenow={Math.round(secondSize)}
+                    aria-valuemin={0}
+                    aria-valuemax={Math.round(bounds.max)}
+                    aria-valuetext={
+                        collapsed ? "Collapsed" : `${String(Math.round(secondSize))} %`
+                    }
+                    data-dragging={dragging}
+                    tabIndex={0}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    onLostPointerCapture={resetDrag}
+                    onKeyDown={handleKeyDown}
+                />
+                <button
+                    type="button"
+                    className={classes.toggleButton}
+                    aria-expanded={!collapsed}
+                    aria-controls={panelId}
+                    aria-label={toggleLabel}
+                    title={toggleLabel}
+                    onClick={
+                        collapsed
+                            ? expand
+                            : () => {
+                                  setCollapsed(true);
+                              }
+                    }
+                >
+                    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d={collapsed ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        />
+                    </svg>
+                </button>
             </div>
 
             <div
-                className={classes.secondPanel}
-                style={{ width: `${secondSize}%` }}
-                aria-hidden={collapsed}
+                id={panelId}
+                className={cx(
+                    classes.secondPanel,
+                    collapsed && classes.collapsedPanel,
+                    secondPanelHidden && classes.hidden,
+                )}
+                style={{ width: `${String(secondSize)}%` }}
             >
                 {secondPanel}
             </div>

@@ -24,15 +24,13 @@ import { tss } from "tss-react";
  */
 const UI_UPDATE_REQUIRED_EVENTS = [
     "import.done",
-    "saveXML.done",
     "attach",
-    "dmn.views.changed",
     "views.changed",
-    "view.contentChanged",
-    "view.selectionChanged",
-    "view.directEditingChanged",
-    "propertiesPanel.focusin",
-    "propertiesPanel.focusout",
+    "commandStack.changed",
+    "selection.changed",
+    "elements.changed",
+    "directEditing.activate",
+    "directEditing.deactivate",
 ];
 
 /**
@@ -47,28 +45,28 @@ export interface DmnPropertiesPanelOptions {
     hidden?: boolean;
 
     /**
-     * The initial, minimum, and maximum sizes of the properties panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the properties panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "25"
+        // Default 25
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 
     /**
      * The container to host the properties panel. By default, a styled div is created. If you
-     * pass this option, make sure you set an ID and pass it via the `containerId` prop.
-     * Pass `false` to prevent the rendering of this component.
+     * pass your own element (or `false` to render none here), pass a CSS selector for the
+     * element to use via `containerId`; it must exist when the modeler is created.
      */
     container?: ReactNode;
 
     /**
-     * The ID of the container to host the properties panel. Only required if you want to
-     * use your own container.
+     * A CSS selector (e.g. `"#my-properties-panel"`) for the element to host the properties
+     * panel. Only required if you want to use your own container.
      */
     containerId?: string;
 
@@ -88,28 +86,28 @@ export interface DmnModelerOptions {
     refs?: MutableRefObject<CustomDmnJsModeler | undefined>[];
 
     /**
-     * The initial, minimum, and maximum sizes of the modeler panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "75"
+        // Default 75
         initial?: number;
-        // Default "95"
+        // Default 5
         min?: number;
-        // Default "5"
+        // Default 95
         max?: number;
     };
 
     /**
      * The container to host the modeler. By default, a styled div is created. If you pass
-     * this option, make sure you set an ID and pass it via the `containerId` prop.
-     * Pass `false` to prevent the rendering of this component.
+     * your own element (or `false` to render none here), pass a CSS selector for the element
+     * to use via `containerId`; it must exist when the modeler is created.
      */
     container?: ReactNode;
 
     /**
-     * The ID of the container to host the modeler. Only required if you want to use your own
-     * container.
+     * A CSS selector (e.g. `"#my-modeler"`) for the element to host the modeler. Only
+     * required if you want to use your own container.
      */
     containerId?: string;
 
@@ -141,7 +139,7 @@ export interface DmnEditorProps {
     onEvent: (event: Event<any, any>) => void;
 
     /**
-     * The class name applied to the host of the properties panel.
+     * The class name applied to the root element.
      */
     className?: string;
 
@@ -203,6 +201,8 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     } = props;
 
     const [modeler, setModeler] = useState<CustomDmnJsModeler | undefined>(undefined);
+    // The properties panel only supports the DRD; other views leave it empty.
+    const [activeViewType, setActiveViewType] = useState<string | undefined>(undefined);
 
     const modelerContainerRef = useRef<HTMLDivElement | null>(null);
     const propertiesPanelContainerRef = useRef<HTMLDivElement | null>(null);
@@ -292,13 +292,29 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             return undefined;
         }
 
-        const instance = new CustomDmnJsModeler({
-            container: modelerContainer,
-            propertiesPanel: panelHidden
-                ? undefined
-                : (panelContainerId ?? propertiesPanelContainerRef.current ?? undefined),
-            dmnJsOptions: dmnJsOptions,
-        });
+        let instance: CustomDmnJsModeler;
+        try {
+            instance = new CustomDmnJsModeler({
+                container: modelerContainer,
+                propertiesPanel: panelHidden
+                    ? undefined
+                    : (panelContainerId ??
+                      propertiesPanelContainerRef.current ??
+                      undefined),
+                dmnJsOptions: dmnJsOptions,
+            });
+        } catch (e) {
+            // E.g. a container selector that matches nothing or a broken module in the
+            // options. Report it instead of taking down the host application.
+            console.error("Could not create the modeler", e);
+            onEventRef.current(
+                createNotificationEvent(
+                    "Could not create the modeler. See console for details.",
+                    "error",
+                ),
+            );
+            return undefined;
+        }
 
         // Every view has its own viewer with its own event bus. Viewers are created
         // lazily on first open, so (re-)register whenever the active view changes. The
@@ -306,6 +322,9 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         // stops the event's propagation in diagram-js.
         const onViewsChanged = (event: { type: string }, data: any) => {
             instance.registerGlobalEventListener(handleEvent);
+            if (data?.activeView) {
+                setActiveViewType(data.activeView.type);
+            }
             handleEvent(event.type, data);
         };
         instance.on("views.changed", onViewsChanged);
@@ -319,7 +338,14 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             instance.destroy();
             setModeler(undefined);
         };
-    }, [handleEvent, dmnJsOptions, panelHidden, panelContainerId, modelerContainerId]);
+    }, [
+        handleEvent,
+        onEventRef,
+        dmnJsOptions,
+        panelHidden,
+        panelContainerId,
+        modelerContainerId,
+    ]);
 
     /**
      * Hands the instance to the refs passed by the host.
@@ -482,6 +508,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             secondPanel={propertiesPanelContainer}
             firstPanelSize={modelerOptions?.size}
             secondPanelSize={propertiesPanelOptions?.size}
+            secondPanelHidden={activeViewType !== undefined && activeViewType !== "drd"}
             onResize={onPropertiesPanelWidthChanged}
         />
     );

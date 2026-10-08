@@ -1,25 +1,65 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { BpmnModeler, DmnModeler, Event, isContentSavedEvent } from "../src";
+import {
+    BpmnModeler,
+    DmnModeler,
+    Event,
+    isContentSavedEvent,
+    isNotificationEvent,
+    NotificationEventData,
+} from "../src";
 import { EMPTY_BPMN, EMPTY_DMN } from "./diagrams";
 
 type Mode = "bpmn" | "dmn";
 
 const rootStyle: React.CSSProperties = {
-    position: "relative",
+    display: "flex",
+    flexDirection: "column",
     height: "100%",
     width: "100%",
+    fontFamily: "Arial, sans-serif",
 };
 
-const toolbarStyle: React.CSSProperties = {
-    position: "absolute",
-    zIndex: 100,
-    top: 12,
-    left: "50%",
-    transform: "translateX(-50%)",
+// A header bar instead of a floating toolbar, so the playground does not cover the
+// modeler (e.g. the first XML line or the properties panel header).
+const headerStyle: React.CSSProperties = {
+    flex: "none",
     display: "flex",
+    alignItems: "center",
     gap: 8,
+    padding: "6px 12px",
+    borderBottom: "1px solid rgba(0, 0, 0, 0.15)",
+    fontSize: 14,
 };
+
+const modelerAreaStyle: React.CSSProperties = {
+    flex: "1 1 0",
+    minHeight: 0,
+};
+
+const notificationsStyle: React.CSSProperties = {
+    position: "fixed",
+    zIndex: 100,
+    right: 16,
+    bottom: 16,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    maxWidth: 420,
+};
+
+const SEVERITY_COLORS: Record<NotificationEventData["severity"], string> = {
+    success: "#2e7d32",
+    info: "#0277bd",
+    warning: "#ed6c02",
+    error: "#c62828",
+};
+
+interface Notification extends NotificationEventData {
+    id: number;
+}
+
+let notificationId = 0;
 
 /**
  * Hands host-level events to browser tests: a test defines `window.__cwmEvents` (e.g.
@@ -51,49 +91,101 @@ const App: React.FC = () => {
     const [mode, setMode] = useState<Mode>("bpmn");
     const [bpmnXml, setBpmnXml] = useState<string>(EMPTY_BPMN);
     const [dmnXml, setDmnXml] = useState<string>(EMPTY_DMN);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
-    const onBpmnEvent = useCallback((event: Event<any, any>) => {
-        recordEvent("bpmn", event);
-        if (isContentSavedEvent(event)) {
-            setBpmnXml(event.data.xml);
+    // Shows what a host is supposed to surface; the library itself renders none.
+    const notify = useCallback((event: Event<any, any>) => {
+        if (isNotificationEvent(event)) {
+            setNotifications(current => [
+                ...current,
+                { ...event.data, id: ++notificationId },
+            ]);
         }
     }, []);
 
-    const onDmnEvent = useCallback((event: Event<any, any>) => {
-        recordEvent("dmn", event);
-        if (isContentSavedEvent(event)) {
-            setDmnXml(event.data.xml);
+    useEffect(() => {
+        if (notifications.length === 0) {
+            return undefined;
         }
-    }, []);
+        const timer = setTimeout(() => {
+            setNotifications(current => current.slice(1));
+        }, 6000);
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [notifications]);
+
+    const onBpmnEvent = useCallback(
+        (event: Event<any, any>) => {
+            recordEvent("bpmn", event);
+            notify(event);
+            if (isContentSavedEvent(event)) {
+                setBpmnXml(event.data.xml);
+            }
+        },
+        [notify],
+    );
+
+    const onDmnEvent = useCallback(
+        (event: Event<any, any>) => {
+            recordEvent("dmn", event);
+            notify(event);
+            if (isContentSavedEvent(event)) {
+                setDmnXml(event.data.xml);
+            }
+        },
+        [notify],
+    );
 
     return (
         <div style={rootStyle}>
-            <div style={toolbarStyle}>
-                <button
-                    type="button"
-                    disabled={mode === "bpmn"}
-                    onClick={() => {
-                        setMode("bpmn");
-                    }}
+            <header style={headerStyle}>
+                <strong>Playground</strong>
+                <div
+                    role="group"
+                    aria-label="Modeler"
+                    style={{ display: "flex", gap: 4 }}
                 >
-                    BPMN
-                </button>
-                <button
-                    type="button"
-                    disabled={mode === "dmn"}
-                    onClick={() => {
-                        setMode("dmn");
-                    }}
-                >
-                    DMN
-                </button>
-            </div>
+                    {(["bpmn", "dmn"] as const).map(option => (
+                        <button
+                            key={option}
+                            type="button"
+                            aria-pressed={mode === option}
+                            style={{ fontWeight: mode === option ? "bold" : "normal" }}
+                            onClick={() => {
+                                setMode(option);
+                            }}
+                        >
+                            {option.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+            </header>
 
-            {mode === "bpmn" ? (
-                <BpmnModeler xml={bpmnXml} onEvent={onBpmnEvent} />
-            ) : (
-                <DmnModeler xml={dmnXml} onEvent={onDmnEvent} />
-            )}
+            <main style={modelerAreaStyle}>
+                {mode === "bpmn" ? (
+                    <BpmnModeler xml={bpmnXml} onEvent={onBpmnEvent} />
+                ) : (
+                    <DmnModeler xml={dmnXml} onEvent={onDmnEvent} />
+                )}
+            </main>
+
+            <div style={notificationsStyle} role="status" aria-live="polite">
+                {notifications.map(notification => (
+                    <div
+                        key={notification.id}
+                        style={{
+                            padding: "8px 12px",
+                            borderRadius: 4,
+                            color: "#fff",
+                            fontSize: 14,
+                            backgroundColor: SEVERITY_COLORS[notification.severity],
+                        }}
+                    >
+                        {notification.message}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

@@ -24,13 +24,10 @@ import { useLatest } from "./useLatest";
  */
 const UI_UPDATE_REQUIRED_EVENTS = [
     "import.done",
-    "saveXML.done",
     "commandStack.changed",
     "selection.changed",
     "attach",
-    "elements.copied",
-    "propertiesPanel.focusin",
-    "propertiesPanel.focusout",
+    "copyPaste.elementsCopied",
     "directEditing.activate",
     "directEditing.deactivate",
     "searchPad.closed",
@@ -50,28 +47,28 @@ export interface BpmnPropertiesPanelOptions {
     hidden?: boolean;
 
     /**
-     * The initial, minimum, and maximum sizes of the properties panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the properties panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "25"
+        // Default 25
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 
     /**
      * The container to host the properties panel. By default, a styled div is created. If you
-     * pass this option, make sure you set an ID and pass it via the `containerId` prop.
-     * Pass `false` to prevent the rendering of this component.
+     * pass your own element (or `false` to render none here), pass a CSS selector for the
+     * element to use via `containerId`; it must exist when the modeler is created.
      */
     container?: ReactNode;
 
     /**
-     * The ID of the container to host the properties panel. Only required if you want to
-     * use your own container.
+     * A CSS selector (e.g. `"#my-properties-panel"`) for the element to host the properties
+     * panel. Only required if you want to use your own container.
      */
     containerId?: string;
 
@@ -96,28 +93,28 @@ export interface BpmnModelerOptions {
     refs?: MutableRefObject<CustomBpmnJsModeler | undefined>[];
 
     /**
-     * The initial, minimum, and maximum sizes of the modeler panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "75"
+        // Default 75
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 
     /**
      * The container to host the modeler. By default, a styled div is created. If you pass
-     * this option, make sure you set an ID and pass it via the `containerId` prop.
-     * Pass `false` to prevent the rendering of this component.
+     * your own element (or `false` to render none here), pass a CSS selector for the element
+     * to use via `containerId`; it must exist when the modeler is created.
      */
     container?: ReactNode;
 
     /**
-     * The ID of the container to host the modeler. Only required if you want to use your own
-     * container.
+     * A CSS selector (e.g. `"#my-modeler"`) for the element to host the modeler. Only
+     * required if you want to use your own container.
      */
     containerId?: string;
 
@@ -289,13 +286,29 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             return undefined;
         }
 
-        const instance = new CustomBpmnJsModeler({
-            container: modelerContainer,
-            propertiesPanel: panelHidden
-                ? undefined
-                : (panelContainerId ?? propertiesPanelContainerRef.current ?? undefined),
-            bpmnJsOptions: bpmnJsOptions,
-        });
+        let instance: CustomBpmnJsModeler;
+        try {
+            instance = new CustomBpmnJsModeler({
+                container: modelerContainer,
+                propertiesPanel: panelHidden
+                    ? undefined
+                    : (panelContainerId ??
+                      propertiesPanelContainerRef.current ??
+                      undefined),
+                bpmnJsOptions: bpmnJsOptions,
+            });
+        } catch (e) {
+            // E.g. a container selector that matches nothing or a broken module in the
+            // options. Report it instead of taking down the host application.
+            console.error("Could not create the modeler", e);
+            onEventRef.current(
+                createNotificationEvent(
+                    "Could not create the modeler. See console for details.",
+                    "error",
+                ),
+            );
+            return undefined;
+        }
         instance.registerGlobalEventListener(handleEvent);
         echoes.current.reset();
         setModeler(instance);
@@ -305,7 +318,14 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             instance.destroy();
             setModeler(undefined);
         };
-    }, [handleEvent, bpmnJsOptions, panelHidden, panelContainerId, modelerContainerId]);
+    }, [
+        handleEvent,
+        onEventRef,
+        bpmnJsOptions,
+        panelHidden,
+        panelContainerId,
+        modelerContainerId,
+    ]);
 
     /**
      * Hands the instance to the refs passed by the host.
