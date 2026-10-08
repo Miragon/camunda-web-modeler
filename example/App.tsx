@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
     BpmnModeler,
     DmnModeler,
-    Event,
+    ModelerEvent,
     isContentSavedEvent,
     isNotificationEvent,
     NotificationEventData,
@@ -66,7 +66,7 @@ let notificationId = 0;
  * via Playwright's `addInitScript`) and inspects what the host received. bpmn.io's own
  * events are skipped, they are far too many.
  */
-const recordEvent = (modeler: Mode, event: Event<any, any>) => {
+const recordEvent = (modeler: Mode, event: ModelerEvent) => {
     const sink = (window as unknown as { __cwmEvents?: unknown[] }).__cwmEvents;
     if (sink && event.source !== "bpmnio") {
         sink.push({
@@ -94,7 +94,7 @@ const App: React.FC = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
     // Shows what a host is supposed to surface; the library itself renders none.
-    const notify = useCallback((event: Event<any, any>) => {
+    const notify = useCallback((event: ModelerEvent) => {
         if (isNotificationEvent(event)) {
             setNotifications(current => [
                 ...current,
@@ -116,7 +116,7 @@ const App: React.FC = () => {
     }, [notifications]);
 
     const onBpmnEvent = useCallback(
-        (event: Event<any, any>) => {
+        (event: ModelerEvent) => {
             recordEvent("bpmn", event);
             notify(event);
             if (isContentSavedEvent(event)) {
@@ -127,7 +127,7 @@ const App: React.FC = () => {
     );
 
     const onDmnEvent = useCallback(
-        (event: Event<any, any>) => {
+        (event: ModelerEvent) => {
             recordEvent("dmn", event);
             notify(event);
             if (isContentSavedEvent(event)) {

@@ -1,6 +1,4 @@
-import { Event } from "../Events";
-
-const EventName = "content.saved";
+import type { ModelerEvent } from "../Events";
 
 export type ContentSavedReason =
     /**
@@ -39,13 +37,19 @@ export interface ContentSavedEventData {
     reason: ContentSavedReason;
 }
 
+export interface ContentSavedEvent {
+    source: "modeler";
+    event: "content.saved";
+    data: ContentSavedEventData;
+}
+
 export const createContentSavedEvent = (
     xml: string,
     svg: string | undefined,
     reason: ContentSavedReason,
-): Event<ContentSavedEventData> => ({
+): ContentSavedEvent => ({
     source: "modeler",
-    event: EventName,
+    event: "content.saved",
     data: {
         xml,
         svg,
@@ -53,7 +57,5 @@ export const createContentSavedEvent = (
     },
 });
 
-export const isContentSavedEvent = (
-    event: Event<any>,
-): event is Event<ContentSavedEventData> =>
-    event.source === "modeler" && event.event === EventName;
+export const isContentSavedEvent = (event: ModelerEvent): event is ContentSavedEvent =>
+    event.source === "modeler" && event.event === "content.saved";

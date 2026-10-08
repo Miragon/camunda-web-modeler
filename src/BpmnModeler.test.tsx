@@ -3,7 +3,7 @@ import { createRoot, Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BpmnModeler from "./BpmnModeler";
-import { Event } from "./events";
+import { isContentSavedEvent, isNotificationEvent, ModelerEvent } from "./events";
 
 /**
  * Lifecycle tests for BpmnModeler. bpmn-js and Monaco need a real browser, so both are
@@ -143,7 +143,7 @@ const flush = async () => {
 
 let container: HTMLDivElement;
 let root: Root;
-let received: Event<any, any>[];
+let received: ModelerEvent[];
 
 const render = async (element: React.ReactElement) => {
     await run(() => {
@@ -162,8 +162,8 @@ const click = async (label: string) => {
     await flush();
 };
 
-const saved = () => received.filter(e => e.event === "content.saved");
-const notifications = () => received.filter(e => e.event === "notification");
+const saved = () => received.filter(isContentSavedEvent);
+const notifications = () => received.filter(isNotificationEvent);
 
 /**
  * A host following the README: memoized onEvent, stores content.saved in state.
@@ -173,9 +173,9 @@ const Host: React.FC<{ initial?: string; templates?: unknown[] }> = ({
     templates,
 }) => {
     const [xml, setXml] = useState(initial);
-    const onEvent = useCallback((event: Event<any, any>) => {
+    const onEvent = useCallback((event: ModelerEvent) => {
         received.push(event);
-        if (event.event === "content.saved") {
+        if (isContentSavedEvent(event)) {
             setXml(event.data.xml);
         }
     }, []);
@@ -364,9 +364,9 @@ describe("BpmnModeler", () => {
     it("does not ping-pong with a host that applies content.saved late", async () => {
         const DelayedHost = () => {
             const [xml, setXml] = useState("<A v=0/>");
-            const onEvent = useCallback((event: Event<any, any>) => {
-                if (event.event === "content.saved") {
-                    const next = event.data.xml as string;
+            const onEvent = useCallback((event: ModelerEvent) => {
+                if (isContentSavedEvent(event)) {
+                    const next = event.data.xml;
                     setTimeout(() => {
                         setXml(next);
                     }, 10);

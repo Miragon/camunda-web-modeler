@@ -1,6 +1,4 @@
-import type { Event } from "../Events";
-
-const EventName = "notification";
+import type { ModelerEvent } from "../Events";
 
 export type NotificationSeverity = "success" | "info" | "warning" | "error";
 
@@ -20,19 +18,23 @@ export interface NotificationEventData {
     severity: NotificationSeverity;
 }
 
+export interface NotificationEvent {
+    source: "modeler";
+    event: "notification";
+    data: NotificationEventData;
+}
+
 export const createNotificationEvent = (
     message: string,
     severity: NotificationSeverity,
-): Event<NotificationEventData> => ({
+): NotificationEvent => ({
     source: "modeler",
-    event: EventName,
+    event: "notification",
     data: {
         message,
         severity,
     },
 });
 
-export const isNotificationEvent = (
-    event: Event<any>,
-): event is Event<NotificationEventData> =>
-    event.source === "modeler" && event.event === EventName;
+export const isNotificationEvent = (event: ModelerEvent): event is NotificationEvent =>
+    event.source === "modeler" && event.event === "notification";

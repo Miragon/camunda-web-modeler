@@ -13,7 +13,7 @@ import DmnEditor, {
     DmnPropertiesPanelOptions,
 } from "./editor/DmnEditor";
 import XmlEditor, { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
-import { Event, isBpmnIoEvent } from "./events";
+import { isBpmnIoEvent, ModelerEvent } from "./events";
 import {
     ContentSavedReason,
     createContentSavedEvent,
@@ -64,7 +64,7 @@ export interface DmnModelerProps {
     /**
      * Called whenever an event occurs.
      */
-    onEvent: (event: Event<any, any>) => void;
+    onEvent: (event: ModelerEvent) => void;
 
     /**
      * Options to customize the modeler tab.
@@ -206,7 +206,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
     );
 
     const localOnEvent = useCallback(
-        (event: Event<any, any>) => {
+        (event: ModelerEvent) => {
             if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
                 const data = event.data as ViewsChangedEvent;
                 setViews(data.views);

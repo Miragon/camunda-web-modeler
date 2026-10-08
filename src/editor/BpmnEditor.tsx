@@ -11,7 +11,7 @@ import { tss } from "tss-react";
 import ResizablePanels from "../components/ResizablePanels";
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
-import { Event } from "../events";
+import { ModelerEvent } from "../events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
 import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesPanelResizedEvent";
@@ -143,7 +143,7 @@ export interface BpmnEditorProps {
     /**
      * Called whenever an event occurs.
      */
-    onEvent: (event: Event<any, any>) => void;
+    onEvent: (event: ModelerEvent) => void;
 
     /**
      * The options passed to the bpmn-js modeler.

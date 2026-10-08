@@ -1,25 +1,30 @@
-import { isBpmnIoEvent } from "./bpmnio/BpmnIoEvents";
-import { Event, ModelerEventType } from "./Events";
+import { BpmnIoEvent, isBpmnIoEvent } from "./bpmnio/BpmnIoEvents";
+import { ModelerEvent, ModelerEventType } from "./Events";
 import {
+    ContentSavedEvent,
     ContentSavedEventData,
     ContentSavedReason,
     isContentSavedEvent,
 } from "./modeler/ContentSavedEvent";
 import {
+    DmnViewsChangedEvent,
     DmnViewsChangedEventData,
     isDmnViewsChangedEvent,
 } from "./modeler/DmnViewsChangedEvent";
 import {
     isNotificationEvent,
+    NotificationEvent,
     NotificationEventData,
     NotificationSeverity,
 } from "./modeler/NotificationEvent";
 import {
     isPropertiesPanelResizedEvent,
+    PropertiesPanelResizedEvent,
     PropertiesPanelResizedEventData,
 } from "./modeler/PropertiesPanelResizedEvent";
 import {
     isUIUpdateRequiredEvent,
+    UIUpdateRequiredEvent,
     UIUpdateRequiredEventData,
 } from "./modeler/UIUpdateRequiredEvent";
 
@@ -33,13 +38,19 @@ export {
 };
 
 export type {
-    Event,
+    ModelerEvent,
     ModelerEventType,
+    BpmnIoEvent,
+    ContentSavedEvent,
     ContentSavedReason,
     ContentSavedEventData,
+    DmnViewsChangedEvent,
     DmnViewsChangedEventData,
+    NotificationEvent,
     NotificationEventData,
     NotificationSeverity,
+    PropertiesPanelResizedEvent,
     PropertiesPanelResizedEventData,
+    UIUpdateRequiredEvent,
     UIUpdateRequiredEventData,
 };
