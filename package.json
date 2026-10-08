@@ -13,7 +13,7 @@
     "dev": "vite example",
     "docs": "typedoc src --exclude src/types --exclude src/components --exclude src/bpmnio --exclude \"src/**/*.test.ts\" --exclude \"src/**/*.test.tsx\" --disableSources --out dist/docs",
     "watch": "tsc -w",
-    "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/strip-css-imports-from-dts.mjs",
+    "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/build-styles.mjs",
     "lint:package": "publint --level error",
     "lint": "eslint -c eslint.config.mjs . --max-warnings 0",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p example/tsconfig.json && node scripts/check-readme-examples.mjs",
@@ -47,6 +47,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./style.css": "./dist/style.css",
+    "./bpmn.css": "./dist/bpmn.css",
+    "./dmn.css": "./dist/dmn.css",
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },

@@ -1,0 +1,11 @@
+/* Styles of the DMN modeler: diagram-js, the dmn-js views and the properties panel. */
+@import "@bpmn-io/properties-panel/dist/assets/properties-panel.css";
+@import "diagram-js/assets/diagram-js.css";
+@import "dmn-js/dist/assets/dmn-font/css/dmn-embedded.css";
+@import "dmn-js/dist/assets/dmn-js-decision-table-controls.css";
+@import "dmn-js/dist/assets/dmn-js-decision-table.css";
+@import "dmn-js/dist/assets/dmn-js-drd.css";
+@import "dmn-js/dist/assets/dmn-js-literal-expression.css";
+@import "dmn-js/dist/assets/dmn-js-shared.css";
+@import "dmn-js/dist/assets/dmn-js-boxed-expression.css";
+@import "dmn-js/dist/assets/dmn-js-boxed-expression-controls.css";

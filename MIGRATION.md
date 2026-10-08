@@ -131,3 +131,21 @@ if (isPropertiesPanelResizedEvent(event)) persist(event.data.sizePercent);
 ```
 
 **Who is affected:** hosts that read `data.width`.
+
+## Import the stylesheet (#233)
+
+The library no longer imports the bpmn.io / dmn.io stylesheets from its JavaScript. Import
+the stylesheet once in your application:
+
+```ts
+import "@miragon/camunda-web-modeler/style.css"; // both modelers
+// or only the one you use:
+import "@miragon/camunda-web-modeler/bpmn.css";
+import "@miragon/camunda-web-modeler/dmn.css";
+```
+
+The icon fonts are embedded. The old `@font-face` fallbacks for Internet Explorer (EOT and
+SVG fonts) are no longer included.
+
+**Who is affected:** everyone. Without the stylesheet the canvas, palette and properties
+panel are unstyled.
