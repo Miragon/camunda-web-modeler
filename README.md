@@ -22,15 +22,16 @@ and DMN in your browser application. It has lots of configuration options and of
 
 ## Requirements
 
-- React 17, 18 or 19 (`react` and `react-dom` are peer dependencies).
+- React 17, 18 or 19 and [monaco-editor](https://github.com/microsoft/monaco-editor) 0.55 or
+  newer (`react`, `react-dom` and `monaco-editor` are peer dependencies).
 - A bundler such as Vite, webpack 5 or Next.js. The package is published as ES modules, and
   its dependencies (bpmn-js, dmn-js, Monaco) only run in the browser. For server-side
   rendering, load the modeler on the client only, e.g. with Next.js:
   `dynamic(() => import("@miragon/camunda-web-modeler").then(m => m.BpmnModeler), { ssr: false })`.
 - The stylesheet, imported once: `@miragon/camunda-web-modeler/style.css` for both
   modelers, or `bpmn.css` / `dmn.css` if you only use one of them.
-- The XML tab uses [monaco-editor](https://github.com/microsoft/monaco-editor), which needs
-  its editor worker. With Vite, register it before the modeler is loaded:
+- Monaco needs its editor worker for the XML editor. With Vite, register it before the
+  modeler is loaded:
 
 ```ts
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
@@ -38,14 +39,19 @@ import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
 ```
 
+Monaco is loaded when the XML editor is shown for the first time, so it is not part of your
+initial bundle; with `xmlEditor={{ disabled: true }}` it is never loaded. To use your own
+Monaco build (e.g. only the editor core and the XML language), pass it or a function
+loading it as `xmlEditor={{ monaco: () => import("./my-monaco") }}`.
+
 ## Getting Started
 
 1. Add this dependency to your application:
 
 ```sh
-npm install @miragon/camunda-web-modeler
+npm install @miragon/camunda-web-modeler monaco-editor
 # or
-yarn add @miragon/camunda-web-modeler
+yarn add @miragon/camunda-web-modeler monaco-editor
 ```
 
 2. Include it in your application:

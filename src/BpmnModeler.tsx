@@ -215,6 +215,15 @@ const BpmnModeler = forwardRef<BpmnModelerHandle, BpmnModelerProps>(
             [handleEvent],
         );
 
+        const onMonacoLoadError = useCallback(() => {
+            handleEvent(
+                createNotificationEvent(
+                    "Could not load the XML editor. See console for details.",
+                    "error",
+                ),
+            );
+        }, [handleEvent]);
+
         if (!hasLoaded) {
             return null;
         }
@@ -275,6 +284,7 @@ const BpmnModeler = forwardRef<BpmnModelerHandle, BpmnModelerProps>(
                         active={mode === "xml"}
                         options={xmlEditor}
                         editorRef={editorRef}
+                        onLoadError={onMonacoLoadError}
                         onChanged={onXmlChanged}
                         className={hostClasses?.xmlEditor}
                     />

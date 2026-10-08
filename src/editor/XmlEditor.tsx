@@ -1,18 +1,12 @@
-import React, {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import deepmerge from "deepmerge";
 import Editor, { loader, OnChange, OnMount } from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
+import type * as monaco from "monaco-editor";
 import { tss } from "tss-react";
 
 import type { XmlEditorOptions } from "../options";
-
-loader.config({ monaco });
+import { useLatest } from "./useLatest";
+import type { MutableRef } from "./MutableRef";
 
 export interface XmlEditorProps {
     /**
@@ -35,12 +29,17 @@ export interface XmlEditorProps {
     /**
      * Options for Monaco.
      */
-    options?: Pick<XmlEditorOptions, "options" | "props">;
+    options?: Pick<XmlEditorOptions, "options" | "props" | "monaco">;
+
+    /**
+     * Called if Monaco cannot be loaded.
+     */
+    onLoadError?: (error: unknown) => void;
 
     /**
      * Receives the editor instance while it is mounted.
      */
-    editorRef?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>;
+    editorRef?: MutableRef<monaco.editor.IStandaloneCodeEditor | null>;
 
     /**
      * The class name applied to the root element.
@@ -59,7 +58,19 @@ const useStyles = tss.create(() => ({
     hidden: {
         display: "none",
     },
+    loading: {
+        padding: "16px",
+        fontFamily: "var(--cwm-font-family, Arial, sans-serif)",
+        fontSize: "14px",
+        color: "rgba(0, 0, 0, 0.6)",
+    },
 }));
+
+/**
+ * Loads the monaco-editor installed next to this library (a peer dependency), in a chunk
+ * of its own.
+ */
+const loadInstalledMonaco = () => import("monaco-editor");
 
 const XmlEditor: React.FC<XmlEditorProps> = props => {
     const { classes, cx } = useStyles();
@@ -70,6 +81,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
         active,
         options: editorOptions,
         editorRef,
+        onLoadError,
         className,
     } = props;
 
@@ -126,6 +138,41 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
         setXmlEditorShown(true);
     }
 
+    /**
+     * Loads Monaco when the editor is shown for the first time: the host's instance or
+     * loader if given, the installed monaco-editor otherwise. Until then neither Monaco
+     * nor its workers are loaded.
+     */
+    const monacoSource = editorOptions?.monaco;
+    const onLoadErrorRef = useLatest(onLoadError);
+    const [monacoState, setMonacoState] = useState<"loading" | "ready" | "failed">(
+        "loading",
+    );
+    useEffect(() => {
+        if (!xmlEditorShown) {
+            return undefined;
+        }
+        let cancelled = false;
+        const source = monacoSource ?? loadInstalledMonaco;
+        Promise.resolve(typeof source === "function" ? source() : source)
+            .then(instance => {
+                loader.config({ monaco: instance });
+                if (!cancelled) {
+                    setMonacoState("ready");
+                }
+            })
+            .catch((e: unknown) => {
+                console.error("Could not load Monaco", e);
+                if (!cancelled) {
+                    setMonacoState("failed");
+                    onLoadErrorRef.current?.(e);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [xmlEditorShown, monacoSource, onLoadErrorRef]);
+
     const options = useMemo(
         () =>
             deepmerge(
@@ -150,6 +197,18 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
      */
     if (!xmlEditorShown) {
         return null;
+    }
+
+    if (monacoState !== "ready") {
+        return (
+            <div className={cx(classes.root, !active && classes.hidden, className)}>
+                <div role="status" className={classes.loading}>
+                    {monacoState === "loading"
+                        ? "Loading XML editor…"
+                        : "The XML editor could not be loaded."}
+                </div>
+            </div>
+        );
     }
 
     return (

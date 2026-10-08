@@ -9,6 +9,7 @@ export type {
     DiagramOptions,
     ModelerClasses,
     ModelerProps,
+    MonacoModule,
     PanelSize,
     PropertiesPanelOptions,
     XmlEditorOptions,
