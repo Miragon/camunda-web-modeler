@@ -1,0 +1,13 @@
+/*
+ * diagram-js makes the canvas focusable (for its keyboard shortcuts), so clicking into
+ * it drew the browser's focus outline as a frame around the whole modeler. Only keyboard
+ * focus gets an indicator.
+ */
+.djs-container svg:focus {
+    outline: none;
+}
+
+.djs-container svg:focus-visible {
+    outline: 2px solid var(--cwm-accent-color, hsl(205, 100%, 40%));
+    outline-offset: -2px;
+}
