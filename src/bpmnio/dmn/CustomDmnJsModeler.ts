@@ -16,10 +16,10 @@ import {
     DmnPropertiesPanelModule,
     DmnPropertiesProviderModule,
 } from "dmn-js-properties-panel";
-import deepmerge from "deepmerge";
 import diagramOriginModule from "diagram-js-origin";
 import Modeler from "dmn-js/lib/Modeler";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
+import { DmnViewType, mergeDmnJsOptions } from "../mergeOptions";
 
 /**
  * The result of opening a view.
@@ -69,7 +69,7 @@ export interface DmnView {
     element: any;
     id: string;
     name: string;
-    type: "drd" | "decisionTable" | "literalExpression";
+    type: DmnViewType;
 }
 
 export interface DmnViewer {
@@ -112,8 +112,10 @@ export interface CustomDmnJsModelerOptions {
     container: string | HTMLElement;
 
     /**
-     * The options passed to dmn-js. Will be merged with the options defined by this library,
-     * with the latter taking precedence in case of conflict.
+     * The options passed to dmn-js. They are merged with the options this library needs:
+     * modules are registered after the library's (and can override its services), also per
+     * view and from `common`; values override the library defaults, and moddle extensions
+     * are merged by key. Only the containers are always the component's.
      * CAUTION: If you pass invalid properties, the modeler can break!
      */
     dmnJsOptions?: any;
@@ -131,17 +133,6 @@ interface Injector {
     get: (name: string, strict?: boolean) => any;
 }
 
-const isArrayOrPlainObject = (value: unknown): boolean => {
-    if (Array.isArray(value)) {
-        return true;
-    }
-    if (value === null || typeof value !== "object") {
-        return false;
-    }
-    const prototype = Object.getPrototypeOf(value);
-    return prototype === Object.prototype || prototype === null;
-};
-
 class CustomDmnJsModeler {
     private modeler: Modeler;
 
@@ -151,74 +142,29 @@ class CustomDmnJsModeler {
      * @param options The options to include
      */
     constructor(options: CustomDmnJsModelerOptions) {
-        const mergedOptions = deepmerge.all(
-            [
-                // The options passed by the user
-                options.dmnJsOptions ?? {},
-
-                // The library's default options
-                {
-                    container: options.container,
-                    drd: {
-                        additionalModules: [
-                            diagramOriginModule,
-                            {
-                                __init__: ["globalEventListenerUtil"],
-                                globalEventListenerUtil: [
-                                    "type",
-                                    GlobalEventListenerUtil,
-                                ],
-                            },
-                        ],
-                    },
-                    decisionTable: {
-                        additionalModules: [
-                            {
-                                __init__: ["globalEventListenerUtil"],
-                                globalEventListenerUtil: [
-                                    "type",
-                                    GlobalEventListenerUtil,
-                                ],
-                            },
-                        ],
-                    },
-                    literalExpression: {
-                        additionalModules: [
-                            {
-                                __init__: ["globalEventListenerUtil"],
-                                globalEventListenerUtil: [
-                                    "type",
-                                    GlobalEventListenerUtil,
-                                ],
-                            },
-                        ],
-                    },
-                    moddleExtensions: {
-                        camunda: camundaModdleDescriptor,
-                    },
-                },
-
-                // The options required to display the properties panel (if desired)
-                // prettier-ignore
-                options.propertiesPanel
-                ? {
-                    drd: {
-                        propertiesPanel: {
-                            parent: options.propertiesPanel,
-                        },
-                        additionalModules: [
-                            DmnPropertiesPanelModule,
-                            DmnPropertiesProviderModule,
-                        ],
-                    },
-                }
-                : {},
-            ],
+        const globalEventListenerModule = {
+            __init__: ["globalEventListenerUtil"],
+            globalEventListenerUtil: ["type", GlobalEventListenerUtil],
+        };
+        const mergedOptions = mergeDmnJsOptions(
             {
-                // Only merge (and thereby copy) arrays and plain objects. Everything else,
-                // e.g. DOM elements passed as containers or module instances, is used as-is.
-                isMergeableObject: isArrayOrPlainObject,
+                container: options.container,
+                propertiesPanel: options.propertiesPanel,
+                modules: {
+                    drd: [diagramOriginModule, globalEventListenerModule],
+                    decisionTable: [globalEventListenerModule],
+                    literalExpression: [globalEventListenerModule],
+                    boxedExpression: [globalEventListenerModule],
+                },
+                propertiesPanelModules: [
+                    DmnPropertiesPanelModule,
+                    DmnPropertiesProviderModule,
+                ],
+                moddleExtensions: {
+                    camunda: camundaModdleDescriptor,
+                },
             },
+            options.dmnJsOptions,
         );
 
         this.modeler = new Modeler(mergedOptions);

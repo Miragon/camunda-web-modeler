@@ -17,7 +17,9 @@ export default defineConfig({
             // The bpmn.io wrappers need a real browser (the playground covers them);
             // jsdom coverage of them would be misleading.
             exclude: [
-                "src/bpmnio/**",
+                "src/bpmnio/bpmn/**",
+                "src/bpmnio/dmn/**",
+                "src/bpmnio/index.ts",
                 "src/types/**",
                 "src/test/**",
                 "src/**/*.test.{ts,tsx}",

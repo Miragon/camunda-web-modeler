@@ -280,6 +280,8 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                                                 view.type === "decisionTable",
                                             "dmn-icon-literal-expression":
                                                 view.type === "literalExpression",
+                                            "dmn-icon-business-knowledge":
+                                                view.type === "boxedExpression",
                                         })}
                                     />
 
