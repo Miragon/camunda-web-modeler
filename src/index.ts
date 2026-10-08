@@ -3,14 +3,16 @@ import DmnModeler from "./DmnModeler";
 
 export { BpmnModeler, DmnModeler };
 
-export type { BpmnModelerProps, BpmnModelerTabOptions } from "./BpmnModeler";
-export type { DmnModelerProps, DmnModelerTabOptions } from "./DmnModeler";
+export type { BpmnModelerHandle, BpmnModelerProps } from "./BpmnModeler";
+export type { DmnModelerHandle, DmnModelerProps } from "./DmnModeler";
 export type {
-    BpmnModelerOptions,
-    BpmnPropertiesPanelOptions,
-} from "./editor/BpmnEditor";
-export type { DmnModelerOptions, DmnPropertiesPanelOptions } from "./editor/DmnEditor";
-export type { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
+    DiagramOptions,
+    ModelerClasses,
+    ModelerProps,
+    PanelSize,
+    PropertiesPanelOptions,
+    XmlEditorOptions,
+} from "./options";
 
 export * from "./events";
 export * from "./bpmnio";

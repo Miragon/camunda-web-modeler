@@ -1,6 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+    forwardRef,
+    useCallback,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
 import { tss } from "tss-react";
-import * as monaco from "monaco-editor";
+import type * as monaco from "monaco-editor";
 
 import CustomDmnJsModeler, {
     DmnView,
@@ -8,73 +14,49 @@ import CustomDmnJsModeler, {
 } from "./bpmnio/dmn/CustomDmnJsModeler";
 import SvgIcon from "./components/SvgIcon";
 import ToggleGroup from "./components/ToggleGroup";
-import DmnEditor, {
-    DmnModelerOptions,
-    DmnPropertiesPanelOptions,
-} from "./editor/DmnEditor";
-import XmlEditor, { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
+import DmnEditor from "./editor/DmnEditor";
+import XmlEditor from "./editor/XmlEditor";
+import { EMPTY_DMN } from "./emptyDiagrams";
 import { isBpmnIoEvent, ModelerEvent } from "./events";
 import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
 import { createNotificationEvent } from "./events/modeler/NotificationEvent";
+import type { ModelerProps } from "./options";
+import { useDocumentXml } from "./useDocumentXml";
 
-export interface DmnModelerTabOptions {
+export interface DmnModelerProps extends ModelerProps {
     /**
-     * This option disables the modeler tab.
-     */
-    disabled?: boolean;
-
-    /**
-     * The options passed to the dmn-js modeler.
+     * The options for dmn-js, merged with what this library needs: modules are
+     * registered after the library's (and can override its services), also per view and
+     * from `common`; values override the library defaults, moddle extensions are merged
+     * by key.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: A new object creates a new modeler instance without saving, so memoize it.
      */
-    dmnJsOptions?: any;
-
-    /**
-     * The options to control the appearance of the properties panel.
-     */
-    propertiesPanelOptions?: DmnPropertiesPanelOptions;
-
-    /**
-     * The options to control the appearance of the modeler.
-     */
-    modelerOptions?: DmnModelerOptions;
-
-    /**
-     * The class name to apply to the modeler tab root element.
-     */
-    className?: string;
+    dmnJsOptions?: Record<string, any>;
 }
 
-export interface DmnModelerProps {
+/**
+ * Imperative access to a {@link DmnModeler}, via its `ref`.
+ */
+export interface DmnModelerHandle {
     /**
-     * The class name applied to the root element.
+     * The dmn-js instance. While the XML editor is shown, it holds the state from before
+     * switching; changes made in the XML editor are imported when switching back.
      */
-    className?: string;
+    getModeler(): CustomDmnJsModeler | undefined;
 
     /**
-     * The xml to display in the editor.
+     * The Monaco editor, once the XML editor has been shown.
      */
-    xml: string;
+    getXmlEditor(): monaco.editor.IStandaloneCodeEditor | null;
 
     /**
-     * Called whenever an event occurs.
+     * The current document, from the view that is shown.
      */
-    onEvent: (event: ModelerEvent) => void;
-
-    /**
-     * Options to customize the modeler tab.
-     */
-    modelerTabOptions?: DmnModelerTabOptions;
-
-    /**
-     * Options to customize the XML tab.
-     */
-    xmlTabOptions?: XmlTabOptions;
+    save(): Promise<{ xml: string }>;
 }
 
 declare type DmnViewMode = "modeler" | "xml";
@@ -115,230 +97,245 @@ const useStyles = tss.create(() => ({
     },
 }));
 
-const DmnModeler: React.FC<DmnModelerProps> = props => {
-    const { classes, cx } = useStyles();
+/**
+ * A DMN modeler (dmn-js with properties panel for the DRD) with an XML editor.
+ */
+const DmnModeler = forwardRef<DmnModelerHandle, DmnModelerProps>(
+    function DmnModeler(props, ref) {
+        const { classes, cx } = useStyles();
 
-    const { onEvent, className, xmlTabOptions, modelerTabOptions, xml } = props;
+        const {
+            xml: xmlProp,
+            defaultXml,
+            onEvent,
+            dmnJsOptions,
+            diagram,
+            propertiesPanel,
+            xmlEditor,
+            classes: hostClasses,
+        } = props;
 
-    const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>(null);
-    const modelerRef = useRef<CustomDmnJsModeler | undefined>(undefined);
+        const { xml, hasLoaded, handleEvent } = useDocumentXml(
+            xmlProp,
+            defaultXml,
+            EMPTY_DMN,
+            onEvent,
+        );
 
-    const [views, setViews] = useState<DmnView[]>([]);
-    // The dmn-js view last shown. Kept while the XML tab is open, so switching back
-    // returns to it.
-    const [viewId, setViewId] = useState<string | undefined>(undefined);
-    const [selectedMode, setSelectedMode] = useState<DmnViewMode>("modeler");
+        const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+        const modelerRef = useRef<CustomDmnJsModeler | undefined>(undefined);
 
-    // A disabled tab can never be the visible one, even if it is disabled while active.
-    const mode: DmnViewMode = modelerTabOptions?.disabled
-        ? "xml"
-        : xmlTabOptions?.disabled
-          ? "modeler"
-          : selectedMode;
+        const [views, setViews] = useState<DmnView[]>([]);
+        // The dmn-js view last shown. Kept while the XML tab is open, so switching back
+        // returns to it.
+        const [viewId, setViewId] = useState<string | undefined>(undefined);
+        const [selectedMode, setSelectedMode] = useState<DmnViewMode>("modeler");
 
-    // Only the first render waits for XML. Afterwards an empty document (e.g. the user
-    // cleared the XML editor) must not unmount the editors and their undo history.
-    const [hasLoaded, setHasLoaded] = useState(!!xml);
-    if (xml && !hasLoaded) {
-        setHasLoaded(true);
-    }
+        // A disabled view can never be the visible one, even if it is disabled while shown.
+        const mode: DmnViewMode = diagram?.disabled
+            ? "xml"
+            : xmlEditor?.disabled
+              ? "modeler"
+              : selectedMode;
 
-    const saveFile = useCallback(
-        async (source: DmnViewMode, reason: ContentSavedReason) => {
-            if (source === "xml") {
-                if (monacoRef.current) {
-                    const saved = monacoRef.current.getValue() || "";
-                    onEvent(createContentSavedEvent(saved, undefined, reason));
+        useImperativeHandle(
+            ref,
+            () => ({
+                getModeler: () => modelerRef.current,
+                getXmlEditor: () => editorRef.current,
+                save: async () => {
+                    if (mode === "xml") {
+                        return { xml: editorRef.current?.getValue() ?? xml };
+                    }
+                    return modelerRef.current
+                        ? modelerRef.current.save({ format: true })
+                        : { xml };
+                },
+            }),
+            [mode, xml],
+        );
+
+        const saveFile = useCallback(
+            async (source: DmnViewMode, reason: ContentSavedReason) => {
+                if (source === "xml") {
+                    if (editorRef.current) {
+                        const saved = editorRef.current.getValue() || "";
+                        handleEvent(createContentSavedEvent(saved, undefined, reason));
+                    }
+                } else if (modelerRef.current) {
+                    const saved = await modelerRef.current.save({ format: true });
+                    handleEvent(createContentSavedEvent(saved.xml, undefined, reason));
                 }
-            } else if (modelerRef.current) {
-                const saved = await modelerRef.current.save({ format: true });
-                onEvent(createContentSavedEvent(saved.xml, undefined, reason));
-            }
-        },
-        [onEvent],
-    );
+            },
+            [handleEvent],
+        );
 
-    const changeMode = useCallback(
-        async (optionId: string) => {
-            const nextMode: DmnViewMode = optionId === XML_OPTION_ID ? "xml" : "modeler";
+        const changeMode = useCallback(
+            async (optionId: string) => {
+                const nextMode: DmnViewMode =
+                    optionId === XML_OPTION_ID ? "xml" : "modeler";
 
-            if (nextMode !== mode) {
-                // Don't leave the XML tab with a document the diagram cannot show, the
-                // user would end up on an empty view without their text.
-                if (mode === "xml" && modelerRef.current && monacoRef.current) {
+                if (nextMode !== mode) {
+                    // Don't leave the XML tab with a document the diagram cannot show, the
+                    // user would end up on an empty view without their text.
+                    if (mode === "xml" && modelerRef.current && editorRef.current) {
+                        try {
+                            await modelerRef.current.validate(
+                                editorRef.current.getValue(),
+                            );
+                        } catch (e) {
+                            console.error("Invalid XML, staying in XML view", e);
+                            handleEvent(
+                                createNotificationEvent(
+                                    "The XML is invalid. Fix it before switching to the diagram. See console for details.",
+                                    "error",
+                                ),
+                            );
+                            return;
+                        }
+                    }
+
+                    // Save so the other view starts with the latest content.
                     try {
-                        await modelerRef.current.validate(monacoRef.current.getValue());
+                        await saveFile(mode, "view.changed");
                     } catch (e) {
-                        console.error("Invalid XML, staying in XML view", e);
-                        onEvent(
+                        // Never block switching on a failed save, otherwise the user may
+                        // be unable to reach the XML tab to fix the document.
+                        console.error("Could not save content before switching view", e);
+                        handleEvent(
                             createNotificationEvent(
-                                "The XML is invalid. Fix it before switching to the diagram. See console for details.",
-                                "error",
+                                "Could not serialize diagram. Switching anyway. See console for details.",
+                                "warning",
                             ),
                         );
-                        return;
+                    }
+                    setSelectedMode(nextMode);
+                }
+
+                // DmnEditor opens the requested view once it is visible.
+                if (nextMode === "modeler") {
+                    setViewId(optionId);
+                }
+            },
+            [mode, saveFile, handleEvent],
+        );
+
+        const localOnEvent = useCallback(
+            (event: ModelerEvent) => {
+                if (
+                    isBpmnIoEvent(event) &&
+                    event.event === "views.changed" &&
+                    event.data
+                ) {
+                    const data = event.data as ViewsChangedEvent;
+                    setViews(data.views);
+                    // dmn-js reports no active view while it clears the canvas during an
+                    // import; keep the last one in that case.
+                    if (data.activeView) {
+                        setViewId(data.activeView.id);
                     }
                 }
+                handleEvent(event);
+            },
+            [handleEvent],
+        );
 
-                // Save so the other view starts with the latest content.
-                try {
-                    await saveFile(mode, "view.changed");
-                } catch (e) {
-                    // Never block switching on a failed save, otherwise the user may
-                    // be unable to reach the XML tab to fix the document.
-                    console.error("Could not save content before switching view", e);
-                    onEvent(
-                        createNotificationEvent(
-                            "Could not serialize diagram. Switching anyway. See console for details.",
-                            "warning",
-                        ),
-                    );
-                }
-                setSelectedMode(nextMode);
-            }
+        const onXmlChanged = useCallback(
+            (value: string) => {
+                handleEvent(createContentSavedEvent(value, undefined, "xml.changed"));
+            },
+            [handleEvent],
+        );
 
-            // DmnEditor opens the requested view once it is visible.
-            if (nextMode === "modeler") {
-                setViewId(optionId);
-            }
-        },
-        [mode, saveFile, onEvent],
-    );
+        // Only offer the toggle if there is something to switch between.
+        const toggleOptionCount = views.length + (xmlEditor?.disabled ? 0 : 1);
 
-    const localOnEvent = useCallback(
-        (event: ModelerEvent) => {
-            if (isBpmnIoEvent(event) && event.event === "views.changed" && event.data) {
-                const data = event.data as ViewsChangedEvent;
-                setViews(data.views);
-                // dmn-js reports no active view while it clears the canvas during an
-                // import; keep the last one in that case.
-                if (data.activeView) {
-                    setViewId(data.activeView.id);
-                }
-            }
-            onEvent(event);
-        },
-        [onEvent],
-    );
-
-    const onXmlChanged = useCallback(
-        (value: string) => {
-            onEvent(createContentSavedEvent(value, undefined, "xml.changed"));
-        },
-        [onEvent],
-    );
-
-    const modelerOptions: DmnModelerOptions = useMemo(() => {
-        if (!modelerTabOptions?.modelerOptions) {
-            return {
-                refs: [modelerRef],
-            };
+        if (!hasLoaded) {
+            return null;
         }
 
-        return {
-            ...modelerTabOptions.modelerOptions,
-            refs: [...(modelerTabOptions.modelerOptions.refs ?? []), modelerRef],
-        };
-    }, [modelerTabOptions]);
+        return (
+            <div className={cx(classes.root, hostClasses?.root)}>
+                {!diagram?.disabled && toggleOptionCount > 1 && (
+                    <ToggleGroup
+                        className={cx(classes.modeToggle, hostClasses?.viewToggle)}
+                        label="View"
+                        options={[
+                            ...views.map(view => ({
+                                id: view.id,
+                                node: (
+                                    <>
+                                        <span
+                                            aria-hidden="true"
+                                            className={cx({
+                                                "dmn-icon-lasso-tool":
+                                                    view.type === "drd",
+                                                "dmn-icon-decision-table":
+                                                    view.type === "decisionTable",
+                                                "dmn-icon-literal-expression":
+                                                    view.type === "literalExpression",
+                                                "dmn-icon-business-knowledge":
+                                                    view.type === "boxedExpression",
+                                            })}
+                                        />
 
-    const monacoOptions: MonacoOptions = useMemo(() => {
-        if (!xmlTabOptions?.monacoOptions) {
-            return {
-                refs: [monacoRef],
-            };
-        }
-
-        return {
-            ...xmlTabOptions.monacoOptions,
-            refs: [...(xmlTabOptions.monacoOptions.refs ?? []), monacoRef],
-        };
-    }, [xmlTabOptions]);
-
-    // Only offer the toggle if there is something to switch between.
-    const toggleOptionCount = views.length + (xmlTabOptions?.disabled ? 0 : 1);
-
-    if (!hasLoaded) {
-        return null;
-    }
-
-    return (
-        <div className={cx(classes.root, className)}>
-            {!modelerTabOptions?.disabled && toggleOptionCount > 1 && (
-                <ToggleGroup
-                    className={classes.modeToggle}
-                    label="View"
-                    options={[
-                        ...views.map(view => ({
-                            id: view.id,
-                            node: (
-                                <>
-                                    <span
-                                        aria-hidden="true"
-                                        className={cx({
-                                            "dmn-icon-lasso-tool": view.type === "drd",
-                                            "dmn-icon-decision-table":
-                                                view.type === "decisionTable",
-                                            "dmn-icon-literal-expression":
-                                                view.type === "literalExpression",
-                                            "dmn-icon-business-knowledge":
-                                                view.type === "boxedExpression",
-                                        })}
-                                    />
-
-                                    <span
-                                        title={view.name || "Unnamed"}
-                                        className={classes.buttonTitle}
-                                    >
-                                        {view.name || "Unnamed"}
-                                    </span>
-                                </>
-                            ),
-                        })),
-                        ...(xmlTabOptions?.disabled
-                            ? []
-                            : [
-                                  {
-                                      id: XML_OPTION_ID,
-                                      label: "XML",
-                                      node: (
-                                          <SvgIcon
-                                              className={classes.icon}
-                                              path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                                        <span
+                                            title={view.name || "Unnamed"}
+                                            className={classes.buttonTitle}
+                                        >
+                                            {view.name || "Unnamed"}
+                                        </span>
+                                    </>
+                                ),
+                            })),
+                            ...(xmlEditor?.disabled
+                                ? []
+                                : [
+                                      {
+                                          id: XML_OPTION_ID,
+                                          label: "XML",
+                                          node: (
+                                              <SvgIcon
+                                                  className={classes.icon}
+                                                  path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
                                         0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
-                                          />
-                                      ),
-                                  },
-                              ]),
-                    ]}
-                    onChange={changeMode}
-                    active={mode === "xml" ? XML_OPTION_ID : (viewId ?? "")}
-                />
-            )}
+                                              />
+                                          ),
+                                      },
+                                  ]),
+                        ]}
+                        onChange={changeMode}
+                        active={mode === "xml" ? XML_OPTION_ID : (viewId ?? "")}
+                    />
+                )}
 
-            {!modelerTabOptions?.disabled && (
-                <DmnEditor
-                    xml={xml}
-                    active={mode === "modeler"}
-                    viewId={viewId}
-                    onEvent={localOnEvent}
-                    modelerOptions={modelerOptions}
-                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
-                    dmnJsOptions={modelerTabOptions?.dmnJsOptions}
-                    className={modelerTabOptions?.className}
-                />
-            )}
+                {!diagram?.disabled && (
+                    <DmnEditor
+                        xml={xml}
+                        active={mode === "modeler"}
+                        viewId={viewId}
+                        onEvent={localOnEvent}
+                        dmnJsOptions={dmnJsOptions}
+                        propertiesPanel={propertiesPanel}
+                        diagramSize={diagram?.size}
+                        modelerRef={modelerRef}
+                        classes={hostClasses}
+                    />
+                )}
 
-            {!xmlTabOptions?.disabled && (
-                <XmlEditor
-                    xml={xml}
-                    monacoOptions={monacoOptions}
-                    active={mode === "xml"}
-                    onChanged={onXmlChanged}
-                    className={xmlTabOptions?.className}
-                />
-            )}
-        </div>
-    );
-};
+                {!xmlEditor?.disabled && (
+                    <XmlEditor
+                        xml={xml}
+                        active={mode === "xml"}
+                        options={xmlEditor}
+                        editorRef={editorRef}
+                        onChanged={onXmlChanged}
+                        className={hostClasses?.xmlEditor}
+                    />
+                )}
+            </div>
+        );
+    },
+);
 
 export default DmnModeler;

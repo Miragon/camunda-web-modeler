@@ -1,8 +1,9 @@
-import React, { act, useCallback, useMemo, useState } from "react";
+import React, { act, createRef, useCallback, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import DmnModeler from "./DmnModeler";
+import DmnModeler, { DmnModelerHandle } from "./DmnModeler";
+import { EMPTY_DMN } from "./emptyDiagrams";
 import { isContentSavedEvent, isNotificationEvent, ModelerEvent } from "./events";
 
 /**
@@ -215,7 +216,9 @@ const click = async (name: string) => {
 
 const saved = () => received.filter(isContentSavedEvent);
 
-const Host: React.FC<{ dmnJsOptions?: unknown }> = ({ dmnJsOptions }) => {
+const Host: React.FC<{ dmnJsOptions?: Record<string, unknown> }> = ({
+    dmnJsOptions,
+}) => {
     const [xml, setXml] = useState("<A/>");
     const onEvent = useCallback((event: ModelerEvent) => {
         received.push(event);
@@ -223,10 +226,7 @@ const Host: React.FC<{ dmnJsOptions?: unknown }> = ({ dmnJsOptions }) => {
             setXml(event.data.xml);
         }
     }, []);
-    const modelerTabOptions = useMemo(() => ({ dmnJsOptions }), [dmnJsOptions]);
-    return (
-        <DmnModeler xml={xml} onEvent={onEvent} modelerTabOptions={modelerTabOptions} />
-    );
+    return <DmnModeler xml={xml} onEvent={onEvent} dmnJsOptions={dmnJsOptions} />;
 };
 
 beforeEach(() => {
@@ -338,11 +338,44 @@ describe("DmnModeler", () => {
         expect(panelVisible()).toBe(true);
     });
 
+    it("exposes the modeler and saves the shown view through its ref", async () => {
+        const handle = createRef<DmnModelerHandle>();
+        await render(<DmnModeler ref={handle} defaultXml="<A/>" />);
+
+        expect(handle.current?.getModeler()).toBe(instances[0]);
+        await expect(handle.current?.save()).resolves.toEqual({ xml: "<A/>" });
+
+        await click("XML");
+        await run(() => {
+            editor.onChange?.("<A typed/>");
+        });
+        await expect(handle.current?.save()).resolves.toEqual({ xml: "<A typed/>" });
+    });
+
+    it("shows an empty diagram without xml and defaultXml", async () => {
+        await render(<DmnModeler />);
+
+        expect(instances[0].imports).toEqual([EMPTY_DMN]);
+    });
+
+    it("keeps track of the document itself in uncontrolled mode", async () => {
+        await render(<DmnModeler defaultXml="<A/>" />);
+        const modeler = instances[0];
+
+        modeler.xml = "<A edited/>";
+        await run(() => {
+            modeler.fireViewer("elements.changed");
+        });
+        await flush();
+        await click("XML");
+
+        expect(editor.value).toBe("<A edited/>");
+        expect(modeler.imports).toEqual(["<A/>"]);
+    });
+
     it("wires a recreated instance like the first one", async () => {
-        const { rerender } = {
-            rerender: async (options: unknown) =>
-                render(<Host dmnJsOptions={options} />),
-        };
+        const rerender = (options: Record<string, unknown>) =>
+            render(<Host dmnJsOptions={options} />);
         await rerender({ a: 1 });
         await rerender({ a: 2 });
 

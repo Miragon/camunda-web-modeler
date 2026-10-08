@@ -1,6 +1,5 @@
 import React, {
     MutableRefObject,
-    ReactNode,
     useCallback,
     useEffect,
     useRef,
@@ -17,6 +16,7 @@ import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesP
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
 import { EchoTracker } from "./EchoTracker";
 import { useLatest } from "./useLatest";
+import type { ModelerClasses, PanelSize, PropertiesPanelOptions } from "../options";
 import { tss } from "tss-react";
 
 /**
@@ -37,85 +37,6 @@ const UI_UPDATE_REQUIRED_EVENTS = [
  * The events that trigger a content saved event.
  */
 const CONTENT_SAVED_EVENT = ["elements.changed"];
-
-export interface DmnPropertiesPanelOptions {
-    /**
-     * This option disables the properties panel.
-     */
-    hidden?: boolean;
-
-    /**
-     * The initial, minimum, and maximum sizes of the properties panel in percent of the
-     * container width.
-     */
-    size?: {
-        // Default 25
-        initial?: number;
-        // Default 5
-        min?: number;
-        // Default 95
-        max?: number;
-    };
-
-    /**
-     * The container to host the properties panel. By default, a styled div is created. If you
-     * pass your own element (or `false` to render none here), pass a CSS selector for the
-     * element to use via `containerId`; it must exist when the modeler is created.
-     */
-    container?: ReactNode;
-
-    /**
-     * A CSS selector (e.g. `"#my-properties-panel"`) for the element to host the properties
-     * panel. Only required if you want to use your own container.
-     */
-    containerId?: string;
-
-    /**
-     * The class name applied to the host of the properties panel.
-     */
-    className?: string;
-}
-
-export interface DmnModelerOptions {
-    /**
-     * Will receive the reference to the modeler instance.
-     *
-     * While the XML tab is shown, the instance keeps the state from before switching; changes
-     * made in the XML tab are imported when switching back.
-     */
-    refs?: MutableRefObject<CustomDmnJsModeler | undefined>[];
-
-    /**
-     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
-     * container width.
-     */
-    size?: {
-        // Default 75
-        initial?: number;
-        // Default 5
-        min?: number;
-        // Default 95
-        max?: number;
-    };
-
-    /**
-     * The container to host the modeler. By default, a styled div is created. If you pass
-     * your own element (or `false` to render none here), pass a CSS selector for the element
-     * to use via `containerId`; it must exist when the modeler is created.
-     */
-    container?: ReactNode;
-
-    /**
-     * A CSS selector (e.g. `"#my-modeler"`) for the element to host the modeler. Only
-     * required if you want to use your own container.
-     */
-    containerId?: string;
-
-    /**
-     * The class name applied to the host of the modeler.
-     */
-    className?: string;
-}
 
 export interface DmnEditorProps {
     /**
@@ -139,33 +60,25 @@ export interface DmnEditorProps {
     onEvent: (event: ModelerEvent) => void;
 
     /**
-     * The class name applied to the root element.
+     * The options for dmn-js.
+     *
+     * CAUTION: A new object creates a new modeler instance without saving.
      */
-    className?: string;
+    dmnJsOptions?: Record<string, any>;
+
+    propertiesPanel?: PropertiesPanelOptions;
 
     /**
-     * The options passed to the dmn-js modeler.
-     *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * The size of the canvas next to the properties panel.
      */
-    dmnJsOptions?: any;
+    diagramSize?: PanelSize;
 
     /**
-     * The options to control the appearance of the properties panel.
-     *
-     * CAUTION: Changing `hidden` or `containerId` destroys the editor instance and creates a
-     * new one without automatic saving!
+     * Receives the modeler instance while it exists.
      */
-    propertiesPanelOptions?: DmnPropertiesPanelOptions;
+    modelerRef?: MutableRefObject<CustomDmnJsModeler | undefined>;
 
-    /**
-     * The options to control the appearance of the modeler.
-     *
-     * CAUTION: Changing `containerId` destroys the editor instance and creates a new one
-     * without automatic saving!
-     */
-    modelerOptions?: DmnModelerOptions;
+    classes?: Pick<ModelerClasses, "diagram" | "canvas" | "propertiesPanel">;
 }
 
 const useStyles = tss.create(() => ({
@@ -195,9 +108,10 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         viewId,
         onEvent,
         dmnJsOptions,
-        propertiesPanelOptions,
-        modelerOptions,
-        className,
+        propertiesPanel,
+        diagramSize,
+        modelerRef,
+        classes: hostClasses,
     } = props;
 
     const [modeler, setModeler] = useState<CustomDmnJsModeler | undefined>(undefined);
@@ -227,9 +141,8 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         });
     }, []);
 
-    const panelHidden = !!propertiesPanelOptions?.hidden;
-    const panelContainerId = propertiesPanelOptions?.containerId;
-    const modelerContainerId = modelerOptions?.containerId;
+    const panelHidden = !!propertiesPanel?.hidden;
+    const panelContainer = propertiesPanel?.container;
 
     /**
      * Forwards dmn-js events to the host. Stable for the lifetime of the component, so
@@ -287,7 +200,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
      * component and is only recreated if options that dmn-js reads on construction change.
      */
     useEffect(() => {
-        const modelerContainer = modelerContainerId ?? modelerContainerRef.current;
+        const modelerContainer = modelerContainerRef.current;
         if (!modelerContainer) {
             return undefined;
         }
@@ -298,7 +211,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
                 container: modelerContainer,
                 propertiesPanel: panelHidden
                     ? undefined
-                    : (panelContainerId ??
+                    : (panelContainer ??
                       propertiesPanelContainerRef.current ??
                       undefined),
                 dmnJsOptions: dmnJsOptions,
@@ -338,29 +251,21 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             instance.destroy();
             setModeler(undefined);
         };
-    }, [
-        handleEvent,
-        onEventRef,
-        dmnJsOptions,
-        panelHidden,
-        panelContainerId,
-        modelerContainerId,
-    ]);
+    }, [handleEvent, onEventRef, dmnJsOptions, panelHidden, panelContainer]);
 
     /**
-     * Hands the instance to the refs passed by the host.
+     * Hands the instance to the modeler component.
      */
-    const refs = modelerOptions?.refs;
     useEffect(() => {
-        refs?.forEach(r => {
-            r.current = modeler;
-        });
+        if (modelerRef) {
+            modelerRef.current = modeler;
+        }
         return () => {
-            refs?.forEach(r => {
-                r.current = undefined;
-            });
+            if (modelerRef) {
+                modelerRef.current = undefined;
+            }
         };
-    }, [modeler, refs]);
+    }, [modeler, modelerRef]);
 
     /**
      * Opens the requested view if it is not the active one.
@@ -476,24 +381,23 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         [onEventRef],
     );
 
-    const modelerContainer: ReactNode = modelerOptions?.container ?? (
+    const modelerContainer = (
         <div
             ref={modelerContainerRef}
-            className={cx(classes.modeler, modelerOptions?.className)}
+            className={cx(classes.modeler, hostClasses?.canvas)}
         />
     );
 
-    const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
-        <div
-            ref={propertiesPanelContainerRef}
-            className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
-        />
-    );
-
-    if (panelHidden) {
+    // Without a panel next to the canvas (hidden or rendered into the host's container),
+    // only the canvas is shown.
+    if (panelHidden || panelContainer !== undefined) {
         return (
             <div
-                className={cx(classes.modelerOnly, !active && classes.hidden, className)}
+                className={cx(
+                    classes.modelerOnly,
+                    !active && classes.hidden,
+                    hostClasses?.diagram,
+                )}
             >
                 {modelerContainer}
             </div>
@@ -502,12 +406,17 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
 
     return (
         <ResizablePanels
-            className={className}
+            className={hostClasses?.diagram}
             active={active}
             firstPanel={modelerContainer}
-            secondPanel={propertiesPanelContainer}
-            firstPanelSize={modelerOptions?.size}
-            secondPanelSize={propertiesPanelOptions?.size}
+            secondPanel={
+                <div
+                    ref={propertiesPanelContainerRef}
+                    className={cx(classes.propertiesPanel, hostClasses?.propertiesPanel)}
+                />
+            }
+            firstPanelSize={diagramSize}
+            secondPanelSize={propertiesPanel?.size}
             secondPanelHidden={activeViewType !== undefined && activeViewType !== "drd"}
             onResize={onPropertiesPanelWidthChanged}
         />

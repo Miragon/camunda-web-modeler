@@ -1,8 +1,9 @@
-import React, { act, useCallback, useMemo, useState } from "react";
+import React, { act, createRef, useCallback, useMemo, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import BpmnModeler from "./BpmnModeler";
+import BpmnModeler, { BpmnModelerHandle } from "./BpmnModeler";
+import { EMPTY_BPMN } from "./emptyDiagrams";
 import { isContentSavedEvent, isNotificationEvent, ModelerEvent } from "./events";
 
 /**
@@ -27,7 +28,14 @@ interface FakeModeler {
     xml: string;
     imports: string[];
     templates: unknown[] | undefined;
+    options: FakeOptions;
     fire: (event: string, data?: unknown) => void;
+}
+
+interface FakeOptions {
+    container: unknown;
+    propertiesPanel?: unknown;
+    bpmnJsOptions?: { failOnCreate?: boolean };
 }
 
 vi.mock("./bpmnio/bpmn/CustomBpmnJsModeler", () => {
@@ -38,7 +46,7 @@ vi.mock("./bpmnio/bpmn/CustomBpmnJsModeler", () => {
         imports: string[] = [];
         templates: unknown[] | undefined = undefined;
 
-        constructor(options: { bpmnJsOptions?: { failOnCreate?: boolean } }) {
+        constructor(public options: FakeOptions) {
             if (options.bpmnJsOptions?.failOnCreate) {
                 throw new Error("broken module");
             }
@@ -168,7 +176,7 @@ const notifications = () => received.filter(isNotificationEvent);
 /**
  * A host following the README: memoized onEvent, stores content.saved in state.
  */
-const Host: React.FC<{ initial?: string; templates?: unknown[] }> = ({
+const Host: React.FC<{ initial?: string; templates?: Record<string, unknown>[] }> = ({
     initial = "<A/>",
     templates,
 }) => {
@@ -179,13 +187,7 @@ const Host: React.FC<{ initial?: string; templates?: unknown[] }> = ({
             setXml(event.data.xml);
         }
     }, []);
-    const modelerTabOptions = useMemo(
-        () => ({ propertiesPanelOptions: { elementTemplates: templates } }),
-        [templates],
-    );
-    return (
-        <BpmnModeler xml={xml} onEvent={onEvent} modelerTabOptions={modelerTabOptions} />
-    );
+    return <BpmnModeler xml={xml} onEvent={onEvent} elementTemplates={templates} />;
 };
 
 beforeEach(() => {
@@ -312,45 +314,28 @@ describe("BpmnModeler", () => {
         expect(instances[0].templates).toBe(templates);
     });
 
-    it("calls monacoOptions.props.onMount in addition to filling the refs", async () => {
+    it("calls xmlEditor.props.onMount and still exposes the editor", async () => {
         const onMount = vi.fn();
-        const editorRef: { current: unknown } = { current: null };
-        const MonacoHost = () => {
-            const xmlTabOptions = useMemo(
-                () => ({
-                    monacoOptions: { refs: [editorRef as never], props: { onMount } },
-                }),
-                [],
-            );
-            return (
-                <BpmnModeler
-                    xml="<A/>"
-                    onEvent={() => undefined}
-                    xmlTabOptions={xmlTabOptions}
-                />
-            );
-        };
-        await render(<MonacoHost />);
+        const handle = createRef<BpmnModelerHandle>();
+        const xmlEditor = { props: { onMount } };
+        await render(<BpmnModeler ref={handle} xml="<A/>" xmlEditor={xmlEditor} />);
         await click("XML");
 
         expect(onMount).toHaveBeenCalledTimes(1);
-        expect(editorRef.current).not.toBeNull();
+        expect(handle.current?.getXmlEditor()).not.toBeNull();
     });
 
     it("reports a modeler that cannot be created instead of crashing the host", async () => {
         const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
         const BrokenHost = () => {
-            const options = useMemo(
-                () => ({ bpmnJsOptions: { failOnCreate: true } }),
-                [],
-            );
+            const options = useMemo(() => ({ failOnCreate: true }), []);
             return (
                 <BpmnModeler
                     xml="<A/>"
                     onEvent={e => {
                         received.push(e);
                     }}
-                    modelerTabOptions={options}
+                    bpmnJsOptions={options}
                 />
             );
         };
@@ -359,6 +344,83 @@ describe("BpmnModeler", () => {
         expect(container.querySelector('[role="group"]')).not.toBeNull();
         expect(notifications().map(e => e.data.severity)).toEqual(["error"]);
         error.mockRestore();
+    });
+
+    it("exposes the modeler and saves the shown view through its ref", async () => {
+        const handle = createRef<BpmnModelerHandle>();
+        await render(<BpmnModeler ref={handle} defaultXml="<A/>" />);
+        const modeler = instances[0];
+
+        expect(handle.current?.getModeler()).toBe(modeler);
+        await expect(handle.current?.save()).resolves.toEqual({
+            xml: "<A/>",
+            svg: "<svg/>",
+        });
+
+        await click("XML");
+        await run(() => {
+            editor.onChange?.("<A typed/>");
+        });
+        await expect(handle.current?.save()).resolves.toEqual({ xml: "<A typed/>" });
+    });
+
+    it("keeps track of the document itself in uncontrolled mode", async () => {
+        await render(<BpmnModeler defaultXml="<A/>" />);
+        const modeler = instances[0];
+
+        modeler.xml = "<A edited/>";
+        await run(() => {
+            modeler.fire("commandStack.changed");
+        });
+        await flush();
+        await click("XML");
+
+        expect(editor.value).toBe("<A edited/>");
+        expect(modeler.imports).toEqual(["<A/>"]);
+    });
+
+    it("shows an empty diagram without xml and defaultXml", async () => {
+        await render(<BpmnModeler />);
+
+        expect(instances[0].imports).toEqual([EMPTY_BPMN]);
+    });
+
+    it("waits for a controlled document to arrive", async () => {
+        await render(<BpmnModeler xml="" />);
+        expect(container.innerHTML).toBe("");
+
+        await render(<BpmnModeler xml="<A/>" />);
+        expect(instances[0].imports).toEqual(["<A/>"]);
+    });
+
+    it("renders the properties panel into a host container", async () => {
+        const panel = document.createElement("div");
+        const options = { container: panel };
+        await render(<BpmnModeler xml="<A/>" propertiesPanel={options} />);
+
+        expect(instances[0].options.propertiesPanel).toBe(panel);
+        expect(container.querySelector('[role="separator"]')).toBeNull();
+    });
+
+    it("applies the class names to the parts", async () => {
+        const classes = {
+            root: "c-root",
+            diagram: "c-diagram",
+            canvas: "c-canvas",
+            propertiesPanel: "c-panel",
+            xmlEditor: "c-xml",
+            viewToggle: "c-toggle",
+        };
+        await render(<BpmnModeler xml="<A/>" classes={classes} />);
+        await click("XML");
+
+        const missing = Object.values(classes).filter(
+            className => !container.querySelector(`.${className}`),
+        );
+        expect(missing).toEqual([]);
+        expect(instances[0].options.container).toBe(
+            container.querySelector(".c-canvas"),
+        );
     });
 
     it("does not ping-pong with a host that applies content.saved late", async () => {

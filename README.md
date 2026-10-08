@@ -49,21 +49,14 @@ yarn add @miragon/camunda-web-modeler
 2. Include it in your application:
 
 ```tsx
-import {
-    BpmnModeler,
-    CustomBpmnJsModeler,
-    ModelerEvent,
-    isContentSavedEvent
-} from "@miragon/camunda-web-modeler";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { BpmnModeler, isContentSavedEvent, ModelerEvent } from "@miragon/camunda-web-modeler";
+import React, { useCallback, useState } from "react";
 
 // Your BPMN 2.0 XML, e.g. loaded from your backend.
 const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
 
 const App: React.FC = () => {
-    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
-
-    const [xml, setXml] = useState<string>(BPMN);
+    const [xml, setXml] = useState(BPMN);
 
     const onEvent = useCallback((event: ModelerEvent) => {
         if (isContentSavedEvent(event)) {
@@ -71,25 +64,9 @@ const App: React.FC = () => {
         }
     }, []);
 
-    /**
-     * ====
-     * CAUTION: Using useMemo() is important to prevent additional render cycles!
-     * ====
-     */
-
-    const modelerTabOptions = useMemo(() => ({
-        modelerOptions: {
-            refs: [modelerRef]
-        }
-    }), []);
-
     return (
         <div style={{ height: "100vh" }}>
-            <BpmnModeler
-                xml={xml}
-                onEvent={onEvent}
-                modelerTabOptions={modelerTabOptions}
-            />
+            <BpmnModeler xml={xml} onEvent={onEvent} />
         </div>
     );
 };
@@ -101,162 +78,108 @@ export default App;
 
 The modeler fills its parent element, so give the host element a height.
 
+## Controlled or uncontrolled
+
+Like a React input, the modeler works in two modes:
+
+- **Controlled** (`xml`): you own the document and update it from `content.saved` events, as
+  in the example above. Until `xml` is non-empty for the first time, nothing is rendered,
+  so you can load the document asynchronously.
+- **Uncontrolled** (`defaultXml`): the modeler keeps track of the changes itself. Without
+  `xml` and `defaultXml`, it starts with an empty diagram.
+
+## Accessing the modeler
+
+Pass a `ref` to get the bpmn-js instance, the Monaco editor or the current document:
+
+```tsx
+import { BpmnModeler, BpmnModelerHandle } from "@miragon/camunda-web-modeler";
+import React, { useRef } from "react";
+
+const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
+
+export const Editor: React.FC = () => {
+    const modeler = useRef<BpmnModelerHandle>(null);
+
+    const onSave = async () => {
+        const { xml, svg } = (await modeler.current?.save()) ?? {};
+        console.log("Saved", xml, svg);
+    };
+
+    return (
+        <div style={{ height: "100vh", position: "relative" }}>
+            <button type="button" onClick={() => void onSave()}>
+                Save
+            </button>
+            <button type="button" onClick={() => modeler.current?.getModeler()?.undo()}>
+                Undo
+            </button>
+            <BpmnModeler ref={modeler} defaultXml={BPMN} />
+        </div>
+    );
+};
+```
+
 ## Full example
 
-To see all options available, you can use this example. Remember that it's important to wrap all options and callbacks
-that are passed into the component using `useMemo()` and `useCallback()`. Else you will have lots of additional render
-cycles that can lead to bugs that are difficult to debug.
-
-Using the `bpmnJsOptions`, you can pass any options that you would normally pass into bpmn.io. The component will merge
-these with its own options and use it to create the modeler instance.
+All options of the BPMN modeler. Memoize objects you pass (`useMemo`): a new
+`bpmnJsOptions` object creates a new bpmn-js instance.
 
 ```tsx
 import {
     BpmnModeler,
-    ContentSavedReason,
-    CustomBpmnJsModeler,
-    ModelerEvent,
+    BpmnModelerHandle,
     isBpmnIoEvent,
     isContentSavedEvent,
     isNotificationEvent,
     isPropertiesPanelResizedEvent,
-    isUIUpdateRequiredEvent
+    isUIUpdateRequiredEvent,
+    ModelerEvent,
 } from "@miragon/camunda-web-modeler";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 
-// Your BPMN 2.0 XML, e.g. loaded from your backend.
 const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
 
 const App: React.FC = () => {
-    const modelerRef = useRef<CustomBpmnJsModeler | undefined>(undefined);
-
-    const [xml, setXml] = useState<string>(BPMN);
-
-    const onXmlChanged = useCallback((
-        newXml: string,
-        newSvg: string | undefined,
-        reason: ContentSavedReason
-    ) => {
-        console.log(`Model has been changed because of ${reason}`);
-        // Do whatever you want here, save the XML and SVG in the backend etc.
-        setXml(newXml);
-    }, []);
-
-    const onSaveClicked = useCallback(async () => {
-        if (!modelerRef.current) {
-            // Should actually never happen, but required for type safety
-            return;
-        }
-
-        console.log("Saving model...");
-        const result = await modelerRef.current.save();
-        console.log("Saved model!", result.xml, result.svg);
-    }, []);
+    const modeler = useRef<BpmnModelerHandle>(null);
+    const [xml, setXml] = useState(BPMN);
 
     const onEvent = useCallback((event: ModelerEvent) => {
         if (isContentSavedEvent(event)) {
-            // Content has been saved, e.g. because user edited the model or because he switched
-            // from BPMN to XML.
-            onXmlChanged(event.data.xml, event.data.svg, event.data.reason);
-            return;
+            // The user changed the diagram or the XML, or switched views.
+            console.log(`Content saved because of ${event.data.reason}`);
+            setXml(event.data.xml);
+        } else if (isNotificationEvent(event)) {
+            // Something the user should see, e.g. an import error.
+            console.log(event.data.severity, event.data.message);
+        } else if (isUIUpdateRequiredEvent(event)) {
+            // Update your toolbar, e.g. undo / redo buttons via the ref.
+        } else if (isPropertiesPanelResizedEvent(event)) {
+            // In percent of the editor width; can be passed back as propertiesPanel.size.
+            console.log(`Properties panel resized to ${event.data.width} %`);
+        } else if (isBpmnIoEvent(event)) {
+            // Any bpmn-js event, forwarded as is.
         }
+    }, []);
 
-        if (isNotificationEvent(event)) {
-            // There's a notification the user is supposed to see, e.g. the model could not be
-            // imported because it was invalid.
-            return;
-        }
+    // Passed to bpmn-js; modules can override services of this library.
+    const bpmnJsOptions = useMemo(() => ({ keyboard: { bindTo: document } }), []);
 
-        if (isUIUpdateRequiredEvent(event)) {
-            // Something in the modeler has changed and the UI (e.g. menu) should be updated.
-            // This happens when the user selects an element, for example.
-            return;
-        }
-
-        if (isPropertiesPanelResizedEvent(event)) {
-            // The user has resized the properties panel. You can save this value e.g. in local
-            // storage to restore it on next load and pass it as initializing option.
-            console.log(`Properties panel has been resized to ${event.data.width}`);
-            return;
-        }
-
-        if (isBpmnIoEvent(event)) {
-            // Just a regular bpmn-js event - actually lots of them
-            return;
-        }
-
-        // eslint-disable-next-line no-console
-        console.log("Unhandled event received", event);
-    }, [onXmlChanged]);
-
-    /**
-     * ====
-     * CAUTION: Using useMemo() is important to prevent additional render cycles!
-     * ====
-     */
-
-    const xmlTabOptions = useMemo(() => ({
-        className: undefined,
-        disabled: undefined,
-        monacoOptions: undefined
-    }), []);
-
-    const propertiesPanelOptions = useMemo(() => ({
-        className: undefined,
-        containerId: undefined,
-        container: undefined,
-        elementTemplates: undefined,
-        hidden: undefined,
-        size: {
-            max: undefined,
-            min: undefined,
-            initial: undefined
-        }
-    }), []);
-
-    const modelerOptions = useMemo(() => ({
-        className: undefined,
-        refs: [modelerRef],
-        container: undefined,
-        containerId: undefined,
-        size: {
-            max: undefined,
-            min: undefined,
-            initial: undefined
-        }
-    }), []);
-
-    const bpmnJsOptions = useMemo(() => undefined, []);
-
-    const modelerTabOptions = useMemo(() => ({
-        className: undefined,
-        disabled: undefined,
-        bpmnJsOptions: bpmnJsOptions,
-        modelerOptions: modelerOptions,
-        propertiesPanelOptions: propertiesPanelOptions
-    }), [bpmnJsOptions, modelerOptions, propertiesPanelOptions]);
+    // Element templates in the Camunda 7 format.
+    const elementTemplates = useMemo(() => [], []);
 
     return (
-        <div style={{ height: "100vh", position: "relative" }}>
-            <button
-                onClick={onSaveClicked}
-                style={{
-                    position: "absolute",
-                    zIndex: 100,
-                    top: 25,
-                    left: "calc(50% - 100px)",
-                    minWidth: "200px",
-                    minHeight: "40px"
-                }}
-            >
-                Save Diagram
-            </button>
-
+        <div style={{ height: "100vh" }}>
             <BpmnModeler
+                ref={modeler}
                 xml={xml}
                 onEvent={onEvent}
-                xmlTabOptions={xmlTabOptions}
-                modelerTabOptions={modelerTabOptions}
+                bpmnJsOptions={bpmnJsOptions}
+                elementTemplates={elementTemplates}
+                diagram={{ size: { initial: 70, min: 20, max: 90 } }}
+                propertiesPanel={{ hidden: false, size: { initial: 30 } }}
+                xmlEditor={{ disabled: false, options: { fontSize: 13 } }}
+                classes={{ root: "my-modeler", viewToggle: "my-toggle" }}
             />
         </div>
     );
@@ -267,8 +190,9 @@ export default App;
 
 ## Usage with DMN
 
-Usage with DMN is essentially the same. You just have to use the `<DmnModeler>` component instead. The API is very
-consistent between the two components.
+Usage with DMN is the same: use `<DmnModeler>` (and `DmnModelerHandle` for the `ref`) with
+`dmnJsOptions` instead of `bpmnJsOptions`. Element templates don't exist for DMN, and the
+properties panel is only shown for the DRD.
 
 ## More examples
 
@@ -303,8 +227,12 @@ a new issue. However, **please make sure to include all relevant logs, screensho
 
 For the API reference, start with the type definitions in these files and work your way through:
 
+- [options.ts](./src/options.ts) (the props both modelers share)
 - [BpmnModeler.tsx](./src/BpmnModeler.tsx)
 - [DmnModeler.tsx](./src/DmnModeler.tsx)
+- [Events.ts](./src/events/Events.ts)
+
+Upgrading from 0.x? See [MIGRATION.md](./MIGRATION.md).
 
 ## Engage with the Miragon team
 

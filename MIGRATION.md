@@ -48,3 +48,70 @@ const onEvent = (event: ModelerEvent) => {
 longer types `data`, because forwarded bpmn.io events can have any name; check
 `event.source === "modeler"` as well, or use the guards. The `data` of bpmn.io
 events is `unknown` instead of `any`.
+
+## Flatter props, a `ref` handle and `xml` / `defaultXml` (#228, #229, #230)
+
+The nested tab options are replaced by flat props, styling goes through one `classes`
+object, and the instances are reachable through the component `ref` instead of `refs`
+arrays in the options.
+
+| 0.x                                                                   | 1.0                                                   |
+| --------------------------------------------------------------------- | ----------------------------------------------------- |
+| `className`                                                           | `classes.root`                                        |
+| `modelerTabOptions.disabled`                                          | `diagram.disabled`                                    |
+| `modelerTabOptions.className`                                         | `classes.diagram`                                     |
+| `modelerTabOptions.bpmnJsOptions` / `.dmnJsOptions`                   | `bpmnJsOptions` / `dmnJsOptions`                      |
+| `modelerTabOptions.modelerOptions.refs`                               | `ref` → `getModeler()`                                |
+| `modelerTabOptions.modelerOptions.size`                               | `diagram.size`                                        |
+| `modelerTabOptions.modelerOptions.className`                          | `classes.canvas`                                      |
+| `modelerTabOptions.modelerOptions.container` / `.containerId`         | removed, the component always renders the canvas      |
+| `modelerTabOptions.propertiesPanelOptions.hidden` / `.size`           | `propertiesPanel.hidden` / `.size`                    |
+| `modelerTabOptions.propertiesPanelOptions.container` / `.containerId` | `propertiesPanel.container` (element or CSS selector) |
+| `modelerTabOptions.propertiesPanelOptions.className`                  | `classes.propertiesPanel`                             |
+| `modelerTabOptions.propertiesPanelOptions.elementTemplates`           | `elementTemplates`                                    |
+| `xmlTabOptions.disabled`                                              | `xmlEditor.disabled`                                  |
+| `xmlTabOptions.className`                                             | `classes.xmlEditor`                                   |
+| `xmlTabOptions.monacoOptions.options` / `.props`                      | `xmlEditor.options` / `.props`                        |
+| `xmlTabOptions.monacoOptions.refs`                                    | `ref` → `getXmlEditor()`                              |
+| —                                                                     | `classes.viewToggle`                                  |
+
+```tsx
+// before
+const modelerRef = useRef<CustomBpmnJsModeler>();
+const modelerTabOptions = useMemo(
+  () => ({
+    modelerOptions: { refs: [modelerRef] },
+    propertiesPanelOptions: { elementTemplates: templates, size: { initial: 30 } },
+  }),
+  [templates],
+);
+<BpmnModeler xml={xml} onEvent={onEvent} modelerTabOptions={modelerTabOptions} />;
+modelerRef.current?.undo();
+
+// after
+const modeler = useRef<BpmnModelerHandle>(null);
+<BpmnModeler
+  ref={modeler}
+  xml={xml}
+  onEvent={onEvent}
+  elementTemplates={templates}
+  propertiesPanel={{ size: { initial: 30 } }}
+/>;
+modeler.current?.getModeler()?.undo();
+```
+
+Also new:
+
+- `xml` is optional. Pass `defaultXml` instead to let the modeler keep track of the
+  document itself (uncontrolled); without both it starts with an empty diagram.
+- `onEvent` is optional.
+- `ref.current.save()` returns the current document of the shown view.
+
+**Types:** `BpmnModelerTabOptions`, `DmnModelerTabOptions`, `BpmnModelerOptions`,
+`DmnModelerOptions`, `BpmnPropertiesPanelOptions`, `DmnPropertiesPanelOptions`,
+`MonacoOptions` and `XmlTabOptions` are replaced by `DiagramOptions`,
+`PropertiesPanelOptions`, `XmlEditorOptions`, `ModelerClasses`, `BpmnModelerHandle` and
+`DmnModelerHandle`.
+
+**Who is affected:** every host using options or `className`. Hosts that only pass `xml`
+and `onEvent` don't need to change anything.

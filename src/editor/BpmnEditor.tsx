@@ -1,6 +1,5 @@
 import React, {
     MutableRefObject,
-    ReactNode,
     useCallback,
     useEffect,
     useRef,
@@ -9,6 +8,7 @@ import React, {
 import { tss } from "tss-react";
 
 import ResizablePanels from "../components/ResizablePanels";
+import type { BaseViewerOptions } from "bpmn-js/lib/BaseViewer";
 import CustomBpmnJsModeler from "../bpmnio/bpmn/CustomBpmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
 import { ModelerEvent } from "../events";
@@ -18,6 +18,7 @@ import { createPropertiesPanelResizedEvent } from "../events/modeler/PropertiesP
 import { createUIUpdateRequiredEvent } from "../events/modeler/UIUpdateRequiredEvent";
 import { EchoTracker } from "./EchoTracker";
 import { useLatest } from "./useLatest";
+import type { ModelerClasses, PanelSize, PropertiesPanelOptions } from "../options";
 
 /**
  * The events that trigger a UI update required event.
@@ -39,97 +40,7 @@ const UI_UPDATE_REQUIRED_EVENTS = [
  */
 const CONTENT_SAVED_EVENT = ["commandStack.changed"];
 
-export interface BpmnPropertiesPanelOptions {
-    /**
-     * This option disables the properties panel.
-     * CAUTION: Element templates will not be imported either if this option is set!
-     */
-    hidden?: boolean;
-
-    /**
-     * The initial, minimum, and maximum sizes of the properties panel in percent of the
-     * container width.
-     */
-    size?: {
-        // Default 25
-        initial?: number;
-        // Default 5
-        min?: number;
-        // Default 95
-        max?: number;
-    };
-
-    /**
-     * The container to host the properties panel. By default, a styled div is created. If you
-     * pass your own element (or `false` to render none here), pass a CSS selector for the
-     * element to use via `containerId`; it must exist when the modeler is created.
-     */
-    container?: ReactNode;
-
-    /**
-     * A CSS selector (e.g. `"#my-properties-panel"`) for the element to host the properties
-     * panel. Only required if you want to use your own container.
-     */
-    containerId?: string;
-
-    /**
-     * The class name applied to the host of the properties panel.
-     */
-    className?: string;
-
-    /**
-     * The element templates to import into the modeler.
-     */
-    elementTemplates?: any[];
-}
-
-export interface BpmnModelerOptions {
-    /**
-     * Will receive the reference to the modeler instance.
-     *
-     * While the XML tab is shown, the instance keeps the state from before switching; changes
-     * made in the XML tab are imported when switching back.
-     */
-    refs?: MutableRefObject<CustomBpmnJsModeler | undefined>[];
-
-    /**
-     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
-     * container width.
-     */
-    size?: {
-        // Default 75
-        initial?: number;
-        // Default 5
-        min?: number;
-        // Default 95
-        max?: number;
-    };
-
-    /**
-     * The container to host the modeler. By default, a styled div is created. If you pass
-     * your own element (or `false` to render none here), pass a CSS selector for the element
-     * to use via `containerId`; it must exist when the modeler is created.
-     */
-    container?: ReactNode;
-
-    /**
-     * A CSS selector (e.g. `"#my-modeler"`) for the element to host the modeler. Only
-     * required if you want to use your own container.
-     */
-    containerId?: string;
-
-    /**
-     * The class name applied to the host of the modeler.
-     */
-    className?: string;
-}
-
 export interface BpmnEditorProps {
-    /**
-     * The class name applied to the root element.
-     */
-    className?: string;
-
     /**
      * The XML to display in the editor.
      */
@@ -146,28 +57,30 @@ export interface BpmnEditorProps {
     onEvent: (event: ModelerEvent) => void;
 
     /**
-     * The options passed to the bpmn-js modeler.
+     * The options for bpmn-js.
      *
-     * CAUTION: When this option object is changed, the old editor instance will be destroyed
-     * and a new one will be created without automatic saving!
+     * CAUTION: A new object creates a new modeler instance without saving.
      */
-    bpmnJsOptions?: any;
+    bpmnJsOptions?: BaseViewerOptions;
 
     /**
-     * The options to control the appearance of the properties panel.
-     *
-     * CAUTION: Changing `hidden` or `containerId` destroys the editor instance and creates a
-     * new one without automatic saving!
+     * The element templates for the properties panel.
      */
-    propertiesPanelOptions?: BpmnPropertiesPanelOptions;
+    elementTemplates?: Record<string, unknown>[];
+
+    propertiesPanel?: PropertiesPanelOptions;
 
     /**
-     * The options to control the appearance of the modeler.
-     *
-     * CAUTION: Changing `containerId` destroys the editor instance and creates a new one
-     * without automatic saving!
+     * The size of the canvas next to the properties panel.
      */
-    modelerOptions?: BpmnModelerOptions;
+    diagramSize?: PanelSize;
+
+    /**
+     * Receives the modeler instance while it exists.
+     */
+    modelerRef?: MutableRefObject<CustomBpmnJsModeler | undefined>;
+
+    classes?: Pick<ModelerClasses, "diagram" | "canvas" | "propertiesPanel">;
 }
 
 const useStyles = tss.create(() => ({
@@ -196,10 +109,12 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         active,
         xml,
         onEvent,
-        className,
         bpmnJsOptions,
-        modelerOptions,
-        propertiesPanelOptions,
+        elementTemplates,
+        propertiesPanel,
+        diagramSize,
+        modelerRef,
+        classes: hostClasses,
     } = props;
 
     const [modeler, setModeler] = useState<CustomBpmnJsModeler | undefined>(undefined);
@@ -216,9 +131,8 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         { modeler: CustomBpmnJsModeler; xml: string } | undefined
     >(undefined);
 
-    const panelHidden = !!propertiesPanelOptions?.hidden;
-    const panelContainerId = propertiesPanelOptions?.containerId;
-    const modelerContainerId = modelerOptions?.containerId;
+    const panelHidden = !!propertiesPanel?.hidden;
+    const panelContainer = propertiesPanel?.container;
 
     /**
      * Forwards bpmn-js events to the host. Stable for the lifetime of the component, so
@@ -281,7 +195,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
      * component and is only recreated if options that bpmn-js reads on construction change.
      */
     useEffect(() => {
-        const modelerContainer = modelerContainerId ?? modelerContainerRef.current;
+        const modelerContainer = modelerContainerRef.current;
         if (!modelerContainer) {
             return undefined;
         }
@@ -292,7 +206,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                 container: modelerContainer,
                 propertiesPanel: panelHidden
                     ? undefined
-                    : (panelContainerId ??
+                    : (panelContainer ??
                       propertiesPanelContainerRef.current ??
                       undefined),
                 bpmnJsOptions: bpmnJsOptions,
@@ -318,29 +232,21 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
             instance.destroy();
             setModeler(undefined);
         };
-    }, [
-        handleEvent,
-        onEventRef,
-        bpmnJsOptions,
-        panelHidden,
-        panelContainerId,
-        modelerContainerId,
-    ]);
+    }, [handleEvent, onEventRef, bpmnJsOptions, panelHidden, panelContainer]);
 
     /**
-     * Hands the instance to the refs passed by the host.
+     * Hands the instance to the modeler component.
      */
-    const refs = modelerOptions?.refs;
     useEffect(() => {
-        refs?.forEach(r => {
-            r.current = modeler;
-        });
+        if (modelerRef) {
+            modelerRef.current = modeler;
+        }
         return () => {
-            refs?.forEach(r => {
-                r.current = undefined;
-            });
+            if (modelerRef) {
+                modelerRef.current = undefined;
+            }
         };
-    }, [modeler, refs]);
+    }, [modeler, modelerRef]);
 
     /**
      * Imports the document XML whenever it changes. Imports are deferred while the editor
@@ -392,7 +298,6 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
     /**
      * Imports the specified element templates whenever they or the instance change.
      */
-    const elementTemplates = propertiesPanelOptions?.elementTemplates;
     useEffect(() => {
         if (modeler && !panelHidden) {
             modeler.importElementTemplates(elementTemplates ?? []);
@@ -436,24 +341,23 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
         [onEventRef],
     );
 
-    const modelerContainer: ReactNode = modelerOptions?.container ?? (
+    const modelerContainer = (
         <div
             ref={modelerContainerRef}
-            className={cx(classes.modeler, modelerOptions?.className)}
+            className={cx(classes.modeler, hostClasses?.canvas)}
         />
     );
 
-    const propertiesPanelContainer: ReactNode = propertiesPanelOptions?.container ?? (
-        <div
-            ref={propertiesPanelContainerRef}
-            className={cx(classes.propertiesPanel, propertiesPanelOptions?.className)}
-        />
-    );
-
-    if (panelHidden) {
+    // Without a panel next to the canvas (hidden or rendered into the host's container),
+    // only the canvas is shown.
+    if (panelHidden || panelContainer !== undefined) {
         return (
             <div
-                className={cx(classes.modelerOnly, !active && classes.hidden, className)}
+                className={cx(
+                    classes.modelerOnly,
+                    !active && classes.hidden,
+                    hostClasses?.diagram,
+                )}
             >
                 {modelerContainer}
             </div>
@@ -462,12 +366,17 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
 
     return (
         <ResizablePanels
-            className={className}
+            className={hostClasses?.diagram}
             active={active}
             firstPanel={modelerContainer}
-            secondPanel={propertiesPanelContainer}
-            firstPanelSize={modelerOptions?.size}
-            secondPanelSize={propertiesPanelOptions?.size}
+            secondPanel={
+                <div
+                    ref={propertiesPanelContainerRef}
+                    className={cx(classes.propertiesPanel, hostClasses?.propertiesPanel)}
+                />
+            }
+            firstPanelSize={diagramSize}
+            secondPanelSize={propertiesPanel?.size}
             onResize={onPropertiesPanelWidthChanged}
         />
     );
