@@ -18,6 +18,7 @@ import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
+import { createNotificationEvent } from "./events/modeler/NotificationEvent";
 
 export interface ModelerTabOptions {
     /**
@@ -95,6 +96,8 @@ export interface DmnModelerProps {
 
 const useStyles = tss.create(() => ({
     root: {
+        // Positioning context for the absolutely positioned mode toggle.
+        position: "relative",
         height: "100%",
         overflow: "hidden",
     },
@@ -164,7 +167,19 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
             if (viewId && activeView !== viewId) {
                 // View has been changed from or to XML, save it so the user can reimport it
                 if (viewId === "xml" || activeView === "xml") {
-                    await saveFile(activeView, "view.changed");
+                    try {
+                        await saveFile(activeView, "view.changed");
+                    } catch (e) {
+                        // Never block switching on a failed save, otherwise the user may
+                        // be unable to reach the XML tab to fix the document.
+                        console.error("Could not save content before switching view", e);
+                        onEvent(
+                            createNotificationEvent(
+                                "Could not serialize diagram. Switching anyway. See console for details.",
+                                "warning",
+                            ),
+                        );
+                    }
                 }
 
                 setActiveView(viewId);
@@ -178,7 +193,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                 }
             }
         },
-        [activeView, saveFile],
+        [activeView, saveFile, onEvent],
     );
 
     const localOnEvent = useCallback(
@@ -252,6 +267,9 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
         };
     }, [xmlTabOptions]);
 
+    // Only offer the toggle if there is something to switch between.
+    const toggleOptionCount = views.length + (xmlTabOptions?.disabled ? 0 : 1);
+
     if (!xml) {
         return null;
     }
@@ -279,15 +297,17 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                 />
             )}
 
-            {!modelerTabOptions?.disabled && (
+            {!modelerTabOptions?.disabled && toggleOptionCount > 1 && (
                 <ToggleGroup
                     className={classes.modeToggle}
+                    label="View"
                     options={[
                         ...views.map(view => ({
                             id: view.id,
                             node: (
                                 <>
                                     <span
+                                        aria-hidden="true"
                                         className={cx({
                                             "dmn-icon-lasso-tool": view.type === "drd",
                                             "dmn-icon-decision-table":
@@ -306,16 +326,21 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                                 </>
                             ),
                         })),
-                        {
-                            id: "xml",
-                            node: (
-                                <SvgIcon
-                                    className={classes.icon}
-                                    path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
+                        ...(xmlTabOptions?.disabled
+                            ? []
+                            : [
+                                  {
+                                      id: "xml",
+                                      label: "XML",
+                                      node: (
+                                          <SvgIcon
+                                              className={classes.icon}
+                                              path="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2
                                         0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
-                                />
-                            ),
-                        },
+                                          />
+                                      ),
+                                  },
+                              ]),
                     ]}
                     onChange={changeMode}
                     active={activeView ?? ""}

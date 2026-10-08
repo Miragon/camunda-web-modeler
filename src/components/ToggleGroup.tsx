@@ -3,6 +3,8 @@ import { tss } from "tss-react";
 
 export interface ToggleOption {
     id: string;
+    /** Accessible name and tooltip of the option. Required for icon-only options. */
+    label?: string;
     node: ReactNode;
 }
 
@@ -11,6 +13,8 @@ interface Props {
     onChange: (id: string) => Promise<void>;
     active: string;
     className?: string;
+    /** Accessible name of the whole group. */
+    label?: string;
 }
 
 const useStyles = tss.create(() => ({
@@ -53,13 +57,24 @@ const ToggleGroup: React.FC<Props> = props => {
     const { classes, cx } = useStyles();
 
     return (
-        <div className={cx(classes.root, props.className)}>
+        <div
+            role="group"
+            aria-label={props.label}
+            className={cx(classes.root, props.className)}
+        >
             {props.options.map(option => (
                 <button
                     key={option.id}
                     type="button"
+                    aria-pressed={props.active === option.id}
+                    aria-label={option.label}
+                    title={option.label}
                     className={cx(props.active === option.id && classes.active)}
-                    onClick={() => void props.onChange(option.id)}
+                    onClick={() => {
+                        props.onChange(option.id).catch((e: unknown) => {
+                            console.error("Could not change view", e);
+                        });
+                    }}
                 >
                     {option.node}
                 </button>

@@ -15,9 +15,12 @@ import {
     ContentSavedReason,
     createContentSavedEvent,
 } from "./events/modeler/ContentSavedEvent";
+import { createNotificationEvent } from "./events/modeler/NotificationEvent";
 
 const useStyles = tss.create(() => ({
     root: {
+        // Positioning context for the absolutely positioned mode toggle.
+        position: "relative",
         height: "100%",
         overflow: "hidden",
     },
@@ -177,11 +180,24 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
         async (value: string) => {
             const bpmnViewMode = value as BpmnViewMode;
             if (bpmnViewMode !== null && bpmnViewMode !== mode) {
-                await saveFile(mode, "view.changed");
+                try {
+                    await saveFile(mode, "view.changed");
+                } catch (e) {
+                    // A failed save (e.g. no definitions loaded after an invalid import)
+                    // must never block switching, otherwise the user cannot reach the
+                    // XML tab anymore to fix the document.
+                    console.error("Could not save content before switching view", e);
+                    onEvent(
+                        createNotificationEvent(
+                            "Could not serialize diagram. Switching anyway. See console for details.",
+                            "warning",
+                        ),
+                    );
+                }
                 setMode(bpmnViewMode);
             }
         },
-        [saveFile, mode],
+        [saveFile, mode, onEvent],
     );
 
     const onXmlChanged = useCallback(
@@ -221,9 +237,11 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
             {!xmlTabOptions?.disabled && !modelerTabOptions?.disabled && (
                 <ToggleGroup
                     className={classes.modeToggle}
+                    label="View"
                     options={[
                         {
                             id: "bpmn",
+                            label: "Diagram",
                             node: (
                                 <SvgIcon
                                     className={classes.icon}
@@ -235,6 +253,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                         },
                         {
                             id: "xml",
+                            label: "XML",
                             node: (
                                 <SvgIcon
                                     className={classes.icon}
