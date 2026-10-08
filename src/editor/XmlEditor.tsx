@@ -6,48 +6,13 @@ import React, {
     useState,
 } from "react";
 import deepmerge from "deepmerge";
-import Editor, { EditorProps, loader, OnChange, OnMount } from "@monaco-editor/react";
+import Editor, { loader, OnChange, OnMount } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 import { tss } from "tss-react";
 
+import type { XmlEditorOptions } from "../options";
+
 loader.config({ monaco });
-
-export interface MonacoOptions {
-    /**
-     * Will receive the reference to the editor instance.
-     */
-    refs?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>[];
-
-    /**
-     * Additional props to pass to the editor component. They override the defaults defined
-     * by this component; `onMount` and `onChange` are called in addition to the internal
-     * handlers, and `value` is always the document XML.
-     */
-    props?: Partial<EditorProps>;
-
-    /**
-     * Additional options to pass to the editor component. This will override the defaults defined
-     * by this component.
-     */
-    options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
-}
-
-export interface XmlTabOptions {
-    /**
-     * This option disables the XML tab.
-     */
-    disabled?: boolean;
-
-    /**
-     * The options to pass to the monaco editor.
-     */
-    monacoOptions?: MonacoOptions;
-
-    /**
-     * The class name applied to the root element of the XML tab.
-     */
-    className?: string;
-}
 
 export interface XmlEditorProps {
     /**
@@ -68,9 +33,14 @@ export interface XmlEditorProps {
     onChanged: (xml: string) => void;
 
     /**
-     * The options to pass to the monaco editor.
+     * Options for Monaco.
      */
-    monacoOptions?: MonacoOptions;
+    options?: Pick<XmlEditorOptions, "options" | "props">;
+
+    /**
+     * Receives the editor instance while it is mounted.
+     */
+    editorRef?: MutableRefObject<monaco.editor.IStandaloneCodeEditor | null>;
 
     /**
      * The class name applied to the root element.
@@ -94,7 +64,14 @@ const useStyles = tss.create(() => ({
 const XmlEditor: React.FC<XmlEditorProps> = props => {
     const { classes, cx } = useStyles();
 
-    const { xml, onChanged, active, monacoOptions, className } = props;
+    const {
+        xml,
+        onChanged,
+        active,
+        options: editorOptions,
+        editorRef,
+        className,
+    } = props;
 
     const [xmlEditorShown, setXmlEditorShown] = useState(false);
 
@@ -102,7 +79,7 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
         onMount: userOnMount,
         onChange: userOnChange,
         ...userProps
-    } = monacoOptions?.props ?? {};
+    } = editorOptions?.props ?? {};
 
     const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(
         null,
@@ -117,19 +94,18 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
     );
 
     /**
-     * Hands the editor to the refs passed by the host.
+     * Hands the editor to the modeler while it is mounted.
      */
-    const refs = monacoOptions?.refs;
     useEffect(() => {
-        refs?.forEach(r => {
-            r.current = editor;
-        });
+        if (editorRef) {
+            editorRef.current = editor;
+        }
         return () => {
-            refs?.forEach(r => {
-                r.current = null;
-            });
+            if (editorRef) {
+                editorRef.current = null;
+            }
         };
-    }, [editor, refs]);
+    }, [editor, editorRef]);
 
     const onXmlChanged = useCallback<OnChange>(
         (value, event) => {
@@ -164,9 +140,9 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
                         enabled: false,
                     },
                 },
-                monacoOptions?.options ?? {},
+                editorOptions?.options ?? {},
             ),
-        [monacoOptions?.options],
+        [editorOptions?.options],
     );
 
     /**
