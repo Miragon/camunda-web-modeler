@@ -239,6 +239,7 @@ const BpmnModeler: React.FC<BpmnModelerProps> = props => {
                     active={mode === "xml"}
                     monacoOptions={monacoOptions}
                     onChanged={onXmlChanged}
+                    className={xmlTabOptions?.className}
                 />
             )}
 

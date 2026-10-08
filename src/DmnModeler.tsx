@@ -278,6 +278,7 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     monacoOptions={monacoOptions}
                     active={mode === "xml"}
                     onChanged={onXmlChanged}
+                    className={xmlTabOptions?.className}
                 />
             )}
 
