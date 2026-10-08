@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 declare module "dmn-js/lib/Modeler" {
-    import { DmnView, DmnViewer } from "../bpmnio/dmn/CustomDmnJsModeler";
+    import {
+        DmnView,
+        DmnViewer,
+        ImportXMLResult,
+        OpenResult,
+        SaveXMLResult,
+    } from "../bpmnio/dmn/CustomDmnJsModeler";
 
     class Modeler {
         constructor(options: any);
@@ -62,29 +68,6 @@ declare module "dmn-js/lib/Modeler" {
          */
         destroy();
     }
-
-    export type OpenResult = {
-        /**
-         * Warnings occurred during the opening.
-         */
-        warnings: string[];
-    };
-
-    export type OpenError = {
-        error: Error;
-        /**
-         * Warnings occurred during the opening.
-         */
-        warnings: string[];
-    };
-
-    export type ImportXMLResult = {
-        warnings: string[];
-    };
-
-    export type SaveXMLResult = {
-        xml: string;
-    };
 
     export default Modeler;
 }

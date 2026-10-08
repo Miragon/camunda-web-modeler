@@ -26,6 +26,23 @@ export interface MonacoOptions {
     options?: Partial<monaco.editor.IStandaloneEditorConstructionOptions>;
 }
 
+export interface XmlTabOptions {
+    /**
+     * This option disables the XML tab.
+     */
+    disabled?: boolean;
+
+    /**
+     * The options to pass to the monaco editor.
+     */
+    monacoOptions?: MonacoOptions;
+
+    /**
+     * The class name applied to the host of the modeler.
+     */
+    className?: string;
+}
+
 export interface XmlEditorProps {
     /**
      * The XML to display in the editor.

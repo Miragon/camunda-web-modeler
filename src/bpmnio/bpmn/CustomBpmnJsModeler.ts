@@ -100,7 +100,15 @@ class CustomBpmnJsModeler extends Modeler {
      * Returns the injector.
      */
     getInjector(): Injector {
-        return this.get("injector");
+        return this.get<Injector>("injector");
+    }
+
+    /**
+     * Returns a bpmn-js service. The official typings return `unknown` for services
+     * looked up by name; the wrapper methods below know which service they ask for.
+     */
+    private service(name: string): any {
+        return this.get(name);
     }
 
     /**
@@ -110,14 +118,14 @@ class CustomBpmnJsModeler extends Modeler {
      * @throws Rejects if the XML is not a parsable BPMN document
      */
     async validate(xml: string): Promise<void> {
-        await this.get("moddle").fromXML(xml, "bpmn:Definitions");
+        await this.service("moddle").fromXML(xml, "bpmn:Definitions");
     }
 
     /**
      * Notifies the canvas that its container has been resized or shown.
      */
     resized(): void {
-        this.get("canvas").resized();
+        this.service("canvas").resized();
     }
 
     /**
@@ -131,7 +139,8 @@ class CustomBpmnJsModeler extends Modeler {
             }),
             this.saveSVG(),
         ]);
-        return { xml, svg };
+        // saveXML only omits the XML if it failed, in which case it rejects anyway.
+        return { xml: xml ?? "", svg };
     }
 
     /**
@@ -140,7 +149,7 @@ class CustomBpmnJsModeler extends Modeler {
      * @param listener The listener to register
      */
     public registerGlobalEventListener(listener: EventCallback): void {
-        this.get("globalEventListenerUtil").on(listener);
+        this.service("globalEventListenerUtil").on(listener);
     }
 
     /**
@@ -149,7 +158,7 @@ class CustomBpmnJsModeler extends Modeler {
      * @param listener The listener to unregister
      */
     public unregisterGlobalEventListener(listener: EventCallback): void {
-        this.get("globalEventListenerUtil").off(listener);
+        this.service("globalEventListenerUtil").off(listener);
     }
 
     /**
@@ -158,7 +167,7 @@ class CustomBpmnJsModeler extends Modeler {
      * @param elementTemplates The element templates to import.
      */
     public importElementTemplates(elementTemplates: Record<string, unknown>[]): void {
-        this.get("elementTemplatesLoader").setTemplates(elementTemplates);
+        this.service("elementTemplatesLoader").setTemplates(elementTemplates);
     }
 
     /**
@@ -200,7 +209,7 @@ class CustomBpmnJsModeler extends Modeler {
      * Activates the edit label function.
      */
     public toggleEditLabel(): void {
-        const selection = this.get("selection").get();
+        const selection = this.service("selection").get();
         if (selection.length > 0) {
             this.getInjector().get("directEditing").activate(selection[0]);
         }
@@ -212,7 +221,7 @@ class CustomBpmnJsModeler extends Modeler {
     public selectAll(): void {
         const canvas = this.getInjector().get("canvas");
         const elementRegistry = this.getInjector().get("elementRegistry");
-        const selection = this.get("selection");
+        const selection = this.service("selection");
 
         // select all elements except for the invisible
         // root element
@@ -227,7 +236,7 @@ class CustomBpmnJsModeler extends Modeler {
      * Removes the currently selected elements.
      */
     public removeSelected(): void {
-        const modeling = this.get("modeling");
+        const modeling = this.service("modeling");
         const selectedElements = this.getInjector().get("selection").get();
 
         if (selectedElements.length === 0) {
@@ -241,7 +250,7 @@ class CustomBpmnJsModeler extends Modeler {
      * Returns the size of the current selection.
      */
     public getSelectionSize(): number {
-        return this.get("selection").get().length;
+        return this.service("selection").get().length;
     }
 
     /**
@@ -249,7 +258,7 @@ class CustomBpmnJsModeler extends Modeler {
      * Can be used to determine if the copy button should be enabled or not.
      */
     public canCopy(): boolean {
-        return this.get("selection").get().length > 0;
+        return this.service("selection").get().length > 0;
     }
 
     /**
@@ -257,14 +266,14 @@ class CustomBpmnJsModeler extends Modeler {
      * Can be used to determine if the paste button should be enabled or not.
      */
     public canPaste(): boolean {
-        return !this.get("clipboard").isEmpty();
+        return !this.service("clipboard").isEmpty();
     }
 
     /**
      * Returns the current stack index.
      */
     public getStackIndex(): number {
-        return this.get("commandStack")._stackIdx;
+        return this.service("commandStack")._stackIdx;
     }
 
     /**
@@ -272,7 +281,7 @@ class CustomBpmnJsModeler extends Modeler {
      * Can be used to determine if the undo button should be enabled or not.
      */
     public canUndo(): boolean {
-        return this.get("commandStack").canUndo();
+        return this.service("commandStack").canUndo();
     }
 
     /**
@@ -280,28 +289,28 @@ class CustomBpmnJsModeler extends Modeler {
      * Can be used to determine if the redo button should be enabled or not.
      */
     public canRedo(): boolean {
-        return this.get("commandStack").canRedo();
+        return this.service("commandStack").canRedo();
     }
 
     /**
      * Instructs the command stack to undo the last action.
      */
     public undo(): void {
-        return this.get("commandStack").undo();
+        return this.service("commandStack").undo();
     }
 
     /**
      * Instructs the command stack to repeat the last undone action.
      */
     public redo(): void {
-        return this.get("commandStack").redo();
+        return this.service("commandStack").redo();
     }
 
     /**
      * Resets the zoom level to its default value.
      */
     public resetZoom(): void {
-        this.get("zoomScroll").reset();
+        this.service("zoomScroll").reset();
     }
 }
 

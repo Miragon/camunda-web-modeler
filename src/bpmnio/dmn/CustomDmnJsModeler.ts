@@ -14,13 +14,47 @@ import {
 } from "dmn-js-properties-panel";
 import deepmerge from "deepmerge";
 import diagramOriginModule from "diagram-js-origin";
-import Modeler, {
-    ImportXMLResult,
-    OpenError,
-    OpenResult,
-    SaveXMLResult,
-} from "dmn-js/lib/Modeler";
+import Modeler from "dmn-js/lib/Modeler";
 import GlobalEventListenerUtil, { EventCallback } from "../GlobalEventListenerUtil";
+
+/**
+ * The result of opening a view.
+ */
+export interface OpenResult {
+    /**
+     * Warnings that occurred while opening the view.
+     */
+    warnings: string[];
+}
+
+/**
+ * The error dmn-js rejects with if a view could not be opened.
+ */
+export interface OpenError {
+    error: Error;
+
+    /**
+     * Warnings that occurred while opening the view.
+     */
+    warnings: string[];
+}
+
+/**
+ * The result of importing XML.
+ */
+export interface ImportXMLResult {
+    /**
+     * Warnings that occurred during the import.
+     */
+    warnings: string[];
+}
+
+/**
+ * The result of exporting the diagram as XML.
+ */
+export interface SaveXMLResult {
+    xml: string;
+}
 
 export interface ViewsChangedEvent {
     activeView: DmnView | undefined;

@@ -9,7 +9,7 @@ import BpmnEditor, {
     BpmnModelerOptions,
     BpmnPropertiesPanelOptions,
 } from "./editor/BpmnEditor";
-import XmlEditor, { MonacoOptions } from "./editor/XmlEditor";
+import XmlEditor, { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
 import { Event } from "./events";
 import {
     ContentSavedReason,
@@ -35,7 +35,7 @@ const useStyles = tss.create(() => ({
     },
 }));
 
-export interface ModelerTabOptions {
+export interface BpmnModelerTabOptions {
     /**
      * This option disables the modeler tab.
      */
@@ -65,23 +65,6 @@ export interface ModelerTabOptions {
     className?: string;
 }
 
-export interface XmlTabOptions {
-    /**
-     * This option disables the XML tab.
-     */
-    disabled?: boolean;
-
-    /**
-     * The options to pass to the monaco editor.
-     */
-    monacoOptions?: MonacoOptions;
-
-    /**
-     * The class name applied to the host of the modeler.
-     */
-    className?: string;
-}
-
 export interface BpmnModelerProps {
     /**
      * The class name applied to the root element.
@@ -101,7 +84,7 @@ export interface BpmnModelerProps {
     /**
      * Options to customize the modeler tab.
      */
-    modelerTabOptions?: ModelerTabOptions;
+    modelerTabOptions?: BpmnModelerTabOptions;
 
     /**
      * Options to customize the XML tab.
