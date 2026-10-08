@@ -15,10 +15,10 @@ declare module "bpmn-js/lib/Modeler" {
          * Imports the XML into the editor.
          *
          * @param xml The XML to import
-         * @return List of import warnings
-         * @throws If the import failed
+         * @return Resolves with the list of import warnings
+         * @throws Rejects if the import failed
          */
-        importXML(xml: string): ImportResponse;
+        importXML(xml: string): Promise<ImportResponse>;
 
         /**
          * Saves the editor content as XML and returns it.

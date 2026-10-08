@@ -318,7 +318,7 @@ const BpmnEditor: React.FC<BpmnEditorProps> = props => {
                 }
 
                 try {
-                    const result = ref.current.importXML(newXml);
+                    const result = await ref.current.importXML(newXml);
                     const count = result.warnings?.length ?? 0;
                     if (count > 0) {
                         console.log("Imported with warnings", result.warnings);
