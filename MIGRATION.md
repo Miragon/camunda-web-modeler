@@ -21,3 +21,30 @@ Now the host goes last:
 **Who is affected:** hosts whose `bpmnJsOptions` / `dmnJsOptions` contain modules or
 values that so far lost against the library. Check that those are still intended now
 that they take effect.
+
+## Typed events: `Event` → `ModelerEvent` (#227)
+
+`onEvent` used to receive `Event<any, any>`, so `event.data` was untyped, and the
+exported `Event` type shadowed the DOM `Event`. `onEvent` now receives `ModelerEvent`,
+a union of all events; narrowing on `source` and `event` (or using the `is*Event`
+guards) types `data`. Every event also has its own type (`ContentSavedEvent`,
+`NotificationEvent`, …, `BpmnIoEvent`).
+
+```ts
+// before
+import { Event, isContentSavedEvent } from "@miragon/camunda-web-modeler";
+const onEvent = (event: Event<any, any>) => { … };
+
+// after
+import { ModelerEvent, isContentSavedEvent } from "@miragon/camunda-web-modeler";
+const onEvent = (event: ModelerEvent) => {
+    if (isContentSavedEvent(event)) {
+        save(event.data.xml); // typed as ContentSavedEventData
+    }
+};
+```
+
+**Who is affected:** everyone importing `Event`. Comparing only `event.event` no
+longer types `data`, because forwarded bpmn.io events can have any name; check
+`event.source === "modeler"` as well, or use the guards. The `data` of bpmn.io
+events is `unknown` instead of `any`.

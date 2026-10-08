@@ -10,7 +10,7 @@ import BpmnEditor, {
     BpmnPropertiesPanelOptions,
 } from "./editor/BpmnEditor";
 import XmlEditor, { MonacoOptions, XmlTabOptions } from "./editor/XmlEditor";
-import { Event } from "./events";
+import { ModelerEvent } from "./events";
 import {
     ContentSavedReason,
     createContentSavedEvent,
@@ -83,7 +83,7 @@ export interface BpmnModelerProps {
     /**
      * Called whenever an event occurs.
      */
-    onEvent: (event: Event<any, any>) => void;
+    onEvent: (event: ModelerEvent) => void;
 
     /**
      * Options to customize the modeler tab.

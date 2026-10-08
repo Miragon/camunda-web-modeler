@@ -1,6 +1,4 @@
-import { Event } from "../Events";
-
-const EventName = "ui.update.required";
+import type { ModelerEvent } from "../Events";
 
 /**
  * Indicates that something in the modeler has changed so that external UI that depends on modeler
@@ -14,15 +12,21 @@ export interface UIUpdateRequiredEventData {
     isActive: boolean;
 }
 
+export interface UIUpdateRequiredEvent {
+    source: "modeler";
+    event: "ui.update.required";
+    data: UIUpdateRequiredEventData;
+}
+
 export const createUIUpdateRequiredEvent = (
     isActive: boolean,
-): Event<UIUpdateRequiredEventData> => ({
+): UIUpdateRequiredEvent => ({
     source: "modeler",
-    event: EventName,
+    event: "ui.update.required",
     data: { isActive },
 });
 
 export const isUIUpdateRequiredEvent = (
-    event: Event<any>,
-): event is Event<UIUpdateRequiredEventData> =>
-    event.source === "modeler" && event.event === EventName;
+    event: ModelerEvent,
+): event is UIUpdateRequiredEvent =>
+    event.source === "modeler" && event.event === "ui.update.required";

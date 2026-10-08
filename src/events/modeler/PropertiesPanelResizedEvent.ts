@@ -1,6 +1,4 @@
-import { Event } from "../Events";
-
-const EventName = "properties.panel.resized";
+import type { ModelerEvent } from "../Events";
 
 /**
  * Indicates that the width of the properties panel has changed.
@@ -13,15 +11,21 @@ export interface PropertiesPanelResizedEventData {
     width: number;
 }
 
+export interface PropertiesPanelResizedEvent {
+    source: "modeler";
+    event: "properties.panel.resized";
+    data: PropertiesPanelResizedEventData;
+}
+
 export const createPropertiesPanelResizedEvent = (
     width: number,
-): Event<PropertiesPanelResizedEventData> => ({
+): PropertiesPanelResizedEvent => ({
     source: "modeler",
-    event: EventName,
+    event: "properties.panel.resized",
     data: { width },
 });
 
 export const isPropertiesPanelResizedEvent = (
-    event: Event<any>,
-): event is Event<PropertiesPanelResizedEventData> =>
-    event.source === "modeler" && event.event === EventName;
+    event: ModelerEvent,
+): event is PropertiesPanelResizedEvent =>
+    event.source === "modeler" && event.event === "properties.panel.resized";

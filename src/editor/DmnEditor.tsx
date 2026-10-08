@@ -9,7 +9,7 @@ import React, {
 import ResizablePanels from "../components/ResizablePanels";
 import CustomDmnJsModeler from "../bpmnio/dmn/CustomDmnJsModeler";
 import { createBpmnIoEvent } from "../events/bpmnio/BpmnIoEvents";
-import { Event } from "../events";
+import { ModelerEvent } from "../events";
 import { createContentSavedEvent } from "../events/modeler/ContentSavedEvent";
 import { createDmnViewsChangedEvent } from "../events/modeler/DmnViewsChangedEvent";
 import { createNotificationEvent } from "../events/modeler/NotificationEvent";
@@ -136,7 +136,7 @@ export interface DmnEditorProps {
     /**
      * Called whenever an event occurs.
      */
-    onEvent: (event: Event<any, any>) => void;
+    onEvent: (event: ModelerEvent) => void;
 
     /**
      * The class name applied to the root element.

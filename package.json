@@ -16,7 +16,7 @@
     "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/strip-css-imports-from-dts.mjs",
     "lint:package": "publint --level error",
     "lint": "eslint -c eslint.config.mjs . --max-warnings 0",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p example/tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p example/tsconfig.json && node scripts/check-readme-examples.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",

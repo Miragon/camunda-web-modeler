@@ -52,7 +52,7 @@ yarn add @miragon/camunda-web-modeler
 import {
     BpmnModeler,
     CustomBpmnJsModeler,
-    Event,
+    ModelerEvent,
     isContentSavedEvent
 } from "@miragon/camunda-web-modeler";
 import React, { useCallback, useMemo, useRef, useState } from "react";
@@ -65,7 +65,7 @@ const App: React.FC = () => {
 
     const [xml, setXml] = useState<string>(BPMN);
 
-    const onEvent = useCallback((event: Event<any>) => {
+    const onEvent = useCallback((event: ModelerEvent) => {
         if (isContentSavedEvent(event)) {
             setXml(event.data.xml);
         }
@@ -115,7 +115,7 @@ import {
     BpmnModeler,
     ContentSavedReason,
     CustomBpmnJsModeler,
-    Event,
+    ModelerEvent,
     isBpmnIoEvent,
     isContentSavedEvent,
     isNotificationEvent,
@@ -153,7 +153,7 @@ const App: React.FC = () => {
         console.log("Saved model!", result.xml, result.svg);
     }, []);
 
-    const onEvent = useCallback((event: Event<any>) => {
+    const onEvent = useCallback((event: ModelerEvent) => {
         if (isContentSavedEvent(event)) {
             // Content has been saved, e.g. because user edited the model or because he switched
             // from BPMN to XML.

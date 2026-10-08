@@ -3,7 +3,7 @@ import { createRoot, Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import DmnModeler from "./DmnModeler";
-import { Event } from "./events";
+import { isContentSavedEvent, isNotificationEvent, ModelerEvent } from "./events";
 
 /**
  * Lifecycle tests for DmnModeler. dmn-js and Monaco need a real browser, so both are
@@ -185,7 +185,7 @@ const flush = async () => {
 
 let container: HTMLDivElement;
 let root: Root;
-let received: Event<any, any>[];
+let received: ModelerEvent[];
 
 const render = async (element: React.ReactElement) => {
     await run(() => {
@@ -213,13 +213,13 @@ const click = async (name: string) => {
     await flush();
 };
 
-const saved = () => received.filter(e => e.event === "content.saved");
+const saved = () => received.filter(isContentSavedEvent);
 
 const Host: React.FC<{ dmnJsOptions?: unknown }> = ({ dmnJsOptions }) => {
     const [xml, setXml] = useState("<A/>");
-    const onEvent = useCallback((event: Event<any, any>) => {
+    const onEvent = useCallback((event: ModelerEvent) => {
         received.push(event);
-        if (event.event === "content.saved") {
+        if (isContentSavedEvent(event)) {
             setXml(event.data.xml);
         }
     }, []);
@@ -299,7 +299,7 @@ describe("DmnModeler", () => {
         await click("Definitions");
 
         expect(pressed()).toBe("XML");
-        expect(received.filter(e => e.event === "notification")).toHaveLength(1);
+        expect(received.filter(isNotificationEvent)).toHaveLength(1);
     });
 
     it("reports one content.saved per change, no matter how often views were switched", async () => {

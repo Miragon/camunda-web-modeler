@@ -103,6 +103,11 @@ export default defineConfig(
             "vitest/no-focused-tests": "error",
             "vitest/no-disabled-tests": "error",
             "vitest/prefer-to-have-length": "error",
+            // Type tests assert with expectTypeOf, checked by tsc.
+            "vitest/expect-expect": [
+                "error",
+                { assertFunctionNames: ["expect", "expectTypeOf"] },
+            ],
         },
     },
 
