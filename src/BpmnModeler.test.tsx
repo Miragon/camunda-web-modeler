@@ -309,6 +309,31 @@ describe("BpmnModeler", () => {
         expect(instances[0].templates).toBe(templates);
     });
 
+    it("calls monacoOptions.props.onMount in addition to filling the refs", async () => {
+        const onMount = vi.fn();
+        const editorRef: { current: unknown } = { current: null };
+        const MonacoHost = () => {
+            const xmlTabOptions = useMemo(
+                () => ({
+                    monacoOptions: { refs: [editorRef as never], props: { onMount } },
+                }),
+                [],
+            );
+            return (
+                <BpmnModeler
+                    xml="<A/>"
+                    onEvent={() => undefined}
+                    xmlTabOptions={xmlTabOptions}
+                />
+            );
+        };
+        await render(<MonacoHost />);
+        await click("XML");
+
+        expect(onMount).toHaveBeenCalledTimes(1);
+        expect(editorRef.current).not.toBeNull();
+    });
+
     it("does not ping-pong with a host that applies content.saved late", async () => {
         const DelayedHost = () => {
             const [xml, setXml] = useState("<A v=0/>");
