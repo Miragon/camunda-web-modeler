@@ -77,6 +77,7 @@
     "camunda-bpmn-moddle": "8.0.2",
     "camunda-dmn-moddle": "1.3.1",
     "deepmerge": "4.3.1",
+    "diagram-js": "15.28.0",
     "diagram-js-origin": "1.4.1",
     "dmn-js": "17.12.2",
     "dmn-js-properties-panel": "3.12.0",

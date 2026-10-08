@@ -1049,6 +1049,7 @@ __metadata:
     camunda-bpmn-moddle: "npm:8.0.2"
     camunda-dmn-moddle: "npm:1.3.1"
     deepmerge: "npm:4.3.1"
+    diagram-js: "npm:15.28.0"
     diagram-js-origin: "npm:1.4.1"
     dmn-js: "npm:17.12.2"
     dmn-js-properties-panel: "npm:3.12.0"
@@ -2271,7 +2272,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"diagram-js@npm:^15.21.0, diagram-js@npm:^15.23.2, diagram-js@npm:^15.28.0":
+"diagram-js@npm:15.28.0, diagram-js@npm:^15.21.0, diagram-js@npm:^15.23.2, diagram-js@npm:^15.28.0":
   version: 15.28.0
   resolution: "diagram-js@npm:15.28.0"
   dependencies:
