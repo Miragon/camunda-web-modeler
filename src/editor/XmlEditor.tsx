@@ -158,6 +158,8 @@ const XmlEditor: React.FC<XmlEditorProps> = props => {
                     wordWrap: "on",
                     wrappingIndent: "deepIndent",
                     scrollBeyondLastLine: false,
+                    // Room to scroll the last lines out from under the view toggle.
+                    padding: { bottom: 88 },
                     minimap: {
                         enabled: false,
                     },

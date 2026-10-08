@@ -94,9 +94,13 @@ const useStyles = tss.create(() => ({
     },
     modeToggle: {
         position: "absolute",
+        // Rendered before the editors (tab order), so it needs to be lifted above them.
+        zIndex: 10,
         left: "32px",
         bottom: "32px",
-        backgroundColor: "rgba(255, 255, 255, 0.87)",
+        // Many DMN views scroll instead of overflowing the modeler.
+        maxWidth: "calc(100% - 32px - 32px)",
+        overflowX: "auto",
     },
     buttonTitle: {
         marginLeft: "0.5rem",
@@ -259,29 +263,6 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
 
     return (
         <div className={cx(classes.root, className)}>
-            {!modelerTabOptions?.disabled && (
-                <DmnEditor
-                    xml={xml}
-                    active={mode === "modeler"}
-                    viewId={viewId}
-                    onEvent={localOnEvent}
-                    modelerOptions={modelerOptions}
-                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
-                    dmnJsOptions={modelerTabOptions?.dmnJsOptions}
-                    className={modelerTabOptions?.className}
-                />
-            )}
-
-            {!xmlTabOptions?.disabled && (
-                <XmlEditor
-                    xml={xml}
-                    monacoOptions={monacoOptions}
-                    active={mode === "xml"}
-                    onChanged={onXmlChanged}
-                    className={xmlTabOptions?.className}
-                />
-            )}
-
             {!modelerTabOptions?.disabled && toggleOptionCount > 1 && (
                 <ToggleGroup
                     className={classes.modeToggle}
@@ -329,6 +310,29 @@ const DmnModeler: React.FC<DmnModelerProps> = props => {
                     ]}
                     onChange={changeMode}
                     active={mode === "xml" ? XML_OPTION_ID : (viewId ?? "")}
+                />
+            )}
+
+            {!modelerTabOptions?.disabled && (
+                <DmnEditor
+                    xml={xml}
+                    active={mode === "modeler"}
+                    viewId={viewId}
+                    onEvent={localOnEvent}
+                    modelerOptions={modelerOptions}
+                    propertiesPanelOptions={modelerTabOptions?.propertiesPanelOptions}
+                    dmnJsOptions={modelerTabOptions?.dmnJsOptions}
+                    className={modelerTabOptions?.className}
+                />
+            )}
+
+            {!xmlTabOptions?.disabled && (
+                <XmlEditor
+                    xml={xml}
+                    monacoOptions={monacoOptions}
+                    active={mode === "xml"}
+                    onChanged={onXmlChanged}
+                    className={xmlTabOptions?.className}
                 />
             )}
         </div>
