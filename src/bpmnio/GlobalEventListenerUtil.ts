@@ -3,6 +3,9 @@ export type EventCallback = (event: string, data: any) => void;
 /**
  * A module that hooks into the event bus fire method to dispatch all events to the callbacks
  * registered via the on() method.
+ *
+ * The event is delivered to bpmn.io's own listeners first; listeners registered here only
+ * observe it afterwards and cannot break bpmn.io's processing by throwing.
  */
 class GlobalEventListenerUtil {
     private listeners: EventCallback[] = [];
@@ -10,11 +13,22 @@ class GlobalEventListenerUtil {
     constructor(eventBus: any) {
         const fire = eventBus.fire.bind(eventBus);
 
-        eventBus.fire = (event: string, data: any) => {
+        // diagram-js supports both fire(type, data) and fire({ type, ... }).
+        eventBus.fire = (typeOrEvent: string | { type: string }, data?: any) => {
+            const result = fire(typeOrEvent, data);
+
+            const type =
+                typeof typeOrEvent === "string" ? typeOrEvent : typeOrEvent.type;
+            const payload = typeof typeOrEvent === "string" ? data : typeOrEvent;
             this.listeners.forEach(l => {
-                l(event, data);
+                try {
+                    l(type, payload);
+                } catch (e) {
+                    console.error(`Event listener for "${type}" failed`, e);
+                }
             });
-            return fire(event, data);
+
+            return result;
         };
     }
 
