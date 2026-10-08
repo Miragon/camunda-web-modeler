@@ -250,6 +250,15 @@ const DmnModeler = forwardRef<DmnModelerHandle, DmnModelerProps>(
         // Only offer the toggle if there is something to switch between.
         const toggleOptionCount = views.length + (xmlEditor?.disabled ? 0 : 1);
 
+        const onMonacoLoadError = useCallback(() => {
+            handleEvent(
+                createNotificationEvent(
+                    "Could not load the XML editor. See console for details.",
+                    "error",
+                ),
+            );
+        }, [handleEvent]);
+
         if (!hasLoaded) {
             return null;
         }
@@ -329,6 +338,7 @@ const DmnModeler = forwardRef<DmnModelerHandle, DmnModelerProps>(
                         active={mode === "xml"}
                         options={xmlEditor}
                         editorRef={editorRef}
+                        onLoadError={onMonacoLoadError}
                         onChanged={onXmlChanged}
                         className={hostClasses?.xmlEditor}
                     />

@@ -73,7 +73,6 @@
     "@bpmn-io/properties-panel": "3.56.1",
     "@emotion/react": "11.14.0",
     "@monaco-editor/react": "4.7.0",
-    "@seznam/compose-react-refs": "1.0.6",
     "bpmn-js": "18.31.0",
     "bpmn-js-element-templates": "2.37.1",
     "bpmn-js-properties-panel": "5.65.1",
@@ -84,7 +83,6 @@
     "diagram-js-origin": "1.4.1",
     "dmn-js": "17.12.2",
     "dmn-js-properties-panel": "3.12.0",
-    "monaco-editor": "0.57.0",
     "tss-react": "4.9.21"
   },
   "devDependencies": {
@@ -103,6 +101,7 @@
     "eslint-plugin-jsx-a11y": "6.10.2",
     "globals": "17.13.0",
     "jsdom": "30.1.1",
+    "monaco-editor": "0.57.0",
     "prettier": "3.9.9",
     "publint": "0.3.25",
     "react": "18.3.1",
@@ -115,6 +114,7 @@
     "vitest": "5.0.3"
   },
   "peerDependencies": {
+    "monaco-editor": ">=0.55.0 <1",
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BpmnModeler, { BpmnModelerHandle } from "./BpmnModeler";
 import { EMPTY_BPMN } from "./emptyDiagrams";
+import type { MonacoModule } from "./options";
 import { isContentSavedEvent, isNotificationEvent, ModelerEvent } from "./events";
 
 /**
@@ -421,6 +422,52 @@ describe("BpmnModeler", () => {
         expect(instances[0].options.container).toBe(
             container.querySelector(".c-canvas"),
         );
+    });
+
+    it("loads Monaco only when the XML editor is shown for the first time", async () => {
+        const loadMonaco = vi.fn(() => Promise.resolve({} as MonacoModule));
+        const xmlEditor = { monaco: loadMonaco };
+        await render(<BpmnModeler xml="<A/>" xmlEditor={xmlEditor} />);
+        expect(loadMonaco).not.toHaveBeenCalled();
+
+        await click("XML");
+        await click("Diagram");
+        await click("XML");
+
+        expect(loadMonaco).toHaveBeenCalledTimes(1);
+        expect(container.querySelector('[data-testid="monaco"]')).not.toBeNull();
+    });
+
+    it("never loads Monaco with the XML editor disabled", async () => {
+        const loadMonaco = vi.fn(() => Promise.resolve({} as MonacoModule));
+        const xmlEditor = { disabled: true, monaco: loadMonaco };
+        await render(<BpmnModeler xml="<A/>" xmlEditor={xmlEditor} />);
+
+        expect(loadMonaco).not.toHaveBeenCalled();
+        expect(container.querySelector('[role="group"]')).toBeNull();
+    });
+
+    it("reports a Monaco that cannot be loaded", async () => {
+        const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        const xmlEditor = { monaco: () => Promise.reject(new Error("offline")) };
+        await render(
+            <BpmnModeler
+                xml="<A/>"
+                xmlEditor={xmlEditor}
+                onEvent={e => {
+                    received.push(e);
+                }}
+            />,
+        );
+        await click("XML");
+
+        expect(notifications().map(e => e.data.message)).toEqual([
+            "Could not load the XML editor. See console for details.",
+        ]);
+        expect(container.querySelector('[role="status"]')?.textContent).toBe(
+            "The XML editor could not be loaded.",
+        );
+        error.mockRestore();
     });
 
     it("does not ping-pong with a host that applies content.saved late", async () => {

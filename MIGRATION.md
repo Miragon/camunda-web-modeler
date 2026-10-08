@@ -161,3 +161,23 @@ Deep imports like `@miragon/camunda-web-modeler/dist/editor/XmlEditor` no longer
 Everything meant for hosts is exported from the package root.
 
 **Who is affected:** hosts that import files under `dist/`.
+
+## Monaco is a peer dependency and loaded on demand (#235)
+
+`monaco-editor` was a regular dependency, imported by the library at startup together
+with a global `loader.config()` call. Every host bundled all of Monaco in its initial
+chunk, even with the XML editor disabled.
+
+Now:
+
+- `monaco-editor` is a **peer dependency** (0.55 or newer): install it next to the
+  library (`npm install monaco-editor`; npm does that for you).
+- Monaco is loaded when the XML editor is shown for the first time, in a chunk of its
+  own. With `xmlEditor.disabled` it is never loaded.
+- `xmlEditor.monaco` takes your own Monaco instance or a function loading it, e.g. a
+  build with only the editor core and the XML language.
+
+The worker setup (`MonacoEnvironment`) stays the same.
+
+**Who is affected:** hosts using yarn or pnpm, which don't install peer dependencies
+automatically, and hosts that relied on the library's global `loader.config()`.

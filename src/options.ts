@@ -45,11 +45,25 @@ export interface PropertiesPanelOptions {
     container?: HTMLElement | string;
 }
 
+/**
+ * The monaco-editor module, as returned by `import("monaco-editor")`.
+ */
+export type MonacoModule = typeof monaco;
+
 export interface XmlEditorOptions {
     /**
      * Hides the XML editor, so only the diagram is shown.
      */
     disabled?: boolean;
+
+    /**
+     * The Monaco instance to use, or a function loading it, e.g. a build with only the
+     * editor core and the XML language. By default the installed monaco-editor is loaded
+     * when the XML editor is shown for the first time.
+     *
+     * Monaco is configured globally, so all modelers on a page should use the same one.
+     */
+    monaco?: MonacoModule | (() => Promise<MonacoModule>);
 
     /**
      * Options for the Monaco editor, merged with the defaults of this library.
