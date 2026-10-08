@@ -47,15 +47,15 @@ export interface DmnPropertiesPanelOptions {
     hidden?: boolean;
 
     /**
-     * The initial, minimum, and maximum sizes of the properties panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the properties panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "25"
+        // Default 25
         initial?: number;
-        // Default "5"
+        // Default 5
         min?: number;
-        // Default "95"
+        // Default 95
         max?: number;
     };
 
@@ -88,15 +88,15 @@ export interface DmnModelerOptions {
     refs?: MutableRefObject<CustomDmnJsModeler | undefined>[];
 
     /**
-     * The initial, minimum, and maximum sizes of the modeler panel.
-     * Can be in % or px each.
+     * The initial, minimum, and maximum sizes of the modeler panel in percent of the
+     * container width.
      */
     size?: {
-        // Default "75"
+        // Default 75
         initial?: number;
-        // Default "95"
+        // Default 5
         min?: number;
-        // Default "5"
+        // Default 95
         max?: number;
     };
 
@@ -141,7 +141,7 @@ export interface DmnEditorProps {
     onEvent: (event: Event<any, any>) => void;
 
     /**
-     * The class name applied to the host of the properties panel.
+     * The class name applied to the root element.
      */
     className?: string;
 
@@ -203,6 +203,8 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
     } = props;
 
     const [modeler, setModeler] = useState<CustomDmnJsModeler | undefined>(undefined);
+    // The properties panel only supports the DRD; other views leave it empty.
+    const [activeViewType, setActiveViewType] = useState<string | undefined>(undefined);
 
     const modelerContainerRef = useRef<HTMLDivElement | null>(null);
     const propertiesPanelContainerRef = useRef<HTMLDivElement | null>(null);
@@ -306,6 +308,9 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
         // stops the event's propagation in diagram-js.
         const onViewsChanged = (event: { type: string }, data: any) => {
             instance.registerGlobalEventListener(handleEvent);
+            if (data?.activeView) {
+                setActiveViewType(data.activeView.type);
+            }
             handleEvent(event.type, data);
         };
         instance.on("views.changed", onViewsChanged);
@@ -482,6 +487,7 @@ const DmnEditor: React.FC<DmnEditorProps> = props => {
             secondPanel={propertiesPanelContainer}
             firstPanelSize={modelerOptions?.size}
             secondPanelSize={propertiesPanelOptions?.size}
+            secondPanelHidden={activeViewType !== undefined && activeViewType !== "drd"}
             onResize={onPropertiesPanelWidthChanged}
         />
     );

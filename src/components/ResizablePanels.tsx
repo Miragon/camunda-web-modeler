@@ -34,6 +34,12 @@ export interface ResizablePanelsProps {
     firstPanelSize?: PanelSize;
     /** Second-panel size constraints in %. Defaults 25 / 5 / 95. */
     secondPanelSize?: PanelSize;
+    /**
+     * Hides the second panel and the divider while true. The panel stays mounted (its
+     * content may be owned by bpmn-js / dmn-js) and keeps its size for when it is shown
+     * again.
+     */
+    secondPanelHidden?: boolean;
     /** Fired on mount with the initial sizes and on every subsequent change. */
     onResize?: (firstSize: number, secondSize: number) => void;
 }
@@ -112,6 +118,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
         secondPanel,
         firstPanelSize,
         secondPanelSize,
+        secondPanelHidden = false,
         onResize,
     } = props;
 
@@ -246,7 +253,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             <div className={classes.firstPanel}>{firstPanel}</div>
 
             <div
-                className={classes.divider}
+                className={cx(classes.divider, secondPanelHidden && classes.hidden)}
                 role="separator"
                 aria-orientation="vertical"
                 tabIndex={0}
@@ -285,7 +292,7 @@ const ResizablePanels: React.FC<ResizablePanelsProps> = props => {
             </div>
 
             <div
-                className={classes.secondPanel}
+                className={cx(classes.secondPanel, secondPanelHidden && classes.hidden)}
                 style={{ width: `${secondSize}%` }}
                 aria-hidden={collapsed}
             >

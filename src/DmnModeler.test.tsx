@@ -324,6 +324,18 @@ describe("DmnModeler", () => {
         expect(modeler.imports).toEqual(["<A/>"]);
     });
 
+    it("hides the properties panel in views it cannot show anything for", async () => {
+        await render(<Host />);
+        const divider = container.querySelector<HTMLElement>('[role="separator"]')!;
+        const panelVisible = () => getComputedStyle(divider).display !== "none";
+
+        expect(panelVisible()).toBe(true);
+        await click("Decision 1");
+        expect(panelVisible()).toBe(false);
+        await click("Definitions");
+        expect(panelVisible()).toBe(true);
+    });
+
     it("wires a recreated instance like the first one", async () => {
         const { rerender } = {
             rerender: async (options: unknown) =>
