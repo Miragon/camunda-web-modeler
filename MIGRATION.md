@@ -115,3 +115,19 @@ Also new:
 
 **Who is affected:** every host using options or `className`. Hosts that only pass `xml`
 and `onEvent` don't need to change anything.
+
+## `properties.panel.resized`: `width` → `sizePercent` (#231)
+
+The event reported the panel size as `data.width`, which suggested pixels but was a
+percentage of the editor width. The field is now called `sizePercent`; the value is the
+same (0 when collapsed) and can be passed back as `propertiesPanel.size.initial`.
+
+```ts
+// before
+if (isPropertiesPanelResizedEvent(event)) persist(event.data.width);
+
+// after
+if (isPropertiesPanelResizedEvent(event)) persist(event.data.sizePercent);
+```
+
+**Who is affected:** hosts that read `data.width`.
