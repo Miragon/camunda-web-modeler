@@ -50,7 +50,6 @@
     "./style.css": "./dist/style.css",
     "./bpmn.css": "./dist/bpmn.css",
     "./dmn.css": "./dist/dmn.css",
-    "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
   "sideEffects": [
