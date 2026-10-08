@@ -108,7 +108,7 @@
   },
   "resolutions": {
     "min-dash": "4.1.1",
-    "dompurify": "3.4.15"
+    "dompurify": "3.4.16"
   },
   "packageManager": "yarn@4.16.0"
 }
