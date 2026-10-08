@@ -1,11 +1,12 @@
 name: Build
 
+# Pull requests are checked via the pull_request event only; develop is checked again
+# after each merge. (Pushes to feature branches used to trigger a second, identical run.)
 on:
   push:
-    branches-ignore: [ develop ]
+    branches: [develop]
   pull_request:
-    branches: [ develop ]
-    types: [ opened, reopened, synchronize ]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
@@ -18,12 +19,14 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: Miragon/pin-npm-dependencies@v1
-      - run: corepack enable
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
+          persist-credentials: false
+      - uses: Miragon/pin-npm-dependencies@3f7f02fa2454cdd2cdb65df19b081c0d77d301a5 # v1.2.2
+      - run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
           cache: yarn
       - name: Install dependencies
         run: yarn install --immutable
@@ -31,56 +34,75 @@ jobs:
         run: yarn dedupe --check
       - run: yarn lint
       - run: yarn format:check
+      - name: Type-check sources, tests and playground
+        run: yarn typecheck
 
   audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: Miragon/pin-npm-dependencies@v1
-      - run: corepack enable
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
+          persist-credentials: false
+      - uses: Miragon/pin-npm-dependencies@3f7f02fa2454cdd2cdb65df19b081c0d77d301a5 # v1.2.2
+      - run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
           cache: yarn
       - name: Install dependencies
         run: yarn install --immutable
-      - run: yarn npm audit --all --severity high
-        
+      # Blocking for everything consumers install with the package, including
+      # transitive dependencies.
+      - name: Audit runtime dependencies
+        run: yarn npm audit --all --recursive --environment production --severity high --no-deprecations
+      # Informational for dev tooling, so an advisory in a build tool does not block
+      # unrelated pull requests.
+      - name: Audit all dependencies
+        continue-on-error: true
+        run: yarn npm audit --all --recursive --severity high --no-deprecations
+
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - run: corepack enable
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
-          cache: 'yarn'
-      - run: yarn
+          persist-credentials: false
+      - run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --immutable
       - run: yarn test
       - run: yarn build
       - name: Check package contents and exports
         run: yarn lint:package
+      - name: Build playground
+        run: yarn vite build example --outDir "$RUNNER_TEMP/example"
 
   react-19:
     # devDependencies stay on React 18 so the library keeps compiling against the
     # oldest supported types; this job checks the upper end of the peer range.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - run: corepack enable
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
-          cache: 'yarn'
-      - run: yarn
+          persist-credentials: false
+      - run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --immutable
       - run: yarn up react@^19 react-dom@^19 @types/react@^19 @types/react-dom@^19
-      - run: yarn tsc --noEmit -p tsconfig.json
-      - run: yarn tsc --noEmit -p example/tsconfig.json
+      - run: yarn typecheck
       - run: yarn test
       - run: yarn build
 
   ci:
-    if: always()
+    if: ${{ !cancelled() }}
     needs: [lint, audit, build, react-19]
     runs-on: ubuntu-latest
     steps:

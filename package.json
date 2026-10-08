@@ -15,11 +15,12 @@
     "watch": "tsc -w",
     "build": "rimraf dist && tsc -p tsconfig.build.json && node scripts/strip-css-imports-from-dts.mjs",
     "lint:package": "publint --level error",
-    "lint": "eslint -c eslint.config.mjs .",
+    "lint": "eslint -c eslint.config.mjs . --max-warnings 0",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p example/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src"
+    "format": "prettier --write src example scripts .github \"*.{mjs,json}\"",
+    "format:check": "prettier --check src example scripts .github \"*.{mjs,json}\""
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
@@ -111,5 +112,17 @@
   "resolutions": {
     "dompurify": "3.4.16"
   },
-  "packageManager": "yarn@4.16.0"
+  "packageManager": "yarn@4.16.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22",
+      "onFail": "warn"
+    },
+    "packageManager": {
+      "name": "yarn",
+      "version": "4.16.0",
+      "onFail": "warn"
+    }
+  }
 }
