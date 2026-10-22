@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/Miragon/camunda-web-modeler/compare/v0.3.0...v0.3.1) (2026-10-22)
+
+
+### 🛠️ Misc
+
+* auto-merge dependabot pull requests ([#250](https://github.com/Miragon/camunda-web-modeler/issues/250)) ([796ab43](https://github.com/Miragon/camunda-web-modeler/commit/796ab43216a07e8bb0d08c569c1ff748c734ea64))
+
 ## [0.3.0](https://github.com/Miragon/camunda-web-modeler/compare/v0.2.0...v0.3.0) (2026-10-08)
 
 
