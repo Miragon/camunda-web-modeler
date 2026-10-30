@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/Miragon/camunda-web-modeler/compare/v0.3.0...v0.3.1) (2026-10-30)
+
+
+### 🛠️ Misc
+
+* add CODEOWNERS ([#253](https://github.com/Miragon/camunda-web-modeler/issues/253)) ([299bdbd](https://github.com/Miragon/camunda-web-modeler/commit/299bdbdf148228dab87478870fe76706328faf52))
+* auto-merge dependabot pull requests ([#250](https://github.com/Miragon/camunda-web-modeler/issues/250)) ([796ab43](https://github.com/Miragon/camunda-web-modeler/commit/796ab43216a07e8bb0d08c569c1ff748c734ea64))
+* **deps:** bump actions/create-github-app-token ([#248](https://github.com/Miragon/camunda-web-modeler/issues/248)) ([404b6e2](https://github.com/Miragon/camunda-web-modeler/commit/404b6e2bf478ca7ae23d8fc7c5cd390a2d1cdd38))
+
 ## [0.3.0](https://github.com/Miragon/camunda-web-modeler/compare/v0.2.0...v0.3.0) (2026-10-08)
 
 
