@@ -1,6 +1,6 @@
-# Migrating to 1.0
+# Migrating to 0.3
 
-1.0 bundles the breaking changes of epic #226. Each section lists what changed, who is
+0.3 bundles the breaking changes of epic #226. Each section lists what changed, who is
 affected and what to do.
 
 ## Host options override the library defaults (#232)
@@ -55,7 +55,7 @@ The nested tab options are replaced by flat props, styling goes through one `cla
 object, and the instances are reachable through the component `ref` instead of `refs`
 arrays in the options.
 
-| 0.x                                                                   | 1.0                                                   |
+| 0.2                                                                   | 0.3                                                   |
 | --------------------------------------------------------------------- | ----------------------------------------------------- |
 | `className`                                                           | `classes.root`                                        |
 | `modelerTabOptions.disabled`                                          | `diagram.disabled`                                    |
