@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import {
-    BpmnModeler,
-    DmnModeler,
     ModelerEvent,
     isContentSavedEvent,
     isNotificationEvent,
     NotificationEventData,
-} from "../src";
+} from "../../src";
+import BpmnExample from "./BpmnExample";
+import DmnExample from "./DmnExample";
 import { EMPTY_BPMN, EMPTY_DMN } from "./diagrams";
 
 type Mode = "bpmn" | "dmn";
@@ -164,9 +164,9 @@ const App: React.FC = () => {
 
             <main style={modelerAreaStyle}>
                 {mode === "bpmn" ? (
-                    <BpmnModeler xml={bpmnXml} onEvent={onBpmnEvent} />
+                    <BpmnExample xml={bpmnXml} onEvent={onBpmnEvent} />
                 ) : (
-                    <DmnModeler xml={dmnXml} onEvent={onDmnEvent} />
+                    <DmnExample xml={dmnXml} onEvent={onDmnEvent} />
                 )}
             </main>
 
