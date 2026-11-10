@@ -1,52 +1,38 @@
 # Camunda Web Modeler
 
-[![NPM](https://img.shields.io/npm/v/@miragon/camunda-web-modeler)](https://www.npmjs.com/package/@miragon/camunda-web-modeler)
-![Type Definitions](https://img.shields.io/npm/types/@miragon/camunda-web-modeler)
-![License](https://img.shields.io/npm/l/@miragon/camunda-web-modeler)
+[![npm](https://img.shields.io/npm/v/@miragon/camunda-web-modeler)](https://www.npmjs.com/package/@miragon/camunda-web-modeler)
+[![Build](https://github.com/Miragon/camunda-web-modeler/actions/workflows/build.yaml/badge.svg)](https://github.com/Miragon/camunda-web-modeler/actions/workflows/build.yaml)
+[![License: Apache 2.0](https://img.shields.io/github/license/Miragon/camunda-web-modeler)](LICENSE)
 
-![Screenshot](./static/screenshot.jpg)
+![A BPMN process open in the modeler, with the tool palette on the left, the Camunda properties panel on the right and the switch to the XML editor at the bottom](./static/screenshot.jpg)
 
-This is a React component based on [bpmn.io](https://bpmn.io) that allows you to use a fully functional modeler for BPMN
-and DMN in your browser application. It has lots of configuration options and offers these features:
+**Let the users of your app model BPMN processes and DMN decisions without leaving it.**
 
-- Full support for BPMN and DMN
-- Embedded XML editor
-- Easily import element templates
-- Full support for using bpmn.io plugins
-- Access to all bpmn.io and additional events to integrate it more easily into your application
-- Exposes the complete bpmn.io API
-- Includes type definitions for many of the undocumented features and endpoints of bpmn.io
-- TypeScript support
+A React component with the [bpmn.io](https://bpmn.io) modelers, the Camunda 7 properties
+panel and an XML editor. Before 1.0, minor versions can break; see
+[MIGRATION.md](MIGRATION.md).
 
-# Usage
+## Why
 
-## Requirements
+Wiring bpmn-js or dmn-js to properties panels, Camunda extensions and an XML view takes
+lots of glue code. This library is that glue, behind one component per notation.
 
-- React 17, 18 or 19 and [monaco-editor](https://github.com/microsoft/monaco-editor) 0.55 or
-  newer (`react`, `react-dom` and `monaco-editor` are peer dependencies).
-- A bundler such as Vite, webpack 5 or Next.js. The package is published as ES modules, and
-  its dependencies (bpmn-js, dmn-js, Monaco) only run in the browser. For server-side
-  rendering, load the modeler on the client only, e.g. with Next.js:
-  `dynamic(() => import("@miragon/camunda-web-modeler").then(m => m.BpmnModeler), { ssr: false })`.
-- The stylesheet, imported once: `@miragon/camunda-web-modeler/style.css` for both
-  modelers, or `bpmn.css` / `dmn.css` if you only use one of them.
-- Monaco needs its editor worker for the XML editor. With Vite, register it before the
-  modeler is loaded:
+## What you get
 
-```ts
-import EditorWorker from "monaco-editor/editor/editor.worker?worker";
+- **BPMN and DMN.** `<BpmnModeler>` and `<DmnModeler>` each come with canvas, properties
+  panel and XML editor; for DMN, the panel covers the decision requirements diagram.
+- **Camunda 7 ready.** The panel edits the Camunda 7 attributes, and element templates in
+  the Camunda 7 format plug right in. Camunda 8 (Zeebe) is not built in.
+- **XML editor on demand.** Monaco loads only when users open the XML view.
+- **Typed events and full access.** Every change arrives as a typed event, and a `ref`
+  hands you the underlying bpmn-js or dmn-js modeler.
+- **React and Vue.** React 17 to 19, or Vue 3 through the BPMN
+  [wrapper component](examples/vue-vite/BpmnModeler.vue) you copy into your app.
 
-self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
-```
+## Install
 
-Monaco is loaded when the XML editor is shown for the first time, so it is not part of your
-initial bundle; with `xmlEditor={{ disabled: true }}` it is never loaded. To use your own
-Monaco build (e.g. only the editor core and the XML language), pass it or a function
-loading it as `xmlEditor={{ monaco: () => import("./my-monaco") }}`.
-
-## Getting Started
-
-1. Add this dependency to your application:
+You need a bundler such as Vite, webpack 5 or Next.js, or an import map as in the
+[example without a build step](examples/react-cdn).
 
 ```sh
 npm install @miragon/camunda-web-modeler monaco-editor
@@ -54,233 +40,70 @@ npm install @miragon/camunda-web-modeler monaco-editor
 yarn add @miragon/camunda-web-modeler monaco-editor
 ```
 
-2. Include it in your application:
+## Get started
 
-```tsx
-import { BpmnModeler, isContentSavedEvent, ModelerEvent } from "@miragon/camunda-web-modeler";
-import "@miragon/camunda-web-modeler/style.css";
-import React, { useCallback, useState } from "react";
+This setup uses Vite; for server-side rendering, see the [guide](docs/guide.md).
 
-// Your BPMN 2.0 XML, e.g. loaded from your backend.
-const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
+1. Register Monaco's worker in `monaco-worker.ts` and import it first in your entry file
+   (`import "./monaco-worker";`):
 
-const App: React.FC = () => {
-    const [xml, setXml] = useState(BPMN);
+   ```ts
+   import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 
-    const onEvent = useCallback((event: ModelerEvent) => {
-        if (isContentSavedEvent(event)) {
-            setXml(event.data.xml);
-        }
-    }, []);
+   self.MonacoEnvironment = { getWorker: () => new EditorWorker() };
+   ```
 
-    return (
-        <div style={{ height: "100vh" }}>
-            <BpmnModeler xml={xml} onEvent={onEvent} />
-        </div>
-    );
-};
+2. Import the stylesheet and render the modeler in an element with a height:
 
-export default App;
-```
+   ```tsx
+   import {
+     BpmnModeler,
+     isContentSavedEvent,
+     ModelerEvent,
+   } from "@miragon/camunda-web-modeler";
+   import "@miragon/camunda-web-modeler/style.css";
+   import React, { useCallback, useState } from "react";
 
-3. Replace `BPMN` with your diagram XML and run the application!
+   // Your BPMN 2.0 XML, e.g. loaded from your backend.
+   const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
 
-The modeler fills its parent element, so give the host element a height.
+   const App: React.FC = () => {
+     const [xml, setXml] = useState(BPMN);
 
-## Controlled or uncontrolled
+     const onEvent = useCallback((event: ModelerEvent) => {
+       if (isContentSavedEvent(event)) {
+         setXml(event.data.xml);
+       }
+     }, []);
 
-Like a React input, the modeler works in two modes:
+     return (
+       <div style={{ height: "100vh" }}>
+         <BpmnModeler xml={xml} onEvent={onEvent} />
+       </div>
+     );
+   };
 
-- **Controlled** (`xml`): you own the document and update it from `content.saved` events, as
-  in the example above. Until `xml` is non-empty for the first time, nothing is rendered,
-  so you can load the document asynchronously.
-- **Uncontrolled** (`defaultXml`): the modeler keeps track of the changes itself. Without
-  `xml` and `defaultXml`, it starts with an empty diagram.
+   export default App;
+   ```
 
-## Accessing the modeler
+3. Replace `BPMN` with your diagram XML and start your app: the diagram opens, and every
+   edit lands in `xml`.
 
-Pass a `ref` to get the bpmn-js instance, the Monaco editor or the current document:
+Next: the [guide](docs/guide.md) and the [examples](examples).
 
-```tsx
-import { BpmnModeler, BpmnModelerHandle } from "@miragon/camunda-web-modeler";
-import React, { useRef } from "react";
+## Help and feedback
 
-const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
+- **Documentation:** setup, options and API reference in the [guide](docs/guide.md).
+- **Bugs and questions:** [open an issue](https://github.com/Miragon/camunda-web-modeler/issues)
+  with logs, screenshots and a code example.
+- **Professional support:** write to
+  [info@miragon.io](mailto:info@miragon.io).
 
-export const Editor: React.FC = () => {
-    const modeler = useRef<BpmnModelerHandle>(null);
+## Contributing
 
-    const onSave = async () => {
-        const { xml, svg } = (await modeler.current?.save()) ?? {};
-        console.log("Saved", xml, svg);
-    };
+How to build, test and change the project is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-    return (
-        <div style={{ height: "100vh", position: "relative" }}>
-            <button type="button" onClick={() => void onSave()}>
-                Save
-            </button>
-            <button type="button" onClick={() => modeler.current?.getModeler()?.undo()}>
-                Undo
-            </button>
-            <BpmnModeler ref={modeler} defaultXml={BPMN} />
-        </div>
-    );
-};
-```
+## License
 
-## Full example
-
-All options of the BPMN modeler. Memoize objects you pass (`useMemo`): a new
-`bpmnJsOptions` object creates a new bpmn-js instance.
-
-```tsx
-import {
-    BpmnModeler,
-    BpmnModelerHandle,
-    isBpmnIoEvent,
-    isContentSavedEvent,
-    isNotificationEvent,
-    isPropertiesPanelResizedEvent,
-    isUIUpdateRequiredEvent,
-    ModelerEvent,
-} from "@miragon/camunda-web-modeler";
-import React, { useCallback, useMemo, useRef, useState } from "react";
-
-const BPMN = `<?xml version="1.0" encoding="UTF-8"?>...`;
-
-const App: React.FC = () => {
-    const modeler = useRef<BpmnModelerHandle>(null);
-    const [xml, setXml] = useState(BPMN);
-
-    const onEvent = useCallback((event: ModelerEvent) => {
-        if (isContentSavedEvent(event)) {
-            // The user changed the diagram or the XML, or switched views.
-            console.log(`Content saved because of ${event.data.reason}`);
-            setXml(event.data.xml);
-        } else if (isNotificationEvent(event)) {
-            // Something the user should see, e.g. an import error.
-            console.log(event.data.severity, event.data.message);
-        } else if (isUIUpdateRequiredEvent(event)) {
-            // Update your toolbar, e.g. undo / redo buttons via the ref.
-        } else if (isPropertiesPanelResizedEvent(event)) {
-            // In percent of the editor width; can be passed back as propertiesPanel.size.
-            console.log(`Properties panel resized to ${event.data.sizePercent} %`);
-        } else if (isBpmnIoEvent(event)) {
-            // Any bpmn-js event, forwarded as is.
-        }
-    }, []);
-
-    // Passed to bpmn-js; modules can override services of this library.
-    const bpmnJsOptions = useMemo(() => ({ keyboard: { bindTo: document } }), []);
-
-    // Element templates in the Camunda 7 format.
-    const elementTemplates = useMemo(() => [], []);
-
-    return (
-        <div style={{ height: "100vh" }}>
-            <BpmnModeler
-                ref={modeler}
-                xml={xml}
-                onEvent={onEvent}
-                bpmnJsOptions={bpmnJsOptions}
-                elementTemplates={elementTemplates}
-                diagram={{ size: { initial: 70, min: 20, max: 90 } }}
-                propertiesPanel={{ hidden: false, size: { initial: 30 } }}
-                xmlEditor={{ disabled: false, options: { fontSize: 13 } }}
-                classes={{ root: "my-modeler", viewToggle: "my-toggle" }}
-            />
-        </div>
-    );
-};
-
-export default App;
-```
-
-## Usage with DMN
-
-Usage with DMN is the same: use `<DmnModeler>` (and `DmnModelerHandle` for the `ref`) with
-`dmnJsOptions` instead of `bpmnJsOptions`. Element templates don't exist for DMN, and the
-properties panel is only shown for the DRD.
-
-## More examples
-
-- [examples/react-vite](./examples/react-vite): a Vite app with separate BPMN and DMN
-  components, saving via the `ref` and element templates. Run it with `yarn dev`.
-- [examples/vue-vite](./examples/vue-vite): the BPMN modeler in a Vue 3 app, bound with
-  `v-model:xml`. The [BpmnModeler.vue](./examples/vue-vite/BpmnModeler.vue) wrapper mounts
-  the React component with `createRoot`; copy it into your app. Run it with `yarn dev:vue`.
-- [examples/react-cdn](./examples/react-cdn): the BPMN modeler without npm or a build step,
-  loaded from [esm.sh](https://esm.sh) via an import map, always in the latest release.
-  Serve the folder with any static web server, e.g. `npx serve examples/react-cdn`.
-
-The Vite examples import the library from `../../src`, so they run against the current
-sources. In your app, import from `@miragon/camunda-web-modeler` instead.
-
-# Development
-
-You need Node.js 22 or newer (see `.nvmrc`) and Yarn 4 via [Corepack](https://github.com/nodejs/corepack).
-Node.js 25 and newer no longer ship Corepack, install it with `npm install -g corepack` there.
-
-```sh
-corepack enable
-yarn install
-yarn dev        # playground with BPMN and DMN at http://localhost:5173
-yarn dev:vue    # the Vue example
-yarn test       # unit and component tests
-yarn test:coverage  # the same with a coverage report (coverage/index.html)
-yarn test:e2e   # opens all examples in Chromium (once: yarn playwright install chromium)
-yarn lint       # ESLint, warnings fail the check
-yarn typecheck  # sources, tests, examples and e2e tests
-yarn build      # library output in dist/
-```
-
-Pull request titles must follow [Conventional Commits](https://www.conventionalcommits.org/); releases are
-created by release-please from them.
-
-# Issues and Questions
-
-If you experience any bugs or have questions concerning the usage or further development plans, don't hesitate to create
-a new issue. However, **please make sure to include all relevant logs, screenshots, and code examples**. Thanks!
-
-# API Reference
-
-For the API reference, start with the type definitions in these files and work your way through:
-
-- [options.ts](./src/options.ts) (the props both modelers share)
-- [BpmnModeler.tsx](./src/BpmnModeler.tsx)
-- [DmnModeler.tsx](./src/DmnModeler.tsx)
-- [Events.ts](./src/events/Events.ts)
-
-Upgrading from 0.x? See [MIGRATION.md](./MIGRATION.md).
-
-## Engage with the Miragon team
-
-If you have any questions or need support, feel free to reach out to us via
-email ([info@miragon.io](mailto:info@miragon.io)).
-We are here to help you, especially if you are considering introducing camunda-web-modeler in your organization.
-
-For inquiries and professional support, please contact us at: [info@miragon.io](mailto:info@miragon.io)
-
-# License
-
-```
-/**
- * Copyright 2021 FlowSquad GmbH
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-```
-
-For the full license text, see the LICENSE file above.
-Remember that the bpmn.io license still applies, i.e. you must not remove the icon displayed in the bottom-right corner.
+[Apache 2.0](LICENSE), Copyright 2021 FlowSquad GmbH. The bpmn.io license applies as well:
+keep the bpmn.io logo in the bottom-right corner of the canvas.
