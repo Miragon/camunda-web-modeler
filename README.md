@@ -4,7 +4,7 @@
 [![Build](https://github.com/Miragon/camunda-web-modeler/actions/workflows/build.yaml/badge.svg)](https://github.com/Miragon/camunda-web-modeler/actions/workflows/build.yaml)
 [![License: Apache 2.0](https://img.shields.io/github/license/Miragon/camunda-web-modeler)](LICENSE)
 
-![A BPMN process open in the modeler, with the tool palette on the left, the Camunda properties panel on the right and the switch to the XML editor at the bottom](./static/screenshot.jpg)
+![A BPMN process open in the modeler, with the tool palette on the left, the Camunda properties panel on the right and the switch to the XML editor at the bottom](docs/assets/screenshot.jpg)
 
 **Let the users of your app model BPMN processes and DMN decisions without leaving it.**
 
