@@ -27,7 +27,7 @@ import globals from "globals";
 export default defineConfig(
     {
         ignores: [
-            "dist",
+            "**/dist",
             "coverage",
             "**/*.d.ts",
             // Build/tool configs are plain ESM run by Node, not part of the typed
@@ -35,6 +35,7 @@ export default defineConfig(
             "*.config.mjs",
             "*.config.mts",
             "scripts",
+            "examples/react-cdn",
         ],
     },
 

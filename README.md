@@ -205,8 +205,17 @@ properties panel is only shown for the DRD.
 
 ## More examples
 
-You can find more examples in our examples
-repository [camunda-web-modeler-examples](https://github.com/FlowSquad/camunda-web-modeler-examples).
+- [examples/react-vite](./examples/react-vite): a Vite app with separate BPMN and DMN
+  components, saving via the `ref` and element templates. Run it with `yarn dev`.
+- [examples/vue-vite](./examples/vue-vite): the BPMN modeler in a Vue 3 app, bound with
+  `v-model:xml`. The [BpmnModeler.vue](./examples/vue-vite/BpmnModeler.vue) wrapper mounts
+  the React component with `createRoot`; copy it into your app. Run it with `yarn dev:vue`.
+- [examples/react-cdn](./examples/react-cdn): the BPMN modeler without npm or a build step,
+  loaded from [esm.sh](https://esm.sh) via an import map, always in the latest release.
+  Serve the folder with any static web server, e.g. `npx serve examples/react-cdn`.
+
+The Vite examples import the library from `../../src`, so they run against the current
+sources. In your app, import from `@miragon/camunda-web-modeler` instead.
 
 # Development
 
@@ -217,10 +226,12 @@ Node.js 25 and newer no longer ship Corepack, install it with `npm install -g co
 corepack enable
 yarn install
 yarn dev        # playground with BPMN and DMN at http://localhost:5173
+yarn dev:vue    # the Vue example
 yarn test       # unit and component tests
 yarn test:coverage  # the same with a coverage report (coverage/index.html)
+yarn test:e2e   # opens all examples in Chromium (once: yarn playwright install chromium)
 yarn lint       # ESLint, warnings fail the check
-yarn typecheck  # sources, tests and playground
+yarn typecheck  # sources, tests, examples and e2e tests
 yarn build      # library output in dist/
 ```
 

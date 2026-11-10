@@ -374,3 +374,7 @@ build/
 
 # Temporary output of scripts/check-readme-examples.mjs
 .readme-check/
+
+# Playwright output
+test-results/
+playwright-report/
