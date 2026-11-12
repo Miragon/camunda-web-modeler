@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.1](https://github.com/Miragon/camunda-web-modeler/compare/v0.3.0...v0.3.1) (2026-11-12)
+
+
+### 🔨 Refactoring
+
+* move usage examples from camunda-web-modeler-examples into this repo ([#255](https://github.com/Miragon/camunda-web-modeler/issues/255)) ([f69d3c4](https://github.com/Miragon/camunda-web-modeler/commit/f69d3c45d38be167db637881931f184a19b42ec1))
+
+
+### 📔 Documentation
+
+* move README screenshot to docs/assets ([#258](https://github.com/Miragon/camunda-web-modeler/issues/258)) ([b5c8e34](https://github.com/Miragon/camunda-web-modeler/commit/b5c8e34146181fa89679311ce567cfbf99e2cd30))
+* rewrite README for integrators and move details to guide and CONTRIBUTING ([#256](https://github.com/Miragon/camunda-web-modeler/issues/256)) ([e0015d3](https://github.com/Miragon/camunda-web-modeler/commit/e0015d32010f71ded78f27feb1d8745300d239c4))
+
+
+### 🛠️ Misc
+
+* add CODEOWNERS ([#253](https://github.com/Miragon/camunda-web-modeler/issues/253)) ([299bdbd](https://github.com/Miragon/camunda-web-modeler/commit/299bdbdf148228dab87478870fe76706328faf52))
+* auto-merge dependabot pull requests ([#250](https://github.com/Miragon/camunda-web-modeler/issues/250)) ([796ab43](https://github.com/Miragon/camunda-web-modeler/commit/796ab43216a07e8bb0d08c569c1ff748c734ea64))
+* **deps:** bump actions/create-github-app-token ([#248](https://github.com/Miragon/camunda-web-modeler/issues/248)) ([404b6e2](https://github.com/Miragon/camunda-web-modeler/commit/404b6e2bf478ca7ae23d8fc7c5cd390a2d1cdd38))
+* **deps:** bump amannn/action-semantic-pull-request ([#259](https://github.com/Miragon/camunda-web-modeler/issues/259)) ([3a980a0](https://github.com/Miragon/camunda-web-modeler/commit/3a980a0eb17c9edff072630235d04c4f8d021aaf))
+* merge dependabot updates as the release app so they reach a release ([#260](https://github.com/Miragon/camunda-web-modeler/issues/260)) ([16b711f](https://github.com/Miragon/camunda-web-modeler/commit/16b711f1b2c2e4d3a59f309c45d962a0d2a27984))
+
 ## [0.3.0](https://github.com/Miragon/camunda-web-modeler/compare/v0.2.0...v0.3.0) (2026-10-08)
 
 
