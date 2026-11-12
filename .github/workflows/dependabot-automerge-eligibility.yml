@@ -1,0 +1,58 @@
+name: Dependabot auto-merge eligibility
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  label-eligible:
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decide whether this update may auto-merge
+        id: decision
+        run: |
+          case "$UPDATE_TYPE" in
+            version-update:semver-patch) allowed_paths=$PATCH_AUTOMERGE_PATHS ;;
+            version-update:semver-minor) allowed_paths=$MINOR_AUTOMERGE_PATHS ;;
+            version-update:semver-major) allowed_paths=$MAJOR_AUTOMERGE_PATHS ;;
+            *) exit 0 ;;
+          esac
+          [ -n "$allowed_paths" ] || exit 0
+          changed_files=$(gh pr diff --name-only "$PR_URL")
+          [ -n "$changed_files" ] || exit 0
+          while IFS= read -r changed_file; do
+            grep -Eq "$allowed_paths" <<< "$changed_file" || exit 0
+          done <<< "$changed_files"
+          echo "eligible=true" >> "$GITHUB_OUTPUT"
+        env:
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+          PATCH_AUTOMERGE_PATHS: "."
+          MINOR_AUTOMERGE_PATHS: "."
+          MAJOR_AUTOMERGE_PATHS: ""
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Withdraw an update that is no longer eligible
+        if: steps.decision.outcome == 'success' && steps.decision.outputs.eligible != 'true'
+        run: |
+          gh pr edit "$PR_URL" --remove-label auto-merge || true
+          gh pr merge --disable-auto "$PR_URL" || true
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Label the update for auto-merge
+        if: steps.decision.outputs.eligible == 'true'
+        run: gh pr edit "$PR_URL" --add-label auto-merge
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
